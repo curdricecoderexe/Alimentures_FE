@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 import FallbackImg from '../../assets/lan.png';
-import ParticleCanvas from '../../components/ui/ParticleCanvas';
 import { cachedFetch } from '../../lib/api';
 
 const CART_FAQS = [
@@ -122,8 +121,6 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] relative overflow-x-hidden font-sans">
-      {/* Animated particles */}
-      <ParticleCanvas count={45} colors={['#920075','#D4AF37','#F59E0B','#E91E8C','#FDE047']} minSize={0.7} maxSize={2.8} speed={0.6} interactive={true} />
       <div className="absolute top-0 left-1/4 w-[700px] h-[400px] bg-[#920075]/4 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[350px] bg-[#D4AF37]/5 rounded-full blur-[130px] pointer-events-none" />
 

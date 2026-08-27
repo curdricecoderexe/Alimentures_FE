@@ -419,7 +419,7 @@ export default function AdminOrders() {
                     <div key={idx} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#24162E] rounded-2xl border border-gray-100 dark:border-white/10">
                       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white dark:bg-[#1A1021] border border-gray-100 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-                          {item.image && <img src={item.image} className="h-full w-full object-cover" />}
+                          {item.image && <img src={item.image} alt="" className="h-full w-full object-cover" />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-sm truncate">{item.name || item.title}</p>

@@ -13,7 +13,6 @@ import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 import ProductDetailsSkeleton from '../../components/skeletons/ProductDetailsSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
-import ParticleCanvas from '../../components/ui/ParticleCanvas';
 import SEO from '../../components/SEO';
 import ProductCard from '../../components/ui/ProductCard';
 
@@ -239,9 +238,6 @@ export default function ProductDetails() {
           }
         }}
       />
-      {/* Animated particles */}
-      <ParticleCanvas count={45} colors={['#920075','#D4AF37','#F59E0B','#E91E8C','#FDE047']} minSize={0.7} maxSize={2.8} speed={0.6} interactive={true} />
-      
       {/* Ambient background glows */}
       <div className="absolute top-0 right-0 w-[600px] h-[500px] bg-[#920075]/4 rounded-full blur-[160px] pointer-events-none -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[400px] bg-[#D4AF37]/4 rounded-full blur-[120px] pointer-events-none -z-10" />

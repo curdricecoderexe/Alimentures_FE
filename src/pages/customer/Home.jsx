@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Check, ArrowRight, Sparkles, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Loader from '../../components/ui/loader';
@@ -120,6 +120,7 @@ const refuseList = [
 export default function Home() {
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const getInitialSlides = () => {
     try {
       const cached = localStorage.getItem('cached_hero_slides');
@@ -339,6 +340,20 @@ export default function Home() {
 
   // GSAP Smooth Visual Animations
   useEffect(() => {
+    // Honour "reduce motion": show everything in its final state, no tweens.
+    if (reduceMotion) {
+      [titleRef, textRef, imageCardRef].forEach((r) => {
+        if (r.current) gsap.set(r.current, { opacity: 1, x: 0, y: 0, scale: 1 });
+      });
+      sectionsRef.current.forEach((s) => s && gsap.set(s, { opacity: 1, y: 0 }));
+      return;
+    }
+
+    // Keep ScrollTrigger in step with Lenis' virtual scroll position (the layout
+    // exposes the instance on window.lenis).
+    const onLenisScroll = () => ScrollTrigger.update();
+    window.lenis?.on('scroll', onLenisScroll);
+
     // Hero Entrance
     const tl = gsap.timeline({ delay: 0.2 });
     if (titleRef.current) {
@@ -361,7 +376,8 @@ export default function Home() {
     }
 
     // Floating animation for ambient light blobs
-    backgroundBlobsRef.current.forEach((blob, idx) => {
+    const blobs = backgroundBlobsRef.current.slice();
+    blobs.forEach((blob, idx) => {
       if (!blob) return;
       gsap.to(blob, {
         y: idx % 2 === 0 ? -40 : 40,
@@ -394,9 +410,12 @@ export default function Home() {
     });
 
     return () => {
+      window.lenis?.off?.('scroll', onLenisScroll);
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      tl.kill();
+      gsap.killTweensOf(blobs);
     };
-  }, []);
+  }, [reduceMotion]);
 
   // Fetch Products Catalog
   useEffect(() => {

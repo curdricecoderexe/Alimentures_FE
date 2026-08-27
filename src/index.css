@@ -4,7 +4,7 @@
 
 @layer base {
   html {
-    scroll-behavior: auto;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -91,14 +91,31 @@ body {
   z-index: 1;
 }
 
-/* Prefers Reduced Motion — Full accessibility support */
+/* Prefers Reduced Motion — Full accessibility support.
+   JS-driven motion (Lenis smooth scroll, the particle canvas, GSAP on the home
+   page, and all framer-motion animations via <MotionConfig reducedMotion="user">)
+   is disabled in code; this block covers the CSS side. */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .animate-marquee { animation: none; }
   .section-reveal { opacity: 1; transform: none; transition: none; }
   .section-reveal.visible { opacity: 1; transform: none; }
   .stagger-children > * { opacity: 1; transform: none; transition: none; }
-  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
+
+/* Header drop-in on mount (replaces a GSAP tween so the layout doesn't pull in
+   GSAP; the reduced-motion block above collapses it to an instant appear). */
+@keyframes nav-drop {
+  from { opacity: 0; transform: translateY(-80px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.nav-drop-in { animation: nav-drop 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
 
 /* Glassmorphism Utility Class */
 .glass-panel {

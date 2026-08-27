@@ -122,7 +122,8 @@ export default function AdminProducts() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  // Initial fetch
+  // Initial fetch (run once on mount)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchProducts(1, '', true); }, []);
 
   useEffect(() => {

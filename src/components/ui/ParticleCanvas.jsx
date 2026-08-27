@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { useReducedMotion } from 'framer-motion';
 
 /**
  * ParticleCanvas — a high-performance, GPU-friendly canvas particle layer.
  * Optimizations:
+ *   - Renders nothing when the user prefers reduced motion.
  *   - Auto-pauses when off-screen or tab is hidden (0% CPU/GPU waste).
  *   - Eliminates expensive ctx.shadowBlur calls for 10x faster canvas rendering.
  *   - Uses passive mouse events & ResizeObserver for zero layout thrashing.
@@ -22,8 +24,10 @@ export default function ParticleCanvas({
   const animRef = useRef(null);
   const isVisible = useRef(true);
   const mouse = useRef({ x: -9999, y: -9999 });
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    if (reduceMotion) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
@@ -203,7 +207,9 @@ export default function ParticleCanvas({
         canvas.removeEventListener('mouseleave', onLeave);
       }
     };
-  }, [count, colors, minSize, maxSize, speed, interactive, glow, enableLines]);
+  }, [count, colors, minSize, maxSize, speed, interactive, glow, enableLines, reduceMotion]);
+
+  if (reduceMotion) return null;
 
   return (
     <canvas

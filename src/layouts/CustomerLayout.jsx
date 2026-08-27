@@ -9,26 +9,20 @@ import { useState, useEffect, useRef } from 'react';
 import logo from '../assets/logo.png';
 import ImageWithFallback from '../assets/lan.png';
 import { useCart } from '../context/CartContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import gsap from 'gsap';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { toast } from 'sonner';
 import ChatWidget from '../components/ChatWidget';
 import CookieConsent from '../components/CookieConsent';
 import { pageview, initAutoTracking, initPerformance } from '../lib/analytics';
 import { cachedFetch, logout } from '../lib/api';
-// Removed Loader import
-// Removed unused import: womenImage
-// Removed unused import: coverImage
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function CustomerLayout() {
   const { cart, wishlist } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,8 +76,12 @@ export default function CustomerLayout() {
   const navRef = useRef(null);
   const lenisRef = useRef(null);
 
-  // Initialize Lenis Smooth Physics-Based Scroll Engine
+  // Initialise the Lenis smooth-scroll engine — but not when the user asked for
+  // reduced motion (they get plain native scrolling instead). The home page
+  // wires its GSAP ScrollTrigger to window.lenis when present.
   useEffect(() => {
+    if (reduceMotion) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -105,16 +103,12 @@ export default function CustomerLayout() {
     }
     rafId = requestAnimationFrame(raf);
 
-    // Coordinate GSAP ScrollTrigger computations
-    const unbindScroll = lenis.on('scroll', ScrollTrigger.update);
-
     return () => {
       cancelAnimationFrame(rafId);
-      if (typeof unbindScroll === 'function') unbindScroll();
       lenis.destroy();
       window.lenis = null;
     };
-  }, []);
+  }, [reduceMotion]);
 
   // Disable browser automatic scroll restoration on load
   useEffect(() => {
@@ -163,14 +157,6 @@ export default function CustomerLayout() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (navRef.current) {
-      gsap.fromTo(navRef.current,
-        { y: -80, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', delay: 0.2 }
-      );
-    }
-  }, []);
 
   useEffect(() => {
     if (cart.length > 0) {
@@ -304,7 +290,7 @@ export default function CustomerLayout() {
     <div className="min-h-screen text-brand-dark relative font-sans overflow-x-hidden">
 
       {/* ── NAVBAR ── */}
-      <header ref={navRef} className="fixed top-0 left-0 right-0 z-[100] transition-all duration-500 pt-2.5 sm:pt-4 px-3 sm:px-6 lg:px-8">
+      <header ref={navRef} className="nav-drop-in fixed top-0 left-0 right-0 z-[100] transition-all duration-500 pt-2.5 sm:pt-4 px-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto transition-all duration-500">
           <div className={`flex items-center justify-between transition-all duration-500 rounded-full px-4 sm:px-6 md:px-8 py-2 md:py-3 ${
             isSolidNav
