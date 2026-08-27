@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /product/
+Allow: /shop
+Allow: /about
+Allow: /contact
+
+Disallow: /admin
+Disallow: /staff
+Disallow: /delivery
+Disallow: /cart
+Disallow: /checkout
+Disallow: /orders
+Disallow: /profile
+Disallow: /addresses
+Disallow: /wishlist
+
+Sitemap: https://alimenture.com/sitemap.xml
