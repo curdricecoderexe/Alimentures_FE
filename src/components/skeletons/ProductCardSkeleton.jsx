@@ -1,15 +1,36 @@
 import React from 'react';
+import Sk from './Sk';
+
 export default function ProductCardSkeleton() {
   return (
-    <div className="bg-white dark:bg-[#1A1021] rounded-3xl shadow-sm border border-gray-100 dark:border-white/10 p-4 flex flex-col gap-4 animate-pulse">
-      <div className="w-full aspect-square bg-gray-100 dark:bg-white/10 rounded-2xl"></div>
-      <div className="space-y-2">
-        <div className="h-4 bg-gray-200 dark:bg-white/20 rounded w-3/4"></div>
-        <div className="h-3 bg-gray-100 dark:bg-white/10 rounded w-1/2"></div>
+    <div className="glass rounded-card overflow-hidden flex flex-col">
+      {/* image plate */}
+      <div className="relative aspect-square w-full plate-berry">
+        <Sk className="absolute top-3 left-3 h-[22px] w-14" rounded="rounded-full" />
+        <Sk className="absolute top-3 right-3 h-8 w-8" rounded="rounded-full" />
       </div>
-      <div className="flex items-center justify-between mt-auto pt-4">
-        <div className="h-5 bg-gray-200 dark:bg-white/20 rounded w-1/3"></div>
-        <div className="h-8 w-8 bg-gray-100 dark:bg-white/10 rounded-full"></div>
+
+      {/* body — mirrors ProductCard p-5 */}
+      <div className="p-5 flex flex-col gap-3 flex-1">
+        <div className="flex items-center justify-between">
+          <Sk className="h-[22px] w-16" rounded="rounded-full" />
+          <Sk className="h-3 w-8" />
+        </div>
+        <Sk className="h-4 w-3/4" />
+        <div className="space-y-1.5 flex-1">
+          <Sk className="h-2.5 w-full" />
+          <Sk className="h-2.5 w-5/6" />
+        </div>
+        <div className="pt-3 border-t border-hairline space-y-3 mt-auto">
+          <div className="flex items-baseline justify-between">
+            <Sk className="h-2.5 w-10" />
+            <Sk className="h-4 w-16" />
+          </div>
+          <div className="flex gap-2">
+            <Sk className="h-9 flex-1" rounded="rounded-xl" />
+            <Sk className="h-9 flex-1" rounded="rounded-xl" />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,18 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Heart, Check, ArrowRight, Sparkles, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Loader from '../../components/ui/loader';
-import ParticleCanvas from '../../components/ui/ParticleCanvas';
+import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
+import { useAppearance } from '../../lib/appearance';
 import lan from '../../assets/lan.png';
 import womenImage from '../../assets/cas/women.png';
-import focusImage from '../../assets/focus.png';
-import bgImage from '../../assets/bg.png';
-import bg1Image from '../../assets/bg-1.png';
+import nammalvarImage from '../../assets/nammalvar.jpg';
+import craftingBgDefault from '../../assets/Munnar.jpg';
+import commitmentBgDefault from '../../assets/bg-1.png';
+import superGrainsBgDefault from '../../assets/bf.png';
+import featuredBgDefault from '../../assets/feature-bg.png';
 
 import fingerMilletImg from '../../assets/fav/finger.png';
 import foxtailMilletImg from '../../assets/fav/foxtail.png';
@@ -33,9 +36,9 @@ import classicCocletsImg from '../../assets/fav/classic_coclets.png';
 gsap.registerPlugin(ScrollTrigger);
 
 // Gradients & Glass Styles
-const GRADIENT_PURPLE_GOLD = 'bg-gradient-to-br from-rose-700 via-rose-600 to-orange-500';
-const TEXT_GRADIENT = 'bg-gradient-to-r from-rose-800 to-orange-600 bg-clip-text text-transparent drop-shadow-sm';
-const GLASS_CARD = 'bg-white/70 backdrop-blur-2xl border border-white/40 shadow-xl shadow-rose-900/5 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500';
+const GRADIENT_PURPLE_GOLD = 'bg-gradient-to-br from-berry via-berry-bright to-gold-light';
+const TEXT_GRADIENT = 'bg-gradient-to-r from-berry-deep to-orange-600 bg-clip-text text-transparent drop-shadow-sm';
+const GLASS_CARD = 'glass border border-white/40 shadow-xl shadow-rose-900/5 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500';
 const GLASS_DRAWER = 'bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl shadow-rose-900/10';
 
 const forbiddenIngredients = [
@@ -69,7 +72,7 @@ const trustPillars = [
 
 const refuseList = [
   {
-    title: '0% Maida & Wheat',
+    title: '0% Maida',
     desc: 'We avoid refined flour and use nutrient-dense grains that naturally support healthier digestion and balanced nutrition.',
     icon: (
       <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -117,10 +120,64 @@ const refuseList = [
   }
 ];
 
+/* Ornamental divider that sits between the catalog category bands. */
+function CatalogDivider() {
+  return (
+    <div className="relative flex items-center justify-center py-7 sm:py-11 overflow-visible" aria-hidden="true">
+      {/* drifting particles */}
+      <span className="absolute left-[calc(50%-150px)] -top-1 h-1 w-1 rounded-full bg-gold-light/60 animate-float" />
+      <span className="absolute left-[calc(50%+120px)] top-3 h-1.5 w-1.5 rounded-full bg-berry/35 animate-float-slow" style={{ animationDelay: '.7s' }} />
+      <span className="absolute left-[calc(50%-80px)] bottom-1 h-1 w-1 rounded-full bg-berry/30 animate-float" style={{ animationDelay: '1.2s' }} />
+      <span className="absolute left-[calc(50%+175px)] -top-2 h-1 w-1 rounded-full bg-gold-light/50 animate-float-slow" style={{ animationDelay: '.35s' }} />
+      <span className="absolute left-[calc(50%-195px)] top-4 h-[3px] w-[3px] rounded-full bg-berry/25 animate-float" style={{ animationDelay: '.9s' }} />
+
+      {/* left rail */}
+      <span className="hidden sm:block h-1 w-1 rounded-full bg-berry/25" />
+      <span className="h-px flex-1 max-w-[70px] sm:max-w-[170px] bg-gradient-to-r from-transparent via-berry/15 to-berry/30" />
+      <span className="h-[3px] w-[3px] rounded-full bg-gold-light/70 mx-1.5" />
+      <span className="h-1.5 w-1.5 rounded-full bg-berry/35 mx-1.5" />
+      <span className="h-px w-5 sm:w-9 bg-berry/25" />
+
+      {/* centre medallion */}
+      <span className="relative mx-3 sm:mx-4 shrink-0">
+        <svg className="absolute -inset-[7px] sm:-inset-2 animate-spin-slow text-gold-light/45" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="26" stroke="currentColor" strokeWidth="1" strokeDasharray="3 6" />
+        </svg>
+        <span className="absolute inset-0 -m-3 rounded-full bg-gradient-to-br from-berry/12 to-gold-light/12 blur-md" />
+        <span className="relative block rounded-full p-[2px] bg-gradient-to-br from-berry via-gold-light to-berry shadow-[0_10px_28px_-10px_rgba(121,8,63,0.45)]">
+          <span className="flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white">
+            <Sprout className="h-4 w-4 sm:h-[19px] sm:w-[19px] text-berry" />
+          </span>
+        </span>
+      </span>
+
+      {/* right rail (mirror) */}
+      <span className="h-px w-5 sm:w-9 bg-berry/25" />
+      <span className="h-1.5 w-1.5 rounded-full bg-berry/35 mx-1.5" />
+      <span className="h-[3px] w-[3px] rounded-full bg-gold-light/70 mx-1.5" />
+      <span className="h-px flex-1 max-w-[70px] sm:max-w-[170px] bg-gradient-to-l from-transparent via-berry/15 to-berry/30" />
+      <span className="hidden sm:block h-1 w-1 rounded-full bg-berry/25" />
+    </div>
+  );
+}
+
 export default function Home() {
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
-  const reduceMotion = useReducedMotion();
+
+  // Admin-customisable section backgrounds (fall back to the bundled defaults).
+  const appearance = useAppearance();
+  const featuredBg = appearance.featuredBg || featuredBgDefault;
+  const superGrainsBg = appearance.superGrainsBg || superGrainsBgDefault;
+  const craftingBg = appearance.craftingBg || craftingBgDefault;
+  const commitmentBg = appearance.commitmentBg || commitmentBgDefault;
+  const CATALOG_BG_KEY = {
+    'Cookies': 'catalogCookiesBg',
+    'Health Mixtures': 'catalogHealthMixturesBg',
+    'Honey': 'catalogHoneyBg',
+    'Jaggery': 'catalogJaggeryBg',
+  };
+
   const getInitialSlides = () => {
     try {
       const cached = localStorage.getItem('cached_hero_slides');
@@ -340,20 +397,6 @@ export default function Home() {
 
   // GSAP Smooth Visual Animations
   useEffect(() => {
-    // Honour "reduce motion": show everything in its final state, no tweens.
-    if (reduceMotion) {
-      [titleRef, textRef, imageCardRef].forEach((r) => {
-        if (r.current) gsap.set(r.current, { opacity: 1, x: 0, y: 0, scale: 1 });
-      });
-      sectionsRef.current.forEach((s) => s && gsap.set(s, { opacity: 1, y: 0 }));
-      return;
-    }
-
-    // Keep ScrollTrigger in step with Lenis' virtual scroll position (the layout
-    // exposes the instance on window.lenis).
-    const onLenisScroll = () => ScrollTrigger.update();
-    window.lenis?.on('scroll', onLenisScroll);
-
     // Hero Entrance
     const tl = gsap.timeline({ delay: 0.2 });
     if (titleRef.current) {
@@ -376,8 +419,7 @@ export default function Home() {
     }
 
     // Floating animation for ambient light blobs
-    const blobs = backgroundBlobsRef.current.slice();
-    blobs.forEach((blob, idx) => {
+    backgroundBlobsRef.current.forEach((blob, idx) => {
       if (!blob) return;
       gsap.to(blob, {
         y: idx % 2 === 0 ? -40 : 40,
@@ -410,12 +452,9 @@ export default function Home() {
     });
 
     return () => {
-      window.lenis?.off?.('scroll', onLenisScroll);
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      tl.kill();
-      gsap.killTweensOf(blobs);
     };
-  }, [reduceMotion]);
+  }, []);
 
   // Fetch Products Catalog
   useEffect(() => {
@@ -494,7 +533,7 @@ export default function Home() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div ref={el => backgroundBlobsRef.current[0] = el}
           className="absolute w-[450px] h-[450px] rounded-full blur-[110px] opacity-[0.14] top-[5%] left-[2%]"
-          style={{ background: 'radial-gradient(circle, #E91E8C 0%, rgba(255,255,255,0) 70%)' }} />
+          style={{ background: 'radial-gradient(circle, #C21A75 0%, rgba(255,255,255,0) 70%)' }} />
 
         <div ref={el => backgroundBlobsRef.current[1] = el}
           className="absolute w-[380px] h-[380px] rounded-full blur-[100px] opacity-[0.12] top-[20%] right-[10%]"
@@ -506,32 +545,32 @@ export default function Home() {
 
         <div ref={el => backgroundBlobsRef.current[3] = el}
           className="absolute w-[420px] h-[420px] rounded-full blur-[110px] opacity-[0.13] top-[75%] right-[5%]"
-          style={{ background: 'radial-gradient(circle, #E91E8C 0%, rgba(255,255,255,0) 70%)' }} />
+          style={{ background: 'radial-gradient(circle, #C21A75 0%, rgba(255,255,255,0) 70%)' }} />
       </div>
 
       {/* Grid overlay accent */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0"
-        style={{ backgroundImage: 'linear-gradient(#E91E8C 1.5px,transparent 1.5px),linear-gradient(90deg,#E91E8C 1.5px,transparent 1.5px)', backgroundSize: '70px 70px' }} />
+        style={{ backgroundImage: 'linear-gradient(#C21A75 1.5px,transparent 1.5px),linear-gradient(90deg,#C21A75 1.5px,transparent 1.5px)', backgroundSize: '70px 70px' }} />
 
       {/* ⸻ HERO SECTION (DEDICATED LIGHT MOBILE COMPOSITION + DESKTOP SLIDESHOW) ⸻ */}
-      <section ref={heroRef} className="relative w-full bg-[#FDFBF7] overflow-hidden select-none z-10 font-sans">
+      <section ref={heroRef} className="relative w-full bg-[#FBF7EF] overflow-hidden select-none z-10 font-sans">
 
         {/* ── 1. LIGHT THEME MOBILE HERO VIEW (< 640px) ── */}
-        <div className="sm:hidden pt-20 pb-8 px-4 min-h-[85vh] flex flex-col justify-between relative z-10 bg-[#FDFBF7] text-[#0a0806]">
+        <div className="sm:hidden pt-20 pb-8 px-4 min-h-[85vh] flex flex-col justify-between relative z-10 bg-[#FBF7EF] text-[#221B1F]">
           {/* Animated Ambient Light Background Glows */}
-          <div className="absolute top-12 right-0 w-72 h-72 bg-rose-700/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-12 left-0 w-72 h-72 bg-orange-500/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute top-12 right-0 w-72 h-72 bg-berry/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-12 left-0 w-72 h-72 bg-gold-light/10 rounded-full blur-[100px] pointer-events-none" />
 
           {/* Top Brand Header */}
           <div className="space-y-2.5 text-center relative z-10 pt-2">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-rose-700/10 border border-rose-700/20 text-[9.5px] font-bold uppercase tracking-[0.25em] text-rose-700 shadow-xs backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-rose-700" /> Heritage Grainlets
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-berry/10 border border-berry/20 text-[9.5px] font-bold uppercase tracking-[0.25em] text-berry shadow-xs backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 text-berry" /> Heritage Grainlets
             </span>
-            <h1 className="font-display font-bold text-3xl text-[#0a0806] tracking-tight leading-tight">
+            <h1 className="font-display font-bold text-3xl text-[#221B1F] tracking-tight leading-tight">
               Crafting Grains <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-rose-600 to-orange-500">Into Gold</span>
+              <span className="accent-text">Into Gold</span>
             </h1>
-            <p className="text-xs text-gray-600 font-bold max-w-xs mx-auto">
+            <p className="text-xs text-ink-soft font-bold max-w-xs mx-auto">
               0% Maida · 0% Processed Sugar · 100% Pure Millets
             </p>
           </div>
@@ -555,7 +594,7 @@ export default function Home() {
                 </AnimatePresence>
 
                 {/* Corner slide count badge */}
-                <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-md border border-gray-200/80 px-2.5 py-0.5 rounded-full text-[8.5px] font-bold tracking-widest text-rose-700 shadow-xs">
+                <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[8.5px] font-bold tracking-widest text-berry shadow-xs">
                   0{currentSlide + 1} / 0{activeSlides.length}
                 </div>
               </div>
@@ -565,10 +604,10 @@ export default function Home() {
           {/* Bottom Light Glass Progress Bar & Controls */}
           <div className="relative z-10 pt-1">
             {activeSlides.length > 1 && (
-              <div className="flex items-center justify-between bg-white/90 backdrop-blur-md px-4 py-2 rounded-full border border-gray-200/80 shadow-sm max-w-xs mx-auto">
+              <div className="flex items-center justify-between glass-sm px-4 py-2 rounded-full border border-hairline/80 shadow-sm max-w-xs mx-auto">
                 <button
                   onClick={handlePrevSlide}
-                  className="p-1 text-gray-600 hover:text-rose-700 transition-colors"
+                  className="p-1 text-ink-soft hover:text-berry transition-colors"
                   aria-label="Previous Banner"
                 >
                   <ChevronLeft className="h-4.5 w-4.5" />
@@ -586,7 +625,7 @@ export default function Home() {
                       aria-label={`Go to slide ${idx + 1}`}
                     >
                       <div
-                        className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-6 bg-rose-700' : 'w-2 bg-gray-300'
+                        className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-6 bg-berry' : 'w-2 bg-gray-300'
                           }`}
                       />
                     </button>
@@ -595,7 +634,7 @@ export default function Home() {
 
                 <button
                   onClick={handleNextSlide}
-                  className="p-1 text-gray-600 hover:text-rose-700 transition-colors"
+                  className="p-1 text-ink-soft hover:text-berry transition-colors"
                   aria-label="Next Banner"
                 >
                   <ChevronRight className="h-4.5 w-4.5" />
@@ -664,7 +703,7 @@ export default function Home() {
                       aria-label={`Go to slide ${idx + 1}`}
                     >
                       <div
-                        className={`h-1.5 rounded-full transition-all duration-500 ease-out ${currentSlide === idx ? 'w-10 bg-[#D4AF37]' : 'w-2.5 bg-white/40 group-hover:bg-white/70 group-hover:scale-110'
+                        className={`h-1.5 rounded-full transition-all duration-500 ease-out ${currentSlide === idx ? 'w-10 bg-[#D7A94E]' : 'w-2.5 bg-white/40 group-hover:bg-white/70 group-hover:scale-110'
                           }`}
                       />
                     </button>
@@ -673,13 +712,13 @@ export default function Home() {
               )}
             </>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#0a0806] via-[#1a140c] to-[#0a0806] animate-pulse flex items-center justify-center" />
+            <div className="w-full h-full bg-gradient-to-br from-[#221B1F] via-[#1a140c] to-[#221B1F] animate-pulse flex items-center justify-center" />
           )}
         </div>
 
         {/* ── LOW-CONTRAST DUAL-DIRECTIONAL MIST FLOW (LEFT & RIGHT TO CENTER) ── */}
         <div className="absolute bottom-0 left-0 right-0 h-28 sm:h-36 md:h-48 pointer-events-none z-15 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FDFBF7] via-[#FDFBF7]/35 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#FBF7EF] via-[#FBF7EF]/35 to-transparent" />
           <motion.div
             animate={{
               x: ['-25%', '15%', '-25%'],
@@ -690,7 +729,7 @@ export default function Home() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute -bottom-8 left-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tr from-[#FDFBF7]/80 via-white/30 to-transparent blur-3xl"
+            className="absolute -bottom-8 left-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tr from-[#FBF7EF]/80 via-white/30 to-transparent blur-3xl"
           />
           <motion.div
             animate={{
@@ -702,18 +741,18 @@ export default function Home() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="absolute -bottom-8 right-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tl from-[#FDFBF7]/80 via-white/30 to-transparent blur-3xl"
+            className="absolute -bottom-8 right-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tl from-[#FBF7EF]/80 via-white/30 to-transparent blur-3xl"
           />
         </div>
       </section>
 
       {/* ⸻ PREMIUM MARQUEE — Clean ingredient promise strip ⸻ */}
-      <section ref={registerSectionRef} className="py-3.5 sm:py-5 border-y border-gray-200/50 bg-[#FDFBF7] relative z-10 overflow-hidden">
+      <section ref={registerSectionRef} className="py-3.5 sm:py-5 border-y border-hairline/50 bg-[#FBF7EF] relative z-10 overflow-hidden">
         <div className="overflow-hidden whitespace-nowrap w-full">
           <div className="inline-flex gap-5 sm:gap-8 animate-marquee">
             {[...forbiddenIngredients, ...forbiddenIngredients, ...forbiddenIngredients].map((item, idx) => (
-              <span key={idx} className="inline-flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-gray-500 shrink-0">
-                <span className="w-1 h-1 rounded-full bg-rose-600/50 inline-block" />{item}<span className="w-1 h-1 rounded-full bg-amber-500/50 inline-block" />
+              <span key={idx} className="inline-flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-ink-muted shrink-0">
+                <span className="w-1 h-1 rounded-full bg-berry/50 inline-block" />{item}<span className="w-1 h-1 rounded-full bg-gold/50 inline-block" />
               </span>
             ))}
           </div>
@@ -721,134 +760,136 @@ export default function Home() {
       </section>
 
       {/* ⸻ 2. FEATURED PRODUCTS ⸻ */}
-      <section id="signature-spotlight" className="relative z-10 overflow-hidden py-16 sm:py-24 lg:py-28 font-sans bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#FFFDF9] via-[#FAF3FC] to-[#F5EBFA]">
+      <section id="signature-spotlight" className="relative z-10 overflow-hidden py-20 sm:py-28 font-sans">
+        {/* photo backdrop with a warm cream wash */}
+        <div className="absolute inset-0 -z-10">
+          <img
+            src={featuredBg}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/92 via-[#FDF9F2]/84 to-[#FBF7EF]/94" />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(80% 55% at 50% 0%, transparent 42%, rgba(121,8,63,0.09) 100%)' }}
+          />
+        </div>
+        <Field orbs={[{ size: 540, color: ORB_BERRY, top: -160, right: -150 }, { size: 460, color: ORB_GOLD, bottom: -180, left: -150 }]} />
 
-        {/* ── Interactive Luxury Particle Layer ── */}
-        <ParticleCanvas count={60} colors={['#920075', '#D4AF37', '#F59E0B', '#E91E8C', '#B8860B']} minSize={0.8} maxSize={3.4} speed={0.65} interactive={true} glow={true} enableLines={true} />
-
-        {/* ── BG: Premium Ambient Glowing Blobs ── */}
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full bg-rose-600/[0.07] blur-[150px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[550px] h-[550px] rounded-full bg-[#D4AF37]/[0.09] blur-[140px] pointer-events-none" />
-        <div className="absolute top-[35%] left-[25%] w-[450px] h-[450px] rounded-full bg-purple-600/[0.05] blur-[120px] pointer-events-none" />
-
-        {/* ── BG: Golden Geometric Ring Ornaments ── */}
-        <div className="hidden sm:block absolute -top-24 -right-24 w-[450px] h-[450px] rounded-full border border-[#D4AF37]/20 pointer-events-none" />
-        <div className="hidden sm:block absolute -top-12 -right-12 w-[350px] h-[350px] rounded-full border border-rose-500/15 stroke-dasharray-4 pointer-events-none" />
-        <div className="hidden sm:block absolute bottom-[-60px] left-[-60px] w-[400px] h-[400px] rounded-full border border-[#D4AF37]/15 pointer-events-none" />
-
-        {/* ── BG: SVG Luxury Mandala Ornaments ── */}
-        <svg className="hidden lg:block absolute top-12 left-12 opacity-[0.12] pointer-events-none animate-spin-slow" width="140" height="140" viewBox="0 0 140 140" fill="none">
-          <circle cx="70" cy="70" r="65" stroke="#D4AF37" strokeWidth="1.5" strokeDasharray="8 6" />
-          <circle cx="70" cy="70" r="45" stroke="#920075" strokeWidth="1.2" strokeDasharray="4 6" />
-          <circle cx="70" cy="70" r="25" fill="#D4AF37" fillOpacity="0.18" />
-        </svg>
-
-        <svg className="hidden lg:block absolute bottom-12 right-12 opacity-[0.1] pointer-events-none" width="120" height="120" viewBox="0 0 120 120" fill="none">
-          <circle cx="60" cy="60" r="55" stroke="#E91E8C" strokeWidth="1.5" strokeDasharray="6 6" />
-          <circle cx="60" cy="60" r="35" stroke="#D4AF37" strokeWidth="1" strokeDasharray="3 5" />
-        </svg>
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1400px] relative z-10">
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-rose-700 border border-rose-700/20 bg-rose-700/6 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full inline-block backdrop-blur-sm shadow-xs">
-              Signature Blends
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1240px] relative z-10">
+          {/* centered header */}
+          <div className="flex flex-col items-center text-center gap-4 max-w-2xl mx-auto mb-12 sm:mb-16">
+            <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
+              <Sparkles className="h-3.5 w-3.5" /> Signature Blends
             </span>
-            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a0a15] leading-tight tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-[#D4AF37] to-[#E91E8C]">
-                Featured Products
-              </span>
+            <h2 className="font-display font-bold text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
+              Featured <span className="accent-text">products</span>
             </h2>
-            <p className="text-[#5a3d52] text-xs sm:text-base max-w-2xl mx-auto leading-relaxed font-medium px-2">
-              Explore the pinnacle of traditional baking — crafted from chemical-free heritage grainlets,
-              premium cow butter, and pure organic palm sweeteners.
+            <span className="rule-berry" />
+            <p className="text-ink-soft text-[14px] sm:text-[15px] leading-relaxed font-medium">
+              Traditional baking at its peak — chemical-free heritage grainlets, country cow butter and pure organic palm sweeteners.
             </p>
+            <Link
+              to="/shop"
+              className="btn-glass mt-2 inline-flex items-center gap-2 h-11 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em]"
+            >
+              View all <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          {/* Featured Products Grid */}
-          <div className="flex flex-wrap justify-center gap-7">
-            {featuredProducts.map((item, index) => (
-              <motion.article
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-                className="group relative flex flex-col w-full sm:w-[calc(50%-14px)] lg:w-[calc(25%-21px)] max-w-[320px] min-w-[240px] rounded-[2rem] overflow-hidden
-                  bg-white/80 backdrop-blur-xl
-                  border border-white/80 hover:border-rose-500/40
-                  shadow-[0_12px_32px_-8px_rgba(0,0,0,0.08),0_4px_12px_rgba(146,0,117,0.05)]
-                  hover:shadow-[0_24px_50px_-12px_rgba(146,0,117,0.22),0_8px_24px_rgba(0,0,0,0.08)]
-                  hover:-translate-y-2 hover:scale-[1.02]
-                  transition-all duration-500 ease-out"
-              >
-                {/* Product Image */}
-                <div className="relative w-full overflow-hidden bg-gray-50 shrink-0" style={{ aspectRatio: '4/3' }}>
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-700 ease-out"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  {/* Glass shimmer overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-white/10 opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  {/* Product name on image */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4.5 z-20 text-center flex flex-col items-center">
-                    <h3 className="font-display font-bold text-white text-xl leading-tight drop-shadow-sm text-center">
-                      {item.name}
-                    </h3>
-                    <p className="text-white/80 text-[9px] font-semibold uppercase tracking-[0.2em] mt-0.5 text-center">{item.tagline}</p>
-                  </div>
-                </div>
-
-                {/* Card Body — Translucent Glass Finish */}
-                <div className="p-5 flex-1 flex flex-col items-center text-center gap-4 bg-gradient-to-b from-white/70 to-white/95 backdrop-blur-md">
-                  <p className="text-gray-600 text-[13px] leading-relaxed line-clamp-2 font-medium text-center">{item.desc}</p>
-
-                  {/* Glass Pill Badges */}
-                  <div className="flex flex-wrap justify-center gap-1.5 mt-auto">
-                    {(item.badges || []).slice(0, 3).map((badge, bIdx) => (
-                      <span
-                        key={bIdx}
-                        className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/70 text-[10px] font-bold text-gray-700 shadow-xs hover:border-rose-700/30 hover:bg-rose-700/5 hover:text-rose-700 hover:shadow-sm transition-all duration-300"
-                      >
-                        {badge}
+          {/* grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+            {featuredProducts.map((item, index) => {
+              const pid = item.id || item._id;
+              const href = pid ? `/product/${pid}` : '/shop';
+              return (
+                <motion.div
+                  key={pid || index}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.5, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Link
+                    to={href}
+                    className="group relative flex flex-col h-full glass foil-top rounded-panel overflow-hidden hover:-translate-y-1.5 transition-transform duration-400"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-cream">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
+                      <span className="absolute top-3 left-3 inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[8.5px] font-extrabold uppercase tracking-[0.14em] text-berry">
+                        <Sparkles className="h-3 w-3" /> Featured
                       </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.article>
-            ))}
+                    </div>
+
+                    <div className="flex flex-col flex-1 gap-2.5 p-5">
+                      <div>
+                        <h3 className="display-md text-[16.5px] text-[#221B1F] leading-snug">{item.name}</h3>
+                      </div>
+                      <p className="text-ink-soft text-[12.5px] leading-relaxed line-clamp-2 font-medium flex-1">{item.desc}</p>
+
+                      <div className="flex flex-wrap gap-1.5">
+                        {(item.badges || []).slice(0, 2).map((badge, bIdx) => (
+                          <span
+                            key={bIdx}
+                            className="inline-flex items-center h-6 px-2.5 rounded-full bg-cream-deep/60 border border-hairline text-[9.5px] font-bold text-ink-soft"
+                          >
+                            {badge}
+                          </span>
+                        ))}
+                      </div>
+
+                      <span className="mt-1 inline-flex items-center gap-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-berry">
+                        {pid ? 'View product' : 'Shop now'}
+                        <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ⸻ TRADITIONAL NOURISHMENT CATALOG ⸻ */}
-      <section id="products" ref={registerSectionRef} className="py-24 sm:py-32 relative z-10 font-sans overflow-hidden bg-gradient-to-b from-[#FDFBF7] via-[#FAF6F0] to-[#FDFBF7]">
+      <section
+        id="products"
+        ref={registerSectionRef}
+        className={`py-24 sm:py-32 relative z-10 font-sans overflow-hidden bg-center bg-cover ${appearance.catalogAllBg ? '' : 'bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF]'}`}
+        style={appearance.catalogAllBg ? { backgroundImage: `url(${appearance.catalogAllBg})` } : undefined}
+      >
 
         {/* ── Floating particles ── */}
-        <ParticleCanvas count={60} colors={['#920075', '#D4AF37', '#F59E0B', '#E91E8C', '#FDE047']} minSize={0.8} maxSize={3.2} speed={0.7} interactive={false} />
+        <Field orbs={[{ size: 560, color: ORB_BERRY, top: -140, left: -140 }, { size: 480, color: ORB_GOLD, bottom: -160, right: -140 }]} />
 
         {/* ── BG LAYER 1: Subtle luxury ambient glows ── */}
-        <div className="absolute top-0 left-[5%] w-[600px] h-[600px] rounded-full bg-rose-700/[0.05] blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[10%] right-[5%] w-[550px] h-[550px] rounded-full bg-orange-500/[0.07] blur-[130px] pointer-events-none" />
-        <div className="absolute top-[50%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#D4AF37]/[0.05] blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 left-[5%] w-[600px] h-[600px] rounded-full bg-berry/[0.05] blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[10%] right-[5%] w-[550px] h-[550px] rounded-full bg-gold-light/[0.07] blur-[130px] pointer-events-none" />
+        <div className="absolute top-[50%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#D7A94E]/[0.05] blur-[120px] pointer-events-none" />
 
         {/* ── BG LAYER 2: Delicate ring outlines ── */}
-        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full border border-rose-700/10 pointer-events-none" />
-        <div className="absolute bottom-[-50px] right-[-50px] w-[380px] h-[380px] rounded-full border border-[#D4AF37]/12 pointer-events-none" />
+        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full border border-berry/10 pointer-events-none" />
+        <div className="absolute bottom-[-50px] right-[-50px] w-[380px] h-[380px] rounded-full border border-[#D7A94E]/12 pointer-events-none" />
 
-        <div className="container mx-auto px-4 sm:px-8 lg:px-10 max-w-[1440px] w-full">
+        <div className="container mx-auto px-4 sm:px-8 lg:px-10 max-w-[1600px] w-full">
           <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-rose-700 bg-rose-700/10 border border-rose-700/20 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs backdrop-blur-md">
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 border border-berry/20 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs backdrop-blur-md">
               Organic Treats
             </span>
-            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#0a0806] leading-tight tracking-tight">
-              Traditional <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-[#D4AF37] to-[#E91E8C]">Nourishment Catalog</span>
+            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
+              Traditional <span className="accent-text">Nourishment Catalog</span>
             </h2>
-            <p className="text-gray-600 text-xs sm:text-base max-w-xl mx-auto leading-relaxed font-medium px-2">
+            <p className="text-ink-soft text-xs sm:text-base max-w-xl mx-auto leading-relaxed font-medium px-2">
               Delicious, clean snacks thoughtfully crafted for your mindful wellness lifestyle.
             </p>
           </div>
@@ -858,7 +899,7 @@ export default function Home() {
             {/* Desktop Left Scroll Arrow */}
             <button
               onClick={() => scrollCategoryBar('left')}
-              className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-gray-200 shadow-md items-center justify-center text-rose-700 hover:bg-rose-700 hover:text-white hover:border-rose-700 transition-all cursor-pointer"
+              className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass-sm border border-hairline shadow-md items-center justify-center text-berry hover:bg-berry hover:text-white hover:border-berry transition-all cursor-pointer"
               aria-label="Scroll categories left"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -866,8 +907,9 @@ export default function Home() {
 
             <div
               ref={categoryBarRef}
-              className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none py-2 px-1 sm:px-2 scroll-smooth snap-x"
+              className="flex overflow-x-auto scrollbar-none py-2 px-1 sm:px-2 scroll-smooth snap-x"
             >
+              <div className="flex items-center gap-2 sm:gap-3 mx-auto">
               {allCategoryTabs.map((category) => {
                 const isAll = category === 'All Products' || category === 'All';
                 const isSelected = (activeCategory === 'All' && isAll) || activeCategory === category;
@@ -876,20 +918,21 @@ export default function Home() {
                     key={category}
                     onClick={() => setActiveCategory(isAll ? 'All' : category)}
                     className={`shrink-0 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em] transition-all duration-300 border backdrop-blur-md cursor-pointer snap-start ${isSelected
-                      ? 'bg-rose-700 border-rose-700 text-white shadow-[0_6px_20px_rgba(146,0,117,0.3)] scale-[1.02]'
-                      : 'bg-white/90 border-gray-200/80 text-gray-700 hover:bg-white hover:border-rose-700/40 hover:text-rose-700 shadow-2xs'
+                      ? 'bg-berry border-berry text-white shadow-[0_6px_20px_rgba(146,0,117,0.3)] scale-[1.02]'
+                      : 'bg-white/90 border-hairline/80 text-ink-soft hover:bg-white hover:border-berry/40 hover:text-berry shadow-2xs'
                       }`}
                   >
                     {category}
                   </button>
                 );
               })}
+              </div>
             </div>
 
             {/* Desktop Right Scroll Arrow */}
             <button
               onClick={() => scrollCategoryBar('right')}
-              className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-gray-200 shadow-md items-center justify-center text-rose-700 hover:bg-rose-700 hover:text-white hover:border-rose-700 transition-all cursor-pointer"
+              className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass-sm border border-hairline shadow-md items-center justify-center text-berry hover:bg-berry hover:text-white hover:border-berry transition-all cursor-pointer"
               aria-label="Scroll categories right"
             >
               <ChevronRight className="w-5 h-5" />
@@ -901,35 +944,53 @@ export default function Home() {
               <Loader fullScreen={false} text="Loading pure treats" />
             </div>
           ) : activeCategory === 'All' ? (
-            <div className="space-y-20 sm:space-y-24">
-              {DEFAULT_CATEGORIES.map((catName) => {
-                const catProducts = products.filter(p =>
-                  p.category?.toLowerCase() === catName.toLowerCase() ||
-                  (catName === 'Cookies' && (!p.category || p.category.toLowerCase() === 'biscuit' || p.category.toLowerCase() === 'cookies'))
-                );
-                const displayProducts = catProducts.length > 0 ? catProducts : products.slice(0, 4);
+            <div className="space-y-8 sm:space-y-10">
+              {DEFAULT_CATEGORIES
+                .map((catName) => ({
+                  catName,
+                  catProducts: products.filter(p =>
+                    p.category?.toLowerCase() === catName.toLowerCase() ||
+                    (catName === 'Cookies' && (!p.category || p.category.toLowerCase() === 'biscuit' || p.category.toLowerCase() === 'cookies'))
+                  )
+                }))
+                .filter(({ catProducts }) => catProducts.length > 0)
+                .map(({ catName, catProducts }, catIdx, visibleCategories) => {
+                const displayProducts = catProducts;
                 const meta = getCategoryMeta(catName);
                 const IconComp = meta.icon;
+                const catBg = appearance[CATALOG_BG_KEY[catName]];
 
                 return (
-                  <div key={catName} className="relative group/catBox">
+                  <Fragment key={catName}>
+                  <div
+                    className={`relative group/catBox ${catBg
+                      ? 'rounded-[2.5rem] sm:rounded-[3.25rem] overflow-hidden p-6 sm:p-12 lg:p-16 xl:p-20 -mx-4 sm:-mx-8 lg:-mx-10 xl:-mx-20 2xl:-mx-32 ring-1 ring-black/5 shadow-[0_45px_100px_-45px_rgba(121,8,63,0.42)]'
+                      : ''}`}
+                  >
+                    {catBg && (
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-cover bg-center blur-[7px] scale-[1.18] pointer-events-none"
+                        style={{ backgroundImage: `url(${catBg})` }}
+                      />
+                    )}
 
                     {/* ── Editorial Section Header ── */}
                     <div className="flex items-end justify-between mb-6 sm:mb-10 pb-4 sm:pb-5 border-b border-gray-900/10 relative">
 
                       {/* Accent line on top of the border */}
-                      <div className="absolute bottom-[-1px] left-0 w-12 sm:w-20 h-[2px] bg-gradient-to-r from-rose-600 to-orange-400 rounded-full" />
+                      <div className="absolute bottom-[-1px] left-0 w-12 sm:w-20 h-[2px] bg-gradient-to-r from-berry to-gold-light rounded-full" />
 
                       {/* Left: Large editorial label */}
                       <div className="flex flex-col gap-1.5 min-w-0">
-                        <p className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-[0.28em] text-rose-600 flex items-center gap-1.5">
+                        <p className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-[0.28em] text-berry flex items-center gap-1.5">
                           <IconComp className="w-3 h-3" /> {meta.desc.split(' ').slice(0, 4).join(' ')}
                         </p>
                         <div className="flex items-baseline gap-2 sm:gap-4 flex-wrap">
-                          <h3 className="font-display font-bold text-3xl sm:text-5xl md:text-6xl text-[#0a0806] tracking-tight leading-none">
+                          <h3 className="font-display font-bold text-3xl sm:text-5xl md:text-6xl text-[#221B1F] tracking-tight leading-none">
                             {catName}
                           </h3>
-                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-gray-400 self-end mb-0.5 sm:mb-1">
+                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-ink-muted self-end mb-0.5 sm:mb-1">
                             {displayProducts.length} {displayProducts.length === 1 ? 'item' : 'items'}
                           </span>
                         </div>
@@ -939,21 +1000,21 @@ export default function Home() {
                       <div className="flex items-center gap-2 shrink-0 pb-0.5">
                         <button
                           onClick={() => scrollCategoryRow(catName, 'left')}
-                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-gray-200 items-center justify-center text-gray-500 hover:bg-[#0a0806] hover:text-white hover:border-[#0a0806] transition-all duration-200 cursor-pointer shadow-sm"
+                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-hairline items-center justify-center text-ink-muted hover:bg-[#221B1F] hover:text-white hover:border-[#221B1F] transition-all duration-200 cursor-pointer shadow-sm"
                           aria-label={`Scroll ${catName} left`}
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => scrollCategoryRow(catName, 'right')}
-                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-gray-200 items-center justify-center text-gray-500 hover:bg-[#0a0806] hover:text-white hover:border-[#0a0806] transition-all duration-200 cursor-pointer shadow-sm"
+                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-hairline items-center justify-center text-ink-muted hover:bg-[#221B1F] hover:text-white hover:border-[#221B1F] transition-all duration-200 cursor-pointer shadow-sm"
                           aria-label={`Scroll ${catName} right`}
                         >
                           <ChevronRight className="w-4 h-4" />
                         </button>
 
                         {displayProducts.length > 1 && (
-                          <div className="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[9px] font-semibold uppercase tracking-wider select-none">
+                          <div className="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-full bg-cream-deep text-ink-muted text-[9px] font-semibold uppercase tracking-wider select-none">
                             <span>Swipe</span>
                             <ArrowRight className="w-3 h-3" />
                           </div>
@@ -975,15 +1036,15 @@ export default function Home() {
                               animate={{ opacity: 1, y: 0 }}
                               transition={{ duration: 0.4, delay: idx * 0.04 }}
                               className="relative flex flex-col w-full rounded-3xl overflow-hidden group
-                                bg-white/85 backdrop-blur-xl border border-white/80
+                                glass
                                 shadow-[0_8px_24px_-6px_rgba(0,0,0,0.06),0_2px_8px_rgba(146,0,117,0.04)]
                                 hover:shadow-[0_20px_45px_-10px_rgba(146,0,117,0.18),0_6px_20px_rgba(0,0,0,0.06)]
-                                hover:border-rose-500/30 hover:-translate-y-1.5 transition-all duration-400 min-w-0"
+                                hover:border-berry-bright/30 hover:-translate-y-1.5 transition-all duration-400 min-w-0"
                             >
                               {/* Image Container with Rounded Inset */}
-                              <div className="relative aspect-square w-full overflow-hidden bg-[#FDFBF7] shrink-0">
+                              <div className="relative aspect-square w-full overflow-hidden bg-[#FBF7EF] shrink-0">
                                 {!loadedImages[item.id || item._id] && (
-                                  <div className="absolute inset-0 bg-[#F5F1EC] animate-pulse" />
+                                  <div className="absolute inset-0 bg-[#F4EBDA] animate-pulse" />
                                 )}
                                 <img
                                   src={item.image || lan}
@@ -992,8 +1053,8 @@ export default function Home() {
                                   loading="lazy"
                                   onLoad={() => handleImageLoad(item.id || item._id)}
                                 />
-                                <span className="absolute top-3 left-3 inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-md text-[8px] sm:text-[8.5px] font-bold text-[#0a0806] uppercase tracking-wider border border-white/40 shadow-xs z-20">
-                                  <Sparkles className="h-2.5 w-2.5 text-[#D4AF37]" /> Pure
+                                <span className="absolute top-3 left-3 inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full glass-sm text-[8px] sm:text-[8.5px] font-bold text-[#221B1F] uppercase tracking-wider border border-white/40 shadow-xs z-20">
+                                  <Sparkles className="h-2.5 w-2.5 text-[#D7A94E]" /> Pure
                                 </span>
                                 <button
                                   onClick={() => {
@@ -1001,10 +1062,10 @@ export default function Home() {
                                     if (isInWishlist(itemId)) { toggleWishlist(item); }
                                     else { openQuickAdd(item, 'wishlist'); }
                                   }}
-                                  className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/40 shadow-xs z-20"
+                                  className="absolute top-3 right-3 h-8 w-8 rounded-full glass-sm flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/40 shadow-xs z-20"
                                   aria-label="Toggle Wishlist"
                                 >
-                                  <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-rose-700 text-rose-700' : 'text-gray-500 hover:text-rose-700'}`} />
+                                  <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-berry text-berry' : 'text-ink-muted hover:text-berry'}`} />
                                 </button>
                                 {item.stock === 0 && (
                                   <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center z-10">
@@ -1016,18 +1077,18 @@ export default function Home() {
                               {/* Card Body with Non-Overflowing Min-W-0 Layout */}
                               <div className="p-4 flex-1 flex flex-col gap-2 min-w-0">
                                 <div className="flex items-center justify-between gap-2 min-w-0">
-                                  <span className="text-[8px] font-bold uppercase tracking-wider text-rose-700 bg-rose-700/8 px-2 py-0.5 rounded-md truncate max-w-[120px]">{item.category || catName}</span>
-                                  <span className="flex items-center gap-0.5 text-[#D4AF37] font-bold text-[9.5px] sm:text-[10px] shrink-0">★ {item.rating || 4.8}</span>
+                                  <span className="text-[8px] font-bold uppercase tracking-wider text-berry bg-berry/8 px-2 py-0.5 rounded-md truncate max-w-[120px]">{item.category || catName}</span>
+                                  <span className="flex items-center gap-0.5 text-[#D7A94E] font-bold text-[9.5px] sm:text-[10px] shrink-0">★ {item.rating || 4.8}</span>
                                 </div>
                                 <Link to={`/product/${item.id || item._id}`}>
-                                  <h3 className="font-display font-bold text-[#0a0806] text-sm sm:text-[15px] leading-snug hover:text-rose-700 transition-colors line-clamp-1">{item.name || item.title}</h3>
+                                  <h3 className="font-display font-bold text-[#221B1F] text-sm sm:text-[15px] leading-snug hover:text-berry transition-colors line-clamp-1">{item.name || item.title}</h3>
                                 </Link>
-                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed flex-1 font-medium">{item.description}</p>
+                                <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed flex-1 font-medium">{item.description}</p>
 
-                                <div className="pt-4 border-t border-gray-100 space-y-3 mt-auto w-full">
+                                <div className="pt-4 border-t border-hairline space-y-3 mt-auto w-full">
                                   <div className="flex items-baseline justify-between">
-                                    <span className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Price</span>
-                                    <span className="font-bold text-[#0a0806] text-base sm:text-lg tracking-tight">
+                                    <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
+                                    <span className="font-bold text-[#221B1F] text-base sm:text-lg tracking-tight">
                                       {item.variants && item.variants.length > 0
                                         ? `From ₹${Math.min(...item.variants.map(v => Number(v.price)))}`
                                         : `₹${item.price}`}
@@ -1036,7 +1097,7 @@ export default function Home() {
                                   <div className="flex gap-2 w-full">
                                     <Link
                                       to={`/product/${item.id || item._id}`}
-                                      className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500 bg-white transition-all shadow-sm"
+                                      className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-hairline text-ink-soft hover:border-gold-light hover:text-gold-light bg-white transition-all shadow-sm"
                                     >
                                       View
                                     </Link>
@@ -1045,8 +1106,8 @@ export default function Home() {
                                       onClick={() => openQuickAdd(item, 'cart')}
                                       disabled={item.stock === 0}
                                       className={`flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1.5 transition-all shadow-sm ${item.stock === 0
-                                        ? 'bg-gray-50 border border-gray-200 text-gray-400 cursor-not-allowed'
-                                        : 'bg-rose-700 text-white hover:bg-rose-800'
+                                        ? 'bg-cream border border-hairline text-ink-muted cursor-not-allowed'
+                                        : 'btn-berry'
                                         }`}
                                     >
                                       <ShoppingCart className="h-3.5 w-3.5" />
@@ -1061,20 +1122,23 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
+
+                  {catIdx < visibleCategories.length - 1 && <CatalogDivider />}
+                  </Fragment>
                 );
               })}
             </div>
           ) : (
             /* SINGLE CATEGORY GRID VIEW */
             <div className="space-y-8">
-              <div className="flex items-center justify-between pb-4 border-b border-gray-200/60">
+              <div className="flex items-center justify-between pb-4 border-b border-hairline/60">
                 <div>
-                  <h3 className="font-display font-bold text-3xl text-[#0a0806] tracking-tight">{activeCategory}</h3>
-                  <p className="text-xs text-gray-500 font-medium mt-1">Showing all products in {activeCategory}</p>
+                  <h3 className="font-display font-bold text-3xl text-[#221B1F] tracking-tight">{activeCategory}</h3>
+                  <p className="text-xs text-ink-muted font-medium mt-1">Showing all products in {activeCategory}</p>
                 </div>
                 <button
                   onClick={() => setActiveCategory('All')}
-                  className="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-xs font-bold text-rose-700 hover:bg-rose-700 hover:text-white transition-all cursor-pointer shadow-xs"
+                  className="px-5 py-2.5 rounded-full bg-white border border-hairline text-xs font-bold text-berry hover:bg-berry hover:text-white transition-all cursor-pointer shadow-xs"
                 >
                   ← Show All Categories
                 </button>
@@ -1088,19 +1152,19 @@ export default function Home() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="relative flex flex-col w-full rounded-3xl overflow-hidden group
-                        bg-white/85 backdrop-blur-xl border border-white/80
+                        glass
                         shadow-[0_8px_24px_-6px_rgba(0,0,0,0.06),0_2px_8px_rgba(146,0,117,0.04)]
                         hover:shadow-[0_20px_45px_-10px_rgba(146,0,117,0.18),0_6px_20px_rgba(0,0,0,0.06)]
-                        hover:border-rose-500/30 hover:-translate-y-1.5 transition-all duration-400"
+                        hover:border-berry-bright/30 hover:-translate-y-1.5 transition-all duration-400"
                     >
-                      <div className="relative aspect-square w-full overflow-hidden bg-[#FDFBF7] shrink-0">
+                      <div className="relative aspect-square w-full overflow-hidden bg-[#FBF7EF] shrink-0">
                         <img
                           src={item.image || lan}
                           alt={item.name || item.title}
                           className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
                         />
-                        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/92 backdrop-blur-md text-[8.5px] font-bold text-[#0a0806] uppercase tracking-widest border border-white/30 shadow-xs z-20">
-                          <Sparkles className="h-2.5 w-2.5 text-[#D4AF37]" /> Pure
+                        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full glass-sm text-[8.5px] font-bold text-[#221B1F] uppercase tracking-widest border border-white/30 shadow-xs z-20">
+                          <Sparkles className="h-2.5 w-2.5 text-[#D7A94E]" /> Pure
                         </span>
                         <button
                           onClick={() => {
@@ -1108,26 +1172,26 @@ export default function Home() {
                             if (isInWishlist(itemId)) { toggleWishlist(item); }
                             else { openQuickAdd(item, 'wishlist'); }
                           }}
-                          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/92 backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/30 shadow-xs z-20"
+                          className="absolute top-3 right-3 h-8 w-8 rounded-full glass-sm flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/30 shadow-xs z-20"
                         >
-                          <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-rose-700 text-rose-700' : 'text-gray-500 hover:text-rose-700'}`} />
+                          <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-berry text-berry' : 'text-ink-muted hover:text-berry'}`} />
                         </button>
                       </div>
 
                       <div className="relative p-5 flex-1 flex flex-col gap-3 bg-white/60 backdrop-blur-sm z-20">
                         <div className="flex items-center justify-between">
-                          <span className="text-[8.5px] font-bold uppercase tracking-[0.18em] text-rose-700 bg-rose-700/8 px-2.5 py-1 rounded-full">{item.category || activeCategory}</span>
-                          <span className="flex items-center gap-0.5 text-[#D4AF37] font-bold text-[10px]">★ {item.rating || 4.8}</span>
+                          <span className="text-[8.5px] font-bold uppercase tracking-[0.18em] text-berry bg-berry/8 px-2.5 py-1 rounded-full">{item.category || activeCategory}</span>
+                          <span className="flex items-center gap-0.5 text-[#D7A94E] font-bold text-[10px]">★ {item.rating || 4.8}</span>
                         </div>
                         <Link to={`/product/${item.id || item._id}`}>
-                          <h3 className="font-display font-bold text-[#0a0806] text-base leading-snug group-hover:text-rose-700 transition-colors line-clamp-1">{item.name || item.title}</h3>
+                          <h3 className="font-display font-bold text-[#221B1F] text-base leading-snug group-hover:text-berry transition-colors line-clamp-1">{item.name || item.title}</h3>
                         </Link>
-                        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed font-medium flex-1">{item.description}</p>
+                        <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed font-medium flex-1">{item.description}</p>
 
-                        <div className="pt-4 border-t border-gray-100 space-y-3 mt-auto w-full">
+                        <div className="pt-4 border-t border-hairline space-y-3 mt-auto w-full">
                           <div className="flex items-baseline justify-between">
-                            <span className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Price</span>
-                            <span className="font-bold text-[#0a0806] text-lg tracking-tight">
+                            <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
+                            <span className="font-bold text-[#221B1F] text-lg tracking-tight">
                               {item.variants && item.variants.length > 0
                                 ? `From ₹${Math.min(...item.variants.map(v => Number(v.price)))}`
                                 : `₹${item.price}`}
@@ -1136,7 +1200,7 @@ export default function Home() {
                           <div className="flex gap-2 w-full">
                             <Link
                               to={`/product/${item.id || item._id}`}
-                              className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-500 bg-white transition-all shadow-sm"
+                              className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-hairline text-ink-soft hover:border-gold-light hover:text-gold-light bg-white transition-all shadow-sm"
                             >
                               View
                             </Link>
@@ -1145,8 +1209,8 @@ export default function Home() {
                               onClick={() => openQuickAdd(item, 'cart')}
                               disabled={item.stock === 0}
                               className={`flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1.5 transition-all shadow-sm ${item.stock === 0
-                                ? 'bg-gray-50 border border-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-rose-700 text-white hover:bg-rose-800'
+                                ? 'bg-cream border border-hairline text-ink-muted cursor-not-allowed'
+                                : 'btn-berry'
                                 }`}
                             >
                               <ShoppingCart className="h-3.5 w-3.5" />
@@ -1161,19 +1225,30 @@ export default function Home() {
               </div>
             </div>
           )}
+
+          {/* Full catalog CTA */}
+          <div className="mt-16 sm:mt-24 flex flex-col items-center gap-4 text-center">
+            <p className="text-ink-soft text-sm font-medium">Looking for something specific? Browse the complete range.</p>
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2.5 h-12 px-8 rounded-full bg-berry text-white text-[11px] font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-8px_rgba(146,0,117,0.45)] hover:bg-berry-deep hover:-translate-y-0.5 transition-all"
+            >
+              Shop all products <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ⸻ 3. WHY CHOOSE ALIMENTURE (Trust Pillars Checklist Cards) ⸻ */}
-      <section id="trust-pillars" className="py-28 px-6 bg-gradient-to-b from-[#FDFBF7] via-[#FAF6F0] to-[#FDFBF7] relative border-b border-gray-200/60 overflow-hidden font-sans">
+      <section id="trust-pillars" className="py-28 px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative border-b border-hairline/60 overflow-hidden font-sans">
         {/* ── Floating particles ── */}
         <div className="max-w-7xl mx-auto space-y-12 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-orange-500 bg-orange-500/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-orange-500/20 shadow-xs backdrop-blur-md">
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-light bg-gold-light/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-gold-light/20 shadow-xs backdrop-blur-md">
               Trust Pillars
             </span>
-            <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#0a0806] tracking-tight leading-tight">
-              Why Families Choose <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-rose-600 to-orange-500">Alimenture</span>
+            <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#221B1F] tracking-tight leading-tight">
+              Why Families Choose <span className="accent-text">Alimenture</span>
             </h2>
           </div>
 
@@ -1198,16 +1273,16 @@ export default function Home() {
             ].map(item => (
               <div
                 key={item.title}
-                className="relative p-7 bg-white/90 backdrop-blur-xl border border-gray-200/80 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(146,0,117,0.10)] hover:border-rose-700/30 hover:-translate-y-1.5 transition-all duration-300 space-y-4 group overflow-hidden"
+                className="relative p-7 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(146,0,117,0.10)] hover:border-berry/30 hover:-translate-y-1.5 transition-all duration-300 space-y-4 group overflow-hidden"
               >
-                <div className="h-12 w-12 rounded-2xl bg-white/80 backdrop-blur-md text-rose-700 border border-rose-700/20 flex items-center justify-center shrink-0 font-bold group-hover:scale-110 group-hover:bg-white/95 group-hover:border-rose-700/40 group-hover:shadow-[0_8px_20px_rgba(146,0,117,0.18)] transition-all duration-300 shadow-2xs">
+                <div className="h-12 w-12 rounded-2xl bg-white/80 backdrop-blur-md text-berry border border-berry/20 flex items-center justify-center shrink-0 font-bold group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:shadow-[0_8px_20px_rgba(146,0,117,0.18)] transition-all duration-300 shadow-2xs">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="font-display font-bold text-lg text-[#0a0806] group-hover:text-rose-700 transition-colors leading-snug">
+                  <h4 className="font-display font-bold text-lg text-[#221B1F] group-hover:text-berry transition-colors leading-snug">
                     {item.title}
                   </h4>
-                  <p className="text-xs text-gray-600 font-medium leading-relaxed">
+                  <p className="text-xs text-ink-soft font-medium leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -1218,20 +1293,20 @@ export default function Home() {
       </section>
 
       {/* ⸻ 4. HEALTHY SNACKING FOR MODERN LIVING ⸻ */}
-      <section id="company" ref={registerSectionRef} className="py-32 relative z-10 bg-[#FDFBF7] border-t border-gray-200/60 overflow-hidden font-sans">
+      <section id="company" ref={registerSectionRef} className="py-32 relative z-10 bg-[#FBF7EF] border-t border-hairline/60 overflow-hidden font-sans">
         {/* ── Floating particles ── */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="container mx-auto px-6 lg:px-12 max-w-[1400px] space-y-28 relative z-10">
           <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center">
             <div className="lg:col-span-6 relative group px-2 sm:px-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#D4AF37]/20 to-rose-700/12 rounded-3xl sm:rounded-[4rem] rounded-tr-[6rem] sm:rounded-tr-[10rem] rounded-bl-[6rem] sm:rounded-bl-[10rem] blur-2xl -z-10 group-hover:scale-105 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-[#D7A94E]/20 to-berry/12 rounded-3xl sm:rounded-[4rem] rounded-tr-[6rem] sm:rounded-tr-[10rem] rounded-bl-[6rem] sm:rounded-bl-[10rem] blur-2xl -z-10 group-hover:scale-105 transition-transform duration-700" />
 
               {/* Certified Pure Badge — Kept safely inside on mobile */}
-              <div className="absolute top-2 right-2 sm:-top-8 sm:-right-8 h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-[#FAF8F5]/95 to-white/90 backdrop-blur-md border border-[#D4AF37]/30 shadow-[0_20px_45px_-10px_rgba(212,175,55,0.3)] flex flex-col items-center justify-center text-center p-2 sm:p-3 animate-[spin_25s_linear_infinite] group-hover:scale-110 transition-all duration-500 z-30 pointer-events-none">
-                <span className="text-[6.5px] sm:text-[7.5px] font-bold tracking-[0.2em] text-[#D4AF37] uppercase">Alimenture</span>
-                <span className="text-[7px] sm:text-[8px] font-bold text-[#0a0806] tracking-[0.1em] mt-1 sm:mt-1.5">CERTIFIED PURE</span>
-                <span className="text-[5.5px] sm:text-[6.5px] text-gray-500 mt-0.5 sm:mt-1">★ ★ ★ ★ ★</span>
+              <div className="absolute top-2 right-2 sm:-top-8 sm:-right-8 h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-[#FBF7EF]/95 to-white/90 backdrop-blur-md border border-[#D7A94E]/30 shadow-[0_20px_45px_-10px_rgba(212,175,55,0.3)] flex flex-col items-center justify-center text-center p-2 sm:p-3 animate-[spin_25s_linear_infinite] group-hover:scale-110 transition-all duration-500 z-30 pointer-events-none">
+                <span className="text-[6.5px] sm:text-[7.5px] font-bold tracking-[0.2em] text-[#D7A94E] uppercase">Alimenture</span>
+                <span className="text-[7px] sm:text-[8px] font-bold text-[#221B1F] tracking-[0.1em] mt-1 sm:mt-1.5">CERTIFIED PURE</span>
+                <span className="text-[5.5px] sm:text-[6.5px] text-ink-muted mt-0.5 sm:mt-1">★ ★ ★ ★ ★</span>
               </div>
 
               {/* Main Artwork Container */}
@@ -1248,40 +1323,40 @@ export default function Home() {
 
                 {/* In-Image Feature Badges */}
                 <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 flex items-center justify-between gap-2 z-20 flex-wrap">
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/95 backdrop-blur-md text-[8.5px] sm:text-[9.5px] font-bold text-[#0a0806] uppercase tracking-wider border border-white/20 shadow-sm">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full glass-sm text-[8.5px] sm:text-[9.5px] font-bold text-[#221B1F] uppercase tracking-wider border border-white/20 shadow-sm">
                     <Leaf className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" /> 100% Native Base
                   </span>
-                  <span className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/95 backdrop-blur-md text-[8.5px] sm:text-[9.5px] font-bold text-rose-700 uppercase tracking-wider border border-white/20 shadow-sm">
+                  <span className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full glass-sm text-[8.5px] sm:text-[9.5px] font-bold text-berry uppercase tracking-wider border border-white/20 shadow-sm">
                     Honest Baking
                   </span>
                 </div>
               </div>
 
               {/* Selected Grains Card — Positioned inside image frame on mobile to prevent chat icon overlap */}
-              <div className="relative mt-3 sm:mt-0 sm:absolute sm:-bottom-8 sm:-left-8 bg-white/95 backdrop-blur-xl border border-gray-200/80 sm:border-white/80 rounded-2xl sm:rounded-2xl p-3.5 sm:p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.08)] hover:border-rose-700/20 transition-all duration-300 z-30 flex items-center gap-3 sm:gap-4 max-w-full sm:max-w-[250px] group/card">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-rose-700/10 flex items-center justify-center text-rose-700 shrink-0 font-bold group-hover/card:scale-110 transition-all duration-500">
-                  <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-rose-700" />
+              <div className="relative mt-3 sm:mt-0 sm:absolute sm:-bottom-8 sm:-left-8 bg-white/95 backdrop-blur-xl border border-hairline/80 sm:border-white/80 rounded-2xl sm:rounded-2xl p-3.5 sm:p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.08)] hover:border-berry/20 transition-all duration-300 z-30 flex items-center gap-3 sm:gap-4 max-w-full sm:max-w-[250px] group/card">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-berry/10 flex items-center justify-center text-berry shrink-0 font-bold group-hover/card:scale-110 transition-all duration-500">
+                  <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-berry" />
                 </div>
                 <div>
-                  <p className="text-[8.5px] sm:text-[9px] font-bold text-rose-700 uppercase tracking-widest">Selected Grains</p>
-                  <p className="text-xs sm:text-sm font-bold text-[#0a0806] mt-0.5">Ragi, Thinai & Kambu</p>
+                  <p className="text-[8.5px] sm:text-[9px] font-bold text-berry uppercase tracking-widest">Selected Grains</p>
+                  <p className="text-xs sm:text-sm font-bold text-[#221B1F] mt-0.5">Ragi, Thinai & Kambu</p>
                 </div>
               </div>
             </div>
 
             <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left z-10 pt-4 lg:pt-0">
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-rose-700 border-2 border-rose-700/20 bg-rose-700/5 px-5 py-2 rounded-full inline-block shadow-xs text-center">
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry border-2 border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-xs text-center">
                 Clean Snack Lineup
               </span>
 
-              <h3 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#0a0806] leading-[1.1] tracking-tight text-center lg:text-left">
-                Aliment <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-rose-600 to-[#D4AF37]">Cookies</span>
+              <h3 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#221B1F] leading-[1.1] tracking-tight text-center lg:text-left">
+                <span className="accent-text">Alchemist</span>
               </h3>
 
-              <div className="h-1 w-24 bg-gradient-to-r from-rose-700 via-[#D4AF37] to-transparent rounded-full mx-auto lg:mx-0" />
+              <div className="h-1 w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto lg:mx-0" />
 
-              <div className="space-y-6 text-[#555555] text-base md:text-lg leading-relaxed">
-                <p className="font-bold text-[#0a0806] text-justify">
+              <div className="space-y-6 text-[#5A4F55] text-base md:text-lg leading-relaxed">
+                <p className="font-bold text-[#221B1F] text-justify">
                   A line of healthy, clean-label cookies prepared without maida, refined sugar, or synthetic preservatives.
                 </p>
               </div>
@@ -1291,36 +1366,36 @@ export default function Home() {
                   {
                     title: 'Sustained Low-GI Energy',
                     desc: 'Slow release, no glycemic crash',
-                    accent: '#920075'
+                    accent: '#A50D5A'
                   },
                   {
                     title: 'Prebiotic Gut Support',
                     desc: 'Rich in prebiotic ancient fibers',
-                    accent: '#F59E0B'
+                    accent: '#D7A94E'
                   },
                   {
                     title: '10 Heritage Super Grains',
                     desc: 'Pure native millets & raw seeds',
-                    accent: '#F59E0B'
+                    accent: '#D7A94E'
                   },
                   {
                     title: '0% Processed Sugar',
                     desc: 'Naturally sweetened with palm sugar',
-                    accent: '#920075'
+                    accent: '#A50D5A'
                   }
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 p-4 sm:p-5 bg-white border border-gray-150 rounded-[1.75rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-rose-700/35 hover:shadow-[0_12px_30px_rgba(146,0,117,0.1)] hover:-translate-y-1 transition-all duration-300 group/pill"
+                    className="flex items-center gap-4 p-4 sm:p-5 bg-white border border-hairline rounded-[1.75rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-berry/35 hover:shadow-[0_12px_30px_rgba(146,0,117,0.1)] hover:-translate-y-1 transition-all duration-300 group/pill"
                   >
-                    <div className={`h-10 w-10 rounded-2xl ${item.accent === '#920075' ? 'bg-rose-700/10 text-rose-700 border border-rose-700/20 group-hover/pill:bg-rose-700' : 'bg-orange-500/10 text-[#B45309] border border-orange-500/20 group-hover/pill:bg-orange-500'} flex items-center justify-center shrink-0 font-bold group-hover/pill:text-white transition-all duration-300 shadow-xs`}>
+                    <div className={`h-10 w-10 rounded-2xl ${item.accent === '#A50D5A' ? 'bg-berry/10 text-berry border border-berry/20 group-hover/pill:bg-berry' : 'bg-gold-light/10 text-[#B27B26] border border-gold-light/20 group-hover/pill:bg-gold-light'} flex items-center justify-center shrink-0 font-bold group-hover/pill:text-white transition-all duration-300 shadow-xs`}>
                       <Check className="h-4 w-4 stroke-[3px]" />
                     </div>
                     <div>
-                      <span className="text-xs sm:text-sm font-bold text-[#0a0806] tracking-wide block group-hover/pill:text-rose-700 transition-colors">
+                      <span className="text-xs sm:text-sm font-bold text-[#221B1F] tracking-wide block group-hover/pill:text-berry transition-colors">
                         {item.title}
                       </span>
-                      <span className="text-[10px] sm:text-xs text-gray-500 font-medium mt-0.5 block">
+                      <span className="text-[10px] sm:text-xs text-ink-muted font-medium mt-0.5 block">
                         {item.desc}
                       </span>
                     </div>
@@ -1331,23 +1406,23 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-12 pt-4">
-            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-rose-700/10 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(146,0,117,0.1)] hover:border-rose-700/25 hover:-translate-y-1 transition-all duration-500">
-              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-rose-700/20 flex items-center justify-center text-rose-700 shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-rose-700/40 group-hover:rotate-6 transition-all duration-500">
+            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-berry/10 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(146,0,117,0.1)] hover:border-berry/25 hover:-translate-y-1 transition-all duration-500">
+              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center text-berry shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:rotate-6 transition-all duration-500">
                 <Heart className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
-              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#0a0806] group-hover:text-rose-700 transition-colors tracking-tight leading-snug text-center">Why Aliment Cookies Matter</h4>
-              <p className="text-[#555555] leading-relaxed text-justify text-xs sm:text-base font-medium">
-                Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Aliment Cookies were created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
+              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-berry transition-colors tracking-tight leading-snug text-center">Why Alchemist Matters</h4>
+              <p className="text-[#5A4F55] leading-relaxed text-justify text-xs sm:text-base font-medium">
+                Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Alchemist was created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
               </p>
             </div>
 
-            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-[#D4AF37]/15 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(212,175,55,0.06)] hover:border-[#D4AF37]/30 hover:-translate-y-1 transition-all duration-500">
-              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-[#D4AF37]/25 flex items-center justify-center text-[#D4AF37] shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-[#D4AF37]/50 group-hover:rotate-6 transition-all duration-500">
+            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-[#D7A94E]/15 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(212,175,55,0.06)] hover:border-[#D7A94E]/30 hover:-translate-y-1 transition-all duration-500">
+              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-[#D7A94E]/25 flex items-center justify-center text-[#D7A94E] shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-[#D7A94E]/50 group-hover:rotate-6 transition-all duration-500">
                 <Zap className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
-              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#0a0806] group-hover:text-[#D4AF37] transition-colors tracking-tight leading-snug text-center">Healthy Snacking for Modern Living</h4>
-              <p className="text-[#555555] leading-relaxed text-justify text-xs sm:text-base font-medium">
-                Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Aliment Cookies are designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
+              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-[#D7A94E] transition-colors tracking-tight leading-snug text-center">Healthy Snacking for Modern Living</h4>
+              <p className="text-[#5A4F55] leading-relaxed text-justify text-xs sm:text-base font-medium">
+                Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemist is designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
               </p>
             </div>
           </div>
@@ -1355,67 +1430,76 @@ export default function Home() {
       </section>
 
       {/* ⸻ 5. POWERED BY ANCIENT SUPER GRAINS ⸻ */}
-      <section id="sustainability" ref={registerSectionRef} className="py-32 bg-[#FAF8F5]/30 border-t border-brand-pink/5 relative z-10 overflow-hidden font-sans">
-        <div className="absolute right-0 top-1/3 w-[500px] h-[500px] bg-rose-700/5 rounded-full blur-[120px] pointer-events-none" />
+      <section id="sustainability" ref={registerSectionRef} className="py-28 sm:py-32 border-t border-hairline/60 relative z-10 overflow-hidden font-sans">
+        {/* heritage-grain photo backdrop with a warm cream wash */}
+        <div className="absolute inset-0 -z-10">
+          <img
+            src={superGrainsBg}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FBF7EF]/90 via-[#F9F1E1]/80 to-[#FBF7EF]/94" />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(80% 55% at 50% 0%, transparent 40%, rgba(121,8,63,0.10) 100%)' }}
+          />
+        </div>
 
         <div className="container mx-auto px-6 max-w-7xl relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-rose-700 bg-rose-700/5 border border-rose-700/15 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs">
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/5 border border-berry/15 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs">
               Nutritional Blueprint
             </span>
-            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#0a0806] leading-tight tracking-tight">
+            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
               Powered by Ancient Super Grains
             </h2>
-            <div className="h-1 w-20 sm:w-24 bg-gradient-to-r from-rose-700 via-[#D4AF37] to-transparent rounded-full mx-auto" />
-            <p className="text-gray-600 text-xs sm:text-base leading-relaxed text-center px-2 font-medium text-pretty">
+            <div className="h-1 w-20 sm:w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto" />
+            <p className="text-ink-soft text-xs sm:text-base leading-relaxed text-center px-2 font-medium text-pretty">
               Our cookies are enriched with ancient grains and traditional rice varieties that have been trusted for generations for their nutritional richness and wellness benefits. These grains naturally provide fiber-rich nourishment, essential minerals, long-lasting energy, better digestion support, and wholesome nutrition.
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-5 sm:gap-6">
             {superGrains.map((millet, idx) => (
               <div key={idx}
-                className="group relative bg-gradient-to-br from-white/85 via-amber-50/20 to-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl p-5 pb-8 shadow-sm hover:shadow-lg hover:shadow-rose-900/8 hover:border-rose-700/20 hover:-translate-y-2 transition-all duration-500 overflow-hidden flex flex-col justify-between w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)] min-w-[260px] max-w-[310px]"
+                className="group relative glass foil-top rounded-panel overflow-hidden flex flex-col w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] min-w-[240px] max-w-[300px] hover:-translate-y-1.5 transition-transform duration-400"
               >
-                {/* Liquid sheen */}
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-violet-400/40 to-transparent" />
-                <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-violet-300/10 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+                <div className="relative aspect-square w-full overflow-hidden bg-cream">
+                  {millet.image && (
+                    <img
+                      src={millet.image}
+                      alt={millet.name}
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent pointer-events-none" />
 
-                <div className="relative aspect-square w-full overflow-hidden bg-violet-50/50 border border-violet-100/40 rounded-[1.85rem] animate-pulse">
-                  <img
-                    src={millet.image}
-                    alt={millet.name}
-                    className="w-full h-full object-cover scale-[1.01] group-hover:scale-105 transition-all duration-1000 ease-[0.16,1,0.3,1] opacity-0"
-                    loading="lazy"
-                    decoding="async"
-                    onLoad={(e) => {
-                      e.target.classList.remove('opacity-0');
-                      e.target.parentElement.classList.remove('animate-pulse');
-                      e.target.parentElement.classList.add('bg-transparent');
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-70 pointer-events-none" />
-
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-                    <span className="h-7 w-7 rounded-lg bg-white/90 backdrop-blur-md flex items-center justify-center text-[10px] font-bold text-rose-700 shadow-sm group-hover:scale-110 group-hover:border group-hover:border-rose-700/30 transition-all duration-300">
-                      0{idx + 1}
+                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                    <span className="h-7 w-7 rounded-lg bg-white/85 backdrop-blur-md border border-white/70 flex items-center justify-center text-[10px] font-extrabold text-berry">
+                      {String(idx + 1).padStart(2, '0')}
                     </span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-rose-700 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-rose-100/40">
-                      {millet.local}
-                    </span>
+                    {millet.local && (
+                      <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-berry bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1 rounded-full">
+                        {millet.local}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                <div className="pt-6 px-2 flex-1 flex flex-col justify-between text-center">
-                  <div className="space-y-4 flex flex-col items-center">
-                    <h3 className="text-2xl font-display font-bold text-[#0a0806] leading-tight group-hover:text-rose-700 transition-colors text-center">
-                      {millet.name}
-                    </h3>
-                    <div className="h-[2px] w-12 bg-gradient-to-r from-rose-700 via-amber-500 to-transparent group-hover:w-20 transition-all duration-500 mx-auto" />
-                    <p className="text-sm text-gray-500 leading-relaxed font-medium text-center">
-                      {millet.benefit}
-                    </p>
-                  </div>
+                <div className="flex flex-col items-center text-center gap-3 p-5">
+                  <h3 className="font-display font-bold text-xl text-[#221B1F] leading-tight group-hover:text-berry transition-colors">
+                    {millet.name}
+                  </h3>
+                  <span className="h-[2px] w-10 bg-gradient-to-r from-berry to-gold-light rounded-full group-hover:w-16 transition-all duration-500" />
+                  <p className="text-[12.5px] text-ink-soft leading-relaxed font-medium">
+                    {millet.benefit}
+                  </p>
                 </div>
               </div>
             ))}
@@ -1423,66 +1507,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ⸻ 6. WHO WE ARE ⸻ */}
-      <section id="about" ref={registerSectionRef} className="py-32 relative z-10 bg-[#FDFBF7] overflow-hidden font-sans">
-        <div className="absolute right-0 top-10 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute left-0 bottom-10 w-96 h-96 bg-rose-700/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-rose-700 border border-rose-700/20 bg-rose-700/5 px-5 py-2 rounded-full inline-block shadow-sm">
-                Our Story
-              </span>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#0a0806] leading-[1.05] tracking-tight text-balance">
-                Built on a Mission.<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 to-orange-500">Not a Trend.</span>
-              </h2>
-              <div className="h-1 w-28 bg-gradient-to-r from-rose-700 via-[#D4AF37] to-transparent rounded-full" />
-
-              <div className="space-y-6 pt-2 text-justify w-full">
-                <p className="text-[#333333] leading-relaxed text-base sm:text-lg font-medium text-justify">
-                  Alimenture Industries Private Limited was incorporated in Chennai in December 2023 by visionary entrepreneurs Pavin Saminathan and Magesh Mohan.
-                </p>
-                <p className="text-[#555555] leading-relaxed text-xs sm:text-base font-medium text-justify">
-                  Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition. More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives. Every product we create reflects our commitment to purity, sustainability, and the well-being of future generations.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {trustPillars.map((pillar, idx) => (
-                <div key={idx}
-                  className="group relative bg-gradient-to-br from-white to-gray-50/50 border border-gray-200/60 rounded-2xl p-8 space-y-6 shadow-sm hover:shadow-xl hover:shadow-rose-900/8 hover:border-rose-700/20 transition-all duration-400 hover:-translate-y-2 overflow-hidden">
-                  {/* Liquid sheen top */}
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent" />
-                  <div className="absolute -top-12 -right-12 w-28 h-28 bg-gradient-to-br from-rose-300/10 to-amber-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
-
-                  <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-gray-200/60 flex items-center justify-center text-rose-700 group-hover:scale-110 group-hover:bg-white/95 group-hover:border-rose-700/30 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] group-hover:rotate-6 transition-all duration-500 shadow-sm shrink-0 relative z-10">
-                    {pillar.icon}
-                  </div>
-
-                  <div className="space-y-2 relative z-10">
-                    <h3 className="font-display font-bold text-[#0a0806] text-xl leading-tight tracking-wide group-hover:text-rose-700 transition-colors">{pillar.title}</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium">{pillar.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 7. OUR PURPOSE ⸻ */}
-      <section id="purpose" className="py-24 px-6 bg-white relative font-sans">
+      {/* ⸻ 6. OUR PURPOSE ⸻ */}
+      <section id="about" ref={registerSectionRef} className="py-24 px-6 bg-white relative font-sans">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-rose-700 bg-rose-700/10 px-4 py-1.5 rounded-full inline-block border border-rose-700/20">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-berry bg-berry/10 px-4 py-1.5 rounded-full inline-block border border-berry/20">
               Our Purpose
             </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-[#1F1F1F] tracking-tight text-balance">
+            <h2 className="font-display font-bold text-3xl sm:text-5xl text-[#221B1F] tracking-tight text-balance">
               Why We Started
             </h2>
-            <p className="text-base text-[#1F1F1F]/80 leading-relaxed font-medium max-w-2xl mx-auto">
+            <p className="text-base text-[#221B1F]/80 leading-relaxed font-medium max-w-2xl mx-auto">
               At Alimenture, every decision begins with a simple belief—food should nourish lives, empower communities, and protect nature.
             </p>
           </div>
@@ -1491,8 +1526,8 @@ export default function Home() {
             <div className="lg:col-span-5 relative group">
               <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl z-10">
                 <img
-                  src={focusImage}
-                  alt="Alimenture Purpose & Empowering Farmers"
+                  src={nammalvarImage}
+                  alt="Nammalvar — the green crusader who inspired Alimenture"
                   className="w-full h-[420px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -1501,17 +1536,17 @@ export default function Home() {
               <div className="absolute -bottom-12 -right-4 sm:-right-6 bg-gradient-to-br from-white/90 via-violet-50/60 to-white/80 backdrop-blur-2xl border border-violet-200/50 rounded-2xl p-6 shadow-[0_20px_50px_rgba(109,40,217,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] max-w-xs z-20">
                 <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-violet-400/50 to-transparent rounded-t-3xl" />
                 <Quote className="h-7 w-7 text-violet-500 mb-2 opacity-80" />
-                <p className="font-display font-bold text-sm text-[#1F1F1F] leading-snug italic">
+                <p className="font-display font-bold text-sm text-[#221B1F] leading-snug italic">
                   "Food should nourish people without adding preservatives."
                 </p>
               </div>
             </div>
 
             <div className="lg:col-span-7 space-y-6 text-justify">
-              <p className="text-base sm:text-lg text-[#1F1F1F]/90 leading-relaxed font-medium text-justify">
+              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium text-justify">
                 Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition.
               </p>
-              <p className="text-xs sm:text-base text-[#1F1F1F]/80 leading-relaxed font-medium text-justify">
+              <p className="text-xs sm:text-base text-[#221B1F]/80 leading-relaxed font-medium text-justify">
                 More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives.
               </p>
             </div>
@@ -1519,50 +1554,99 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ⸻ 7. WHO WE ARE ⸻ */}
+      <section id="story" className="py-32 relative z-10 bg-[#FBF7EF] overflow-hidden font-sans">
+        <div className="absolute right-0 top-10 w-96 h-96 bg-[#D7A94E]/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute left-0 bottom-10 w-96 h-96 bg-berry/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="container mx-auto px-6 max-w-7xl relative z-10">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <div className="space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-berry border border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-sm">
+                Our Story
+              </span>
+              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-[1.05] tracking-tight text-balance">
+                Built on a Mission.<br /><span className="accent-text">Not a Trend.</span>
+              </h2>
+              <div className="h-1 w-28 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full" />
+
+              <div className="space-y-6 pt-2 text-justify w-full">
+                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium text-justify">
+                  Alimenture Industries Private Limited was incorporated in Chennai in December 2023 by visionary entrepreneurs Pavin Saminathan and Magesh Mohan.
+                </p>
+                <p className="text-[#5A4F55] leading-relaxed text-xs sm:text-base font-medium text-justify">
+                  Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition. More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives. Every product we create reflects our commitment to purity, sustainability, and the well-being of future generations.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {trustPillars.map((pillar, idx) => (
+                <div key={idx}
+                  className="group relative bg-gradient-to-br from-white to-gray-50/50 border border-hairline/60 rounded-2xl p-8 space-y-6 shadow-sm hover:shadow-xl hover:shadow-rose-900/8 hover:border-berry/20 transition-all duration-400 hover:-translate-y-2 overflow-hidden">
+                  {/* Liquid sheen top */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry-bright/30 to-transparent" />
+                  <div className="absolute -top-12 -right-12 w-28 h-28 bg-gradient-to-br from-berry-tint/10 to-gold/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
+
+                  <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-hairline/60 flex items-center justify-center text-berry group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/30 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] group-hover:rotate-6 transition-all duration-500 shadow-sm shrink-0 relative z-10">
+                    {pillar.icon}
+                  </div>
+
+                  <div className="space-y-2 relative z-10">
+                    <h3 className="font-display font-bold text-[#221B1F] text-xl leading-tight tracking-wide group-hover:text-berry transition-colors">{pillar.title}</h3>
+                    <p className="text-sm text-ink-soft leading-relaxed font-medium">{pillar.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ⸻ 8. THE 3S PHILOSOPHY OF ALIMENTURE ⸻ */}
-      <section id="philosophy-3s" className="pt-10 pb-28 px-6 bg-gradient-to-b from-[#FDFBF7] via-[#FAF6F0] to-[#FDFBF7] relative font-sans border-t border-gray-200/60 overflow-hidden">
+      <section id="philosophy-3s" className="pt-10 pb-28 px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative font-sans border-t border-hairline/60 overflow-hidden">
         {/* ── Floating particles removed for performance ── */}
         <div className="max-w-7xl mx-auto space-y-20 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-rose-700 bg-rose-700/10 px-5 py-2 rounded-full inline-block border border-rose-700/20 shadow-xs backdrop-blur-md">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 px-5 py-2 rounded-full inline-block border border-berry/20 shadow-xs backdrop-blur-md">
               Foundational Pillars
             </span>
-            <h2 className="font-display font-bold text-4xl sm:text-6xl text-[#0a0806] tracking-tight">
-              The 3S Philosophy of <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-rose-600 to-orange-500">Alimenture</span>
+            <h2 className="font-display font-bold text-4xl sm:text-6xl text-[#221B1F] tracking-tight">
+              The 3S Philosophy of <span className="accent-text">Alimenture</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Sprout className="h-7 w-7 text-rose-700" />,
+                icon: <Sprout className="h-7 w-7 text-berry" />,
                 title: 'Sustenance',
                 desc: 'Creating wholesome foods that support everyday health, energy, and overall well-being through natural ingredients and traditional nutrition.'
               },
               {
-                icon: <Globe className="h-7 w-7 text-orange-500" />,
+                icon: <Globe className="h-7 w-7 text-gold-light" />,
                 title: 'Sustainability',
                 desc: 'Promoting farming and food production methods that protect the environment, preserve biodiversity, and ensure a healthier planet for future generations.'
               },
               {
-                icon: <Users className="h-7 w-7 text-rose-700" />,
+                icon: <Users className="h-7 w-7 text-berry" />,
                 title: 'Self-Reliance',
                 desc: 'Building a stronger and more sustainable economy by empowering local farmers, encouraging natural cultivation, and delivering toxin-free nourishment.'
               }
             ].map(card => (
               <div
                 key={card.title}
-                className="relative p-6 sm:p-10 bg-white/90 backdrop-blur-xl border border-gray-200/80 rounded-[2.5rem] shadow-[0_10px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_rgba(146,0,117,0.12)] hover:border-rose-700/30 hover:-translate-y-2 transition-all duration-500 space-y-5 group overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left"
+                className="relative p-6 sm:p-10 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2.5rem] shadow-[0_10px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_rgba(146,0,117,0.12)] hover:border-berry/30 hover:-translate-y-2 transition-all duration-500 space-y-5 group overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left"
               >
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-rose-700/40 via-[#D4AF37]/50 to-transparent" />
-                <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-rose-700/20 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-white/95 group-hover:border-rose-700/40 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] transition-all duration-500 mx-auto sm:mx-0">
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry/40 via-[#D7A94E]/50 to-transparent" />
+                <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] transition-all duration-500 mx-auto sm:mx-0">
                   {card.icon}
                 </div>
                 <div className="space-y-3 w-full">
-                  <h4 className="font-display font-bold text-xl sm:text-2xl text-[#0a0806] group-hover:text-rose-700 transition-colors leading-tight text-center sm:text-left tracking-tight">
+                  <h4 className="font-display font-bold text-xl sm:text-2xl text-[#221B1F] group-hover:text-berry transition-colors leading-tight text-center sm:text-left tracking-tight">
                     {card.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-medium text-justify">
+                  <p className="text-xs sm:text-sm text-ink-soft leading-relaxed font-medium text-justify">
                     {card.desc}
                   </p>
                 </div>
@@ -1572,60 +1656,62 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ⸻ 9. BUILDING A SUSTAINABLE FOOD FUTURE ⸻ */}
-      <section id="philosophy" ref={registerSectionRef} className="py-20 lg:py-28 relative z-10 overflow-hidden font-sans w-full">
-        <div className="absolute inset-0 z-0">
+      {/* ⸻ 9. CRAFTING GRAINS INTO GOLD ⸻ */}
+      <section id="philosophy" ref={registerSectionRef} className="relative z-10 overflow-hidden font-sans py-24 sm:py-32">
+        {/* photo backdrop with warm cream wash */}
+        <div className="absolute inset-0 -z-10">
           <img
-            src={bgImage}
-            alt="Crafting Grains Into Gold Background"
-            className="w-full h-full object-cover object-center opacity-90 scale-105"
+            src={craftingBg}
+            alt=""
+            aria-hidden="true"
+            className="w-full h-full object-cover object-center"
             loading="lazy"
             decoding="async"
           />
-          {/* Subtle light vignette gradient keeping bg.png crisp & vibrant */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/20 to-white/50 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#FBF7EF]/85 via-[#F9F1E1]/72 to-[#FBF7EF]/92" />
+          <div
+            className="absolute inset-0"
+            style={{ background: 'radial-gradient(85% 55% at 50% 0%, transparent 35%, rgba(121,8,63,0.12) 100%)' }}
+          />
         </div>
 
-        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl space-y-12">
-          <div className="bg-white/85 backdrop-blur-xl border border-white/90 rounded-[3rem] p-6 sm:p-12 lg:p-16 shadow-[0_25px_60px_rgba(0,0,0,0.12)] relative overflow-hidden">
-            <div className="absolute -top-32 -left-32 w-80 h-80 bg-rose-700/12 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-orange-500/15 rounded-full blur-[80px] pointer-events-none" />
+        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+          {/* headline */}
+          <div className="text-center max-w-3xl mx-auto flex flex-col items-center gap-5">
+            <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
+              <Sparkles className="h-3.5 w-3.5" /> Alchemi&rsquo;s Grainlets
+            </span>
+            <h2 className="font-display font-bold text-[2.6rem] sm:text-6xl lg:text-[4.1rem] leading-[1.02] tracking-tight text-[#221B1F] text-balance">
+              Crafting grains <span className="accent-text">into gold</span>
+            </h2>
+            <p className="text-[15px] sm:text-lg text-ink-soft font-medium leading-relaxed max-w-xl">
+              We don&rsquo;t bake compromises. Every recipe breaks the scam of maida, white sugar and refined oil.
+            </p>
+          </div>
 
-            <div className="text-center max-w-3xl mx-auto mb-16 relative z-10 space-y-4">
-              <span className="font-sans font-bold text-xs uppercase tracking-[0.3em] text-rose-700 bg-rose-700/10 px-5 py-2 rounded-full inline-block border border-rose-700/20 shadow-sm">
-                Alchemi's Grainlets
-              </span>
-              <h2 className="font-display font-bold text-4xl sm:text-5xl lg:text-6xl text-[#0a0806] uppercase tracking-tight leading-[1.05]">
-                Crafting Grains <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-700 via-rose-600 to-orange-500">Into Gold</span>
-              </h2>
-              <p className="text-sm sm:text-base text-gray-700 font-sans tracking-wide leading-relaxed max-w-2xl mx-auto font-bold uppercase">
-                We don't bake compromises. We break the scam of Maida, Sugar, and Refined Oil.
-              </p>
-
-              <div className="pt-2">
-                <span className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-[0.25em] border border-orange-500/40 text-[#B45309] bg-orange-500/10 shadow-xs">
-                  What We Refuse To Bake In
-                </span>
-              </div>
+          {/* the 0% pledge */}
+          <div className="mt-14 sm:mt-20">
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <span className="h-px w-10 bg-gradient-to-r from-transparent to-berry/40" />
+              <span className="kicker text-[10px] text-gold">What we refuse to bake in</span>
+              <span className="h-px w-10 bg-gradient-to-l from-transparent to-berry/40" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 relative z-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {refuseList.map((item, idx) => (
                 <div
                   key={idx}
-                  className="relative flex flex-col items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5 p-6 rounded-[2rem] bg-gradient-to-br from-white to-gray-50/30 border border-gray-200/60 shadow-sm hover:shadow-lg hover:shadow-rose-900/8 hover:border-rose-700/20 hover:-translate-y-1.5 transition-all duration-300 group/refuse cursor-pointer overflow-hidden"
+                  className="group relative glass foil-top rounded-panel p-5 sm:p-7 flex flex-col gap-4 hover:-translate-y-1.5 transition-transform duration-300"
                 >
-                  <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-rose-500/20 to-transparent" />
-                  <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-gray-200/60 flex items-center justify-center text-rose-700 group-hover/refuse:scale-110 group-hover/refuse:bg-rose-50 group-hover/refuse:border-rose-700/30 transition-all duration-300 shadow-sm shrink-0 mx-auto sm:mx-0">
-                    {item.icon}
+                  <div className="flex items-center justify-between">
+                    <span className="ico-chip h-11 w-11 rounded-2xl">{item.icon}</span>
+                    <span className="display-lg accent-text text-[2.3rem] sm:text-[2.7rem] leading-none">0%</span>
                   </div>
-
-                  <div className="flex flex-col flex-1 space-y-1 w-full">
-                    <h3 className="font-display font-bold text-base sm:text-lg tracking-wide text-[#0a0806] group-hover/refuse:text-violet-700 transition-colors leading-tight text-center sm:text-left">
-                      {item.title}
+                  <div className="space-y-1.5">
+                    <h3 className="font-display font-bold text-[14.5px] sm:text-base text-[#221B1F] tracking-tight leading-snug">
+                      {item.title.replace(/^0%\s*/, '')}
                     </h3>
-                    <p className="font-sans font-medium text-xs sm:text-sm text-gray-600 leading-relaxed text-justify">
+                    <p className="text-[12px] sm:text-[12.5px] text-ink-soft leading-relaxed font-medium">
                       {item.desc}
                     </p>
                   </div>
@@ -1634,69 +1720,98 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="relative group bg-gradient-to-br bg-white border border-gray-200/60 text-[#1F1F1F] p-6 sm:p-10 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-gray-900/5 hover:border-rose-700/20 hover:-translate-y-1.5 transition-all duration-400 space-y-5 overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-rose-500/30 to-transparent" />
-              <div className="h-14 w-14 rounded-2xl bg-white/80 backdrop-blur-md border border-violet-200/50 flex items-center justify-center text-rose-700 group-hover:scale-110 group-hover:bg-white/95 group-hover:border-rose-700/40 group-hover:shadow-[0_10px_24px_rgba(146,0,117,0.2)] transition-all duration-500 mx-auto sm:mx-0">
-                <Leaf className="h-7 w-7" />
-              </div>
-              <div className="space-y-3 w-full">
-                <h3 className="font-display text-xl sm:text-3xl font-bold text-[#1F1F1F] group-hover:text-rose-700 transition-colors text-center sm:text-left tracking-tight">Building a Sustainable Food Future</h3>
-                <p className="text-gray-600 font-medium leading-relaxed text-xs sm:text-base text-justify">
-                  Alimenture Industries believes healthy food should support both people and the planet. We are committed to promoting sustainable food systems, farmer-friendly ecosystems, traditional agriculture, natural ingredient sourcing, and conscious nourishment practices.
-                </p>
-              </div>
+          {/* two pillars */}
+          <div className="mt-6 grid md:grid-cols-2 gap-5">
+            <div className="relative glass foil-top rounded-panel p-7 sm:p-9 flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
+              <span className="ico-chip h-12 w-12 rounded-2xl"><Leaf className="h-5 w-5" /></span>
+              <h3 className="display-md text-xl sm:text-2xl text-[#221B1F]">Building a sustainable food future</h3>
+              <p className="text-[13px] sm:text-[14px] text-ink-soft leading-relaxed font-medium">
+                Healthy food should serve people and the planet alike. We back sustainable food systems, farmer-friendly ecosystems and traditional agriculture — from sourcing to plate.
+              </p>
             </div>
 
-            <div className="relative group bg-gradient-to-br bg-white border border-gray-200/60 p-6 sm:p-10 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-amber-900/5 hover:border-amber-500/20 hover:-translate-y-1.5 transition-all duration-400 space-y-5 overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left">
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-              <div className="h-14 w-14 rounded-2xl bg-white/80 backdrop-blur-md border border-amber-200/50 flex items-center justify-center text-[#D4AF37] group-hover:scale-110 group-hover:bg-white/95 group-hover:border-[#D4AF37]/50 group-hover:shadow-[0_10px_24px_rgba(212,175,55,0.25)] transition-all duration-500 mx-auto sm:mx-0">
-                <Shield className="h-7 w-7" />
-              </div>
-              <div className="space-y-3 w-full">
-                <h3 className="font-display text-xl sm:text-3xl font-bold text-[#1F1F1F] group-hover:text-rose-700 transition-colors text-center sm:text-left tracking-tight">Food You Can Trust</h3>
-                <p className="text-gray-600 font-medium leading-relaxed text-xs sm:text-base text-justify">
-                  Every Alimenture product is crafted with transparency, care, and commitment to quality. We believe consumers deserve honest ingredients, better nutrition, cleaner food choices, and authentic nourishment.
-                </p>
-              </div>
+            <div className="relative glass foil-top rounded-panel p-7 sm:p-9 flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
+              <span className="ico-chip ico-chip-gold h-12 w-12 rounded-2xl"><Shield className="h-5 w-5" /></span>
+              <h3 className="display-md text-xl sm:text-2xl text-[#221B1F]">Food you can trust</h3>
+              <p className="text-[13px] sm:text-[14px] text-ink-soft leading-relaxed font-medium">
+                Every product is made with transparency and care — honest ingredients, real nutrition and cleaner choices, with nothing to hide on the label.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ⸻ 10. OUR COMMITMENT ⸻ */}
-      <section id="commitment" className="py-16 px-6 bg-[#FAF8F2] relative font-sans">
+      <section id="commitment" className="py-20 sm:py-28 px-6 bg-[#FBF7EF] relative font-sans">
         <div className="max-w-7xl mx-auto">
-          <div className="relative rounded-[2.5rem] overflow-hidden border-2 border-white shadow-2xl bg-gradient-to-br from-[#1F0320] via-[#2B062C] to-[#150216] text-white p-8 sm:p-14 space-y-8">
-            <div className="absolute inset-0 pointer-events-none opacity-40 z-0">
-              <img src={bg1Image} alt="Heritage grain background" className="w-full h-full object-cover" />
-            </div>
+          <div className="relative rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden shadow-[0_45px_110px_-35px_rgba(121,8,63,0.55)] bg-[#1E0518]">
+            {/* layered background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#37062A] via-[#5C0A3B] to-[#1C0416]" />
+            <img
+              src={commitmentBg}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover opacity-[0.12] mix-blend-soft-light pointer-events-none"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute -top-24 -right-16 w-[26rem] h-[26rem] bg-berry/30 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute -bottom-24 -left-16 w-[24rem] h-[24rem] bg-gold-light/20 rounded-full blur-[120px] pointer-events-none" />
+            {/* gold foil hairline */}
+            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-[#D7A94E] to-transparent" />
 
-            <div className="absolute -top-20 -right-20 w-80 h-80 bg-rose-700/40 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-orange-500/25 rounded-full blur-[100px] pointer-events-none" />
+            <div className="relative z-10 p-8 sm:p-14 lg:p-16">
+              <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-12 lg:gap-16 items-start">
+                {/* statement */}
+                <div className="space-y-7 text-center lg:text-left flex flex-col items-center lg:items-start">
+                  <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.35em] text-[#E9C877] bg-white/[0.06] px-4 py-2 rounded-full border border-white/15">
+                    <Sparkles className="h-3.5 w-3.5" /> Our Commitment
+                  </span>
+                  <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-[3.4rem] text-white leading-[1.08] tracking-tight text-balance">
+                    Every product we craft is a step toward a{' '}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F6B5D6] via-[#E9C877] to-[#D7A94E]">healthier India</span>.
+                  </h2>
+                  <p className="text-sm sm:text-[15px] text-white/75 leading-relaxed font-medium max-w-xl text-pretty">
+                    From responsibly sourced ingredients to the farming communities behind them, every decision reflects our dedication to nutrition that is toxin-free, deeply rooted in tradition, and built to last.
+                  </p>
+                  <Link
+                    to="/about"
+                    className="group inline-flex items-center gap-2 text-sm font-bold text-white border-b-2 border-[#D7A94E]/50 pb-1 hover:border-[#D7A94E] transition-colors"
+                  >
+                    Explore our story
+                    <ArrowRight className="h-4 w-4 text-[#D7A94E] group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
 
-            <div className="relative z-10 space-y-6 max-w-4xl text-center sm:text-left flex flex-col items-center sm:items-start">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500 bg-white/10 px-4 py-1.5 rounded-full inline-block border border-white/20 shadow-xs text-center">
-                Our Commitment
-              </span>
-              <h3 className="font-display font-bold text-2xl sm:text-4xl lg:text-5xl text-white leading-tight tracking-tight text-center sm:text-left">
-                Every product we craft is a step toward a healthier India.
-              </h3>
+                {/* pillars */}
+                <div className="space-y-3.5 w-full">
+                  {[
+                    { icon: Sprout,      title: 'Nutrient-rich by design', desc: 'Whole grains and clean recipes — never maida, white sugar or refined oil.' },
+                    { icon: ShieldCheck, title: 'Toxin-free, always',       desc: 'Honest ingredients and transparent sourcing you can actually verify.' },
+                    { icon: Users,       title: 'Farmer-first ecosystems',  desc: 'Traditional agriculture and fair partnerships that strengthen local communities.' },
+                  ].map((p, i) => (
+                    <div
+                      key={i}
+                      className="group flex items-start gap-4 p-5 rounded-2xl bg-white/[0.05] border border-white/10 backdrop-blur-md hover:bg-white/[0.09] hover:border-[#D7A94E]/30 transition-all duration-300"
+                    >
+                      <span className="h-11 w-11 shrink-0 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-[#E9C877] group-hover:scale-110 transition-transform duration-300">
+                        <p.icon className="h-5 w-5" />
+                      </span>
+                      <div className="space-y-1 text-left">
+                        <h3 className="font-display font-bold text-white text-base tracking-tight">{p.title}</h3>
+                        <p className="text-[12.5px] text-white/60 leading-relaxed font-medium">{p.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-              <p className="text-xs sm:text-base text-purple-100/90 leading-relaxed font-medium text-justify">
-                We are committed to delivering food that is nutrient-rich, toxin-free, and deeply rooted in tradition. From responsibly sourcing ingredients to supporting farming communities, every decision reflects our dedication to quality, sustainability, and trust.
-              </p>
-
-              <p className="text-xs sm:text-base text-purple-100/90 leading-relaxed font-medium text-justify">
-                At Alimenture, we don't just produce food—we cultivate healthier lifestyles, strengthen local communities, and build a future where nutrition, nature, and responsibility grow together.
-              </p>
-            </div>
-
-            <div className="relative z-10 pt-4">
-              <div className="bg-gradient-to-r from-black/50 via-purple-950/70 to-black/50 backdrop-blur-2xl border border-white/25 p-6 sm:p-9 rounded-[2rem] text-center shadow-[0_20px_50px_rgba(0,0,0,0.4)] relative overflow-hidden group">
-                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#FDE047] via-[#F472B6] to-transparent opacity-80" />
-                <p className="font-display font-bold text-lg sm:text-2xl text-white leading-snug tracking-wide">
-                  "At Alimenture, we don't just produce food—we produce <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F472B6] to-[#E91E8C]">trust</span>, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FDE047] to-orange-500">health</span>, and <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F472B6] to-[#FDE047]">sustainability</span>."
+              {/* pull quote */}
+              <div className="mt-12 sm:mt-14 pt-10 border-t border-white/10 flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                <Quote className="h-8 w-8 text-[#D7A94E]/70 shrink-0" />
+                <p className="font-display font-semibold text-lg sm:text-2xl text-white/95 leading-snug tracking-tight max-w-4xl">
+                  We don&rsquo;t just produce food — we cultivate healthier lifestyles, stronger communities, and a future where{' '}
+                  <span className="text-[#E9C877]">nutrition, nature, and responsibility</span> grow together.
                 </p>
               </div>
             </div>
@@ -1750,7 +1865,7 @@ export default function Home() {
                 onClick={e => e.stopPropagation()}
               >
                 {/* Modal Hero: Product Image + Title */}
-                <div className="relative h-44 w-full overflow-hidden bg-[#FDFBF7]">
+                <div className="relative h-44 w-full overflow-hidden bg-[#FBF7EF]">
                   {item.image && (
                     <img src={item.image} alt={name} className="w-full h-full object-cover" />
                   )}
@@ -1770,7 +1885,7 @@ export default function Home() {
                   <div className="absolute bottom-4 left-5 right-5">
                     <h3 className="font-display font-bold text-white text-xl leading-tight">{name}</h3>
                     {item.category && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#D4AF37] mt-0.5 block">{item.category}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#D7A94E] mt-0.5 block">{item.category}</span>
                     )}
                   </div>
                 </div>
@@ -1779,7 +1894,7 @@ export default function Home() {
                   {/* Variant Selector */}
                   {hasVariants && (
                     <div>
-                      <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Choose Pack Size</p>
+                      <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-3">Choose Pack Size</p>
                       <div className="flex flex-wrap gap-2">
                         {item.variants.map((v, i) => {
                           const sold = v.stock === 0;
@@ -1790,15 +1905,15 @@ export default function Home() {
                               disabled={sold}
                               onClick={() => { setQaVariant(v); setQaQty(1); }}
                               className={`relative px-4 py-2.5 rounded-2xl font-bold text-xs transition-all border-2 ${sold
-                                ? 'border-gray-100 text-gray-300 cursor-not-allowed bg-gray-50 line-through'
+                                ? 'border-hairline text-ink-muted cursor-not-allowed bg-cream line-through'
                                 : active
-                                  ? 'border-rose-700 bg-rose-700/6 text-rose-700 shadow-[0_4px_12px_rgba(146,0,117,0.15)]'
-                                  : 'border-gray-200 text-gray-600 hover:border-rose-700/40 hover:bg-rose-700/3 bg-white'
+                                  ? 'border-berry bg-berry/6 text-berry shadow-[0_4px_12px_rgba(146,0,117,0.15)]'
+                                  : 'border-hairline text-ink-soft hover:border-berry/40 hover:bg-berry/3 bg-white'
                                 }`}
                             >
                               {v.weight}
-                              <span className={`block text-[8px] mt-0.5 font-bold ${active ? 'text-rose-700' : 'text-gray-400'}`}>₹{v.price}</span>
-                              {sold && <span className="block text-[7px] text-gray-400">Out of stock</span>}
+                              <span className={`block text-[8px] mt-0.5 font-bold ${active ? 'text-berry' : 'text-ink-muted'}`}>₹{v.price}</span>
+                              {sold && <span className="block text-[7px] text-ink-muted">Out of stock</span>}
                               {!sold && v.stock < 10 && (
                                 <span className="absolute -top-1.5 -right-1.5 text-[7px] bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold">{v.stock} left</span>
                               )}
@@ -1813,12 +1928,12 @@ export default function Home() {
                   {quickAddMode === 'cart' && !isOutOfStock && (
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">Quantity</p>
-                        <div className="flex items-center gap-0 border border-gray-200 rounded-2xl bg-gray-50 overflow-hidden">
+                        <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-2.5">Quantity</p>
+                        <div className="flex items-center gap-0 border border-hairline rounded-2xl bg-cream overflow-hidden">
                           <button
                             onClick={() => setQaQty(q => Math.max(1, q - 1))}
                             disabled={qaQty <= 1}
-                            className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30 text-gray-600"
+                            className="w-11 h-11 flex items-center justify-center hover:bg-cream-deep transition-colors disabled:opacity-30 text-ink-soft"
                           >
                             <Minus className="h-3.5 w-3.5" />
                           </button>
@@ -1831,12 +1946,12 @@ export default function Home() {
                               const val = parseInt(e.target.value, 10);
                               setQaQty(isNaN(val) ? 1 : Math.max(1, Math.min(maxQty, val)));
                             }}
-                            className="w-12 text-center text-sm font-bold text-[#0a0806] bg-transparent border-none outline-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-12 text-center text-sm font-bold text-[#221B1F] bg-transparent border-none outline-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
                             onClick={() => setQaQty(q => Math.min(maxQty, q + 1))}
                             disabled={qaQty >= maxQty}
-                            className="w-11 h-11 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:opacity-30 text-gray-600"
+                            className="w-11 h-11 flex items-center justify-center hover:bg-cream-deep transition-colors disabled:opacity-30 text-ink-soft"
                           >
                             <Plus className="h-3.5 w-3.5" />
                           </button>
@@ -1844,8 +1959,8 @@ export default function Home() {
                       </div>
                       {totalPrice && (
                         <div className="text-right">
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
-                          <span className="text-2xl font-bold text-[#0a0806]">₹{totalPrice}</span>
+                          <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-1">Total</p>
+                          <span className="text-2xl font-bold text-[#221B1F]">₹{totalPrice}</span>
                         </div>
                       )}
                     </div>
@@ -1862,7 +1977,7 @@ export default function Home() {
                   <div className="flex gap-3 pt-1">
                     <button
                       onClick={closeQuickAdd}
-                      className="h-12 px-5 rounded-2xl border border-gray-200 text-gray-500 font-bold text-[10px] uppercase tracking-wider hover:border-gray-300 hover:bg-gray-50 transition-all bg-white"
+                      className="h-12 px-5 rounded-2xl border border-hairline text-ink-muted font-bold text-[10px] uppercase tracking-wider hover:border-hairline hover:bg-cream transition-all bg-white"
                     >
                       Cancel
                     </button>
@@ -1870,10 +1985,10 @@ export default function Home() {
                       onClick={confirmQuickAdd}
                       disabled={isOutOfStock}
                       className={`flex-1 h-12 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${isOutOfStock
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-cream-deep text-ink-muted cursor-not-allowed'
                         : quickAddMode === 'cart'
-                          ? 'bg-gradient-to-r from-rose-700 to-[#E91E8C] text-white shadow-[0_8px_24px_rgba(146,0,117,0.3)] hover:shadow-[0_12px_32px_rgba(146,0,117,0.45)] hover:opacity-95'
-                          : 'bg-gradient-to-r from-[#E91E8C] to-rose-700 text-white shadow-[0_8px_24px_rgba(233,30,140,0.3)] hover:opacity-95'
+                          ? 'bg-gradient-to-r from-berry to-berry-bright text-white shadow-[0_8px_24px_rgba(146,0,117,0.3)] hover:shadow-[0_12px_32px_rgba(146,0,117,0.45)] hover:opacity-95'
+                          : 'bg-gradient-to-r from-berry-bright to-berry text-white shadow-[0_8px_24px_rgba(233,30,140,0.3)] hover:opacity-95'
                         }`}
                     >
                       {quickAddMode === 'cart' ? <ShoppingCart className="h-4 w-4" /> : <Heart className="h-4 w-4" />}

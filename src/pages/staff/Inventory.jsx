@@ -1,220 +1,351 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
-import { Search, Plus, Minus, AlertTriangle, Archive, Package, BarChart3 } from 'lucide-react';
+import { Textarea } from '../../components/ui/textarea';
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Sparkles, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
-};
 
 import TableSkeleton from '../../components/skeletons/TableSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
+// Staff has the same product create/update/delete/stock permissions as admin
+// (BE: isStaff allows both roles) — this page mirrors admin/Products.jsx
+// exactly so staff and admin manage the catalogue the same way.
 export default function StaffInventory() {
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const showSkeleton = useSkeletonLoader(loading);
+  const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [stockAdjustment, setStockAdjustment] = useState('');
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const showSkeleton = useSkeletonLoader(isLoading);
+  const fileInputRef = useRef(null);
+  const secondaryFileInputRef = useRef(null);
+  const tertiaryFileInputRef = useRef(null);
 
-  const fetchInventory = async () => {
+  // Shared canvas compression used by all image slots.
+  const compressImageFile = (file, onDone) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File is too large (Max 5MB). Please compress it first.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const img = new Image();
+      img.src = reader.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 1000;
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        if (compressedBase64.length > 900000) {
+          toast.error("Image is still too large. Try a different photo.");
+        } else {
+          onDone(compressedBase64);
+        }
+      };
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const emptyForm = {
+    title: '', category: 'Cookies', price: '', stock: '', description: '', secondaryDescription: '', image: null, secondaryImage: null, tertiaryImage: null, isFeatured: false,
+    badges: '', cleanPromises: '', cleanBadges: '', nutritionFacts: [],
+    variants: [
+      { weight: '250g', price: '', stock: '' },
+      { weight: '500g', price: '', stock: '' },
+      { weight: '1000g', price: '', stock: '' }
+    ]
+  };
+  const [formData, setFormData] = useState(emptyForm);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const PAGE_LIMIT = 8;
+  const abortControllerRef = useRef(null);
+
+  const fetchProducts = async (pageToFetch = 1, query = '', showLoading = true) => {
     try {
-      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`);
+      if (showLoading && products.length === 0) setIsLoading(true);
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
+      const url = `${import.meta.env.VITE_API_URL}/products/search?limit=${PAGE_LIMIT}&page=${pageToFetch}&q=${encodeURIComponent(query)}`;
+      const res = await authenticatedFetch(url, { signal: abortControllerRef.current.signal });
       if (!res) return;
       const data = await res.json();
+
       if (data.success) {
-        setInventory(data.data.map(p => ({
-          id: p.id,
-          name: p.title,
-          stock: p.stock || 0,
-          reorder: 10, // Assuming a default reorder point
-          status: (p.stock || 0) < 5 ? 'Critical' : (p.stock || 0) < 10 ? 'Low' : 'Good'
-        })));
+        setProducts(data.data || []);
+        setHasMore(data.hasMore);
+        setCurrentPage(pageToFetch);
       }
-    } catch {
-      toast.error('Failed to load inventory');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      toast.error('Failed to load products');
+    }
+    finally {
+      if (!abortControllerRef.current?.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
+  // Fetch when searchQuery changes with debounce
   useEffect(() => {
-    fetchInventory();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchProducts(1, searchQuery, false);
+    }, 300);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
-  const filteredInventory = inventory.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Initial fetch
+  useEffect(() => { fetchProducts(1, '', true); }, []);
 
-  const lowStockCount = inventory.filter(item => item.stock < 10).length;
+  useEffect(() => {
+    if (editingProduct) {
+      const p = { ...emptyForm, ...editingProduct };
+      // Hydrate array-backed fields into their editable text representation.
+      if (Array.isArray(p.badges)) p.badges = p.badges.join(', ');
+      if (Array.isArray(p.cleanPromises)) p.cleanPromises = p.cleanPromises.join('\n');
+      if (Array.isArray(p.cleanBadges)) {
+        p.cleanBadges = p.cleanBadges
+          .map(b => (typeof b === 'string' ? b : [b.icon, b.label].filter(Boolean).join(' | ')))
+          .join(', ');
+      }
+      if (!Array.isArray(p.nutritionFacts)) p.nutritionFacts = [];
+      setFormData(p);
+    } else {
+      setFormData(emptyForm);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingProduct, isAddModalOpen]);
 
-  const handleStockUpdate = async (type) => {
-    const adjustment = parseInt(stockAdjustment);
-    if (!adjustment || adjustment <= 0) {
-      toast.error('Enter a valid quantity');
+  const handleNutritionChange = (index, field, value) => {
+    const rows = [...(formData.nutritionFacts || [])];
+    rows[index] = { ...rows[index], [field]: value };
+    setFormData({ ...formData, nutritionFacts: rows });
+  };
+  const addNutritionRow = () => setFormData(prev => ({ ...prev, nutritionFacts: [...(prev.nutritionFacts || []), { label: '', value: '' }] }));
+  const removeNutritionRow = (index) => setFormData(prev => ({ ...prev, nutritionFacts: (prev.nutritionFacts || []).filter((_, i) => i !== index) }));
+
+  const handleVariantChange = (index, field, value) => {
+    const newVariants = [...formData.variants];
+    newVariants[index][field] = value;
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const handleAddVariant = () => {
+    setFormData(prev => ({
+      ...prev,
+      variants: [...prev.variants, { weight: '', price: '', stock: '' }]
+    }));
+  };
+
+  const handleRemoveVariant = (index) => {
+    if (formData.variants.length <= 1) {
+      return toast.error('Product must have at least one variant');
+    }
+    const newVariants = formData.variants.filter((_, i) => i !== index);
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const handleAction = async (e) => {
+    e.preventDefault();
+    const validVariants = formData.variants.filter(v => v.weight?.trim() || v.price || v.stock);
+    if (validVariants.length === 0) {
+      toast.error('Please add at least one variant with weight, price and stock');
       return;
     }
 
-    const toastId = toast.loading('Updating inventory...');
-    try {
-      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/products/${selectedProduct.id}/stock`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adjustment: type === 'add' ? adjustment : -adjustment
-        })
-      });
+    const finalData = {
+      ...formData,
+      isFeatured: Boolean(formData.isFeatured),
+      badges: (Array.isArray(formData.badges)
+        ? formData.badges
+        : String(formData.badges || '').split(',')
+      ).map(b => b.trim()).filter(Boolean),
+      cleanPromises: (Array.isArray(formData.cleanPromises)
+        ? formData.cleanPromises
+        : String(formData.cleanPromises || '').split('\n')
+      ).map(s => s.trim()).filter(Boolean),
+      cleanBadges: (Array.isArray(formData.cleanBadges)
+        ? formData.cleanBadges.map(b => (typeof b === 'string' ? b : [b.icon, b.label].filter(Boolean).join(' | ')))
+        : String(formData.cleanBadges || '').split(',')
+      ).map(s => s.trim()).filter(Boolean).map(s => {
+        const [icon, label] = s.split('|').map(x => x.trim());
+        return label ? { icon, label } : { label: icon };
+      }),
+      nutritionFacts: (formData.nutritionFacts || [])
+        .map(r => ({ label: (r.label || '').trim(), value: (r.value || '').trim() }))
+        .filter(r => r.label || r.value),
+      price: Number(validVariants[0]?.price || 0),
+      stock: validVariants.reduce((acc, v) => acc + Number(v.stock || 0), 0),
+      variants: validVariants.map(v => ({
+        weight: v.weight?.trim() || 'Standard',
+        price: Number(v.price || 0),
+        stock: Number(v.stock || 0)
+      }))
+    };
 
-      if (!res) return;
-      if (res.ok) {
-        toast.success(`Inventory updated: ${selectedProduct.name}`, { id: toastId });
-        fetchInventory();
-        setSelectedProduct(null);
-        setStockAdjustment('');
-      } else {
-        const error = await res.json();
-        toast.error(error.error || 'Failed to update stock', { id: toastId });
+    const toastId = toast.loading(editingProduct ? 'Updating...' : 'Creating...');
+    try {
+      const oversized = ['image', 'secondaryImage', 'tertiaryImage']
+        .find(k => finalData[k] && finalData[k].length > 1048487);
+      if (oversized) {
+        toast.error("An image is too large for the database. Try a smaller photo.", { id: toastId });
+        return;
       }
-    } catch {
-      toast.error('Network error', { id: toastId });
-    }
+      const url = editingProduct ? `${import.meta.env.VITE_API_URL}/products/${editingProduct.id}` : `${import.meta.env.VITE_API_URL}/products`;
+      const method = editingProduct ? 'PUT' : 'POST';
+      const res = await authenticatedFetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalData)
+      });
+      if (!res) {
+        toast.dismiss(toastId);
+        return;
+      }
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(editingProduct ? 'Product Updated' : 'Product Added', { id: toastId });
+        fetchProducts(currentPage, searchQuery, false);
+        setIsAddModalOpen(false);
+        setEditingProduct(null);
+      } else {
+        toast.error(data.error || 'Operation failed', { id: toastId });
+      }
+    } catch { toast.error('Network Error', { id: toastId }); }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
+    const toastId = toast.loading('Deleting product...');
+    try {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/products/${id}`, { method: 'DELETE' });
+      if (!res) {
+        toast.dismiss(toastId);
+        return;
+      }
+      if (res.ok) { toast.success('Product deleted', { id: toastId }); fetchProducts(currentPage, searchQuery, false); }
+      else toast.error('Failed to delete', { id: toastId });
+    } catch { toast.error('Network Error', { id: toastId }); }
+  };
+
+  if (isLoading && products.length === 0) {
+    if (showSkeleton) return <div className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen"><TableSkeleton /></div>;
+    return <div className="min-h-screen bg-transparent"></div>;
+  }
+
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="p-1 sm:p-4 lg:p-6 space-y-5 sm:space-y-8 bg-[#FAFAFA] min-h-screen"
-    >
-      {loading ? (
-        showSkeleton ? <TableSkeleton /> : <div className="min-h-screen"></div>
-      ) : (
-        <>
-          {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-4">
+    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <Badge className="bg-pink-50 text-[#C41E6B] border-none mb-2 font-black uppercase tracking-widest text-[9px] sm:text-[10px]">
-            Stock Control
-          </Badge>
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tighter italic text-gray-900">Inventory.</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Inventory.</h1>
+          <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">Manage custom weights, prices & stocks for N variants</p>
         </div>
-        
-        {lowStockCount > 0 && (
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-3 bg-red-50 border border-red-100 px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl"
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-4 pr-0 sm:pr-4">
+          <Button
+            onClick={() => {
+              const exportData = products.map(p => ({
+                ID: p.id,
+                Title: p.title,
+                Category: p.category,
+                TotalStock: p.stock,
+                Variants: (p.variants || []).map(v => `${v.weight}:${v.stock}@₹${v.price}`).join(', ')
+              }));
+              import('../../lib/exportUtils').then(m => m.exportToExcel(exportData, 'Alimenture_Product_Catalog'));
+            }}
+            variant="outline"
+            className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl border-gray-100 hover:bg-black hover:!text-white font-bold transition-all shadow-sm text-xs sm:text-sm"
           >
-            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-            <span className="text-xs sm:text-sm font-black text-red-600 uppercase tracking-tight">
-              {lowStockCount} Critical Alerts
-            </span>
-          </motion.div>
-        )}
+            <Download className="h-4 w-4 mr-2" /> Export Catalog
+          </Button>
+          <Button onClick={() => setIsAddModalOpen(true)} className="bg-black hover:bg-zinc-800 !text-white h-10 sm:h-12 px-4 sm:px-6 rounded-xl font-bold shadow-md text-xs sm:text-sm">
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-[#E83D6E]" /> Add Product
+          </Button>
+        </div>
       </div>
 
-      {/* --- STATS OVERVIEW --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-        {[
-          { label: 'Total SKUs', value: inventory.length, icon: Archive, color: 'text-gray-900', iconColor: 'text-[#E83D6E]' },
-          { label: 'Low Stock', value: lowStockCount, icon: AlertTriangle, color: 'text-[#C41E6B]', iconColor: 'text-amber-500' },
-          { label: 'Stock Value', value: 'High', icon: BarChart3, color: 'text-emerald-500', iconColor: 'text-emerald-500' },
-        ].map((stat, i) => (
-          <motion.div key={i} variants={itemVariants}>
-            <Card className="border-0 shadow-sm rounded-2xl sm:rounded-[2rem] bg-white border border-gray-100 overflow-hidden">
-              <CardContent className="p-4 sm:p-6 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] sm:text-xs font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                  <p className={`text-2xl sm:text-4xl font-black tracking-tighter mt-0.5 sm:mt-1 ${stat.color}`}>{stat.value}</p>
-                </div>
-                <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.iconColor || stat.color}`} />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* --- SEARCH & TABLE --- */}
-      <motion.div variants={itemVariants}>
-        <Card className="border-0 shadow-sm rounded-2xl sm:rounded-[2.5rem] bg-white dark:bg-[#180E1D] overflow-hidden">
-          <div className="p-3.5 sm:p-6 border-b border-gray-50">
-            <div className="relative w-full md:w-96">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 sm:h-12 rounded-xl sm:rounded-2xl border-gray-100 bg-gray-50 focus:ring-[#C41E6B] font-medium text-xs sm:text-sm"
-              />
+      <Card className="border-0 shadow-sm rounded-2xl bg-white shadow-sm border-gray-200/60 transition-shadow duration-300 border border-gray-100 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="p-6 border-b border-gray-50">
+            <div className="relative max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Input placeholder="Search inventory..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value.toUpperCase())} className="pl-11 h-12 rounded-xl bg-gray-100 border-gray-100 font-bold tracking-tight" />
             </div>
           </div>
-
           {/* Mobile Card List View (< 768px) */}
-          <div className="block md:hidden space-y-3.5 p-3.5 sm:p-4 bg-gray-50/40 dark:bg-transparent">
-            {filteredInventory.map((item) => (
-              <div key={item.id} className="p-4 space-y-3 bg-white dark:bg-[#22152B] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm transition-all">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-black text-gray-900 dark:text-gray-100 text-xs sm:text-sm leading-tight">{item.name}</p>
-                    <p className="text-[10px] font-bold text-gray-400 italic mt-0.5 truncate">SKU: {item.id}</p>
+          <div className="block md:hidden divide-y divide-gray-100">
+            {products.map((product) => (
+              <div key={product.id} className="p-4 bg-white">
+                <div className="flex gap-3.5">
+                  <div className="h-20 w-20 rounded-2xl bg-gray-50 border border-gray-100 shrink-0 relative overflow-hidden shadow-sm">
+                    {product.image ? (
+                      <img src={product.image} className="h-full w-full object-cover" alt="" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-gray-300">
+                        <Package className="h-6 w-6" />
+                      </div>
+                    )}
+                    {product.isFeatured && (
+                      <div className="absolute top-1 left-1 bg-amber-500 text-white flex items-center justify-center h-4 w-4 rounded-full shadow-sm">
+                        <Sparkles className="h-2.5 w-2.5" />
+                      </div>
+                    )}
                   </div>
-                  <div className="shrink-0">
-                    <Badge className={`rounded-full px-3 py-1 text-xs font-bold border shadow-none ${
-                      item.status === 'Critical' ? 'bg-red-50 text-red-600 border-red-100' :
-                      item.status === 'Low' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                      'bg-emerald-50 text-emerald-600 border-emerald-100'
-                    }`}>
-                      {item.status}
-                    </Badge>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between pt-2.5 border-t border-gray-50 dark:border-white/5">
-                  <div>
-                    <span className={`font-black text-base ${item.stock < 10 ? 'text-[#C41E6B]' : 'text-gray-900 dark:text-gray-100'}`}>
-                      {item.stock} <span className="text-[10px] uppercase font-bold text-gray-400">Units</span>
-                    </span>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-2">Min: {item.reorder}</span>
+                  <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-gray-900 text-sm truncate leading-tight">{product.title}</h3>
+                          <p className="text-[10px] font-semibold text-gray-500 mt-1 uppercase tracking-wider">
+                            Stock: <span className="text-gray-900">{product.stock}</span>
+                          </p>
+                        </div>
+                        <div className="flex gap-0.5 shrink-0 -mt-1.5 -mr-1.5">
+                          <Button variant="ghost" size="icon" onClick={() => setEditingProduct(product)} className="h-7 w-7 text-gray-400 hover:text-black bg-white">
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} className="h-7 w-7 text-gray-400 hover:text-red-600 bg-white">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {product.variants?.map((v, i) => (
+                        <div key={i} className="text-[9px] bg-gray-50 border border-gray-200/60 rounded-md px-1.5 py-0.5 text-gray-500 font-semibold flex items-center gap-1">
+                          <span className="text-gray-900">{v.weight}</span>
+                          <span className="text-gray-300">|</span>
+                          <span className={v.stock <= 5 ? 'text-rose-600 font-bold' : ''}>₹{v.price}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedProduct(item)}
-                    className="rounded-xl border-gray-200 font-black italic hover:bg-black hover:text-white transition-all text-xs"
-                  >
-                    Update
-                  </Button>
                 </div>
               </div>
             ))}
@@ -223,116 +354,362 @@ export default function StaffInventory() {
           {/* Desktop Table View (>= 768px) */}
           <div className="hidden md:block overflow-x-auto">
             <Table>
-              <TableHeader>
-                <TableRow className="border-b border-gray-50 hover:bg-transparent">
-                  <TableHead className="px-8 py-6 font-black uppercase tracking-widest text-[10px] text-gray-400">SKU ID</TableHead>
-                  <TableHead className="px-8 py-6 font-black uppercase tracking-widest text-[10px] text-gray-400">Product Name</TableHead>
-                  <TableHead className="px-8 py-6 font-black uppercase tracking-widest text-[10px] text-gray-400">Stock Level</TableHead>
-                  <TableHead className="px-8 py-6 font-black uppercase tracking-widest text-[10px] text-gray-400">Status</TableHead>
-                  <TableHead className="px-8 py-6 text-right font-black uppercase tracking-widest text-[10px] text-gray-400">Action</TableHead>
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead className="pl-6">Product</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Weights & Prices</TableHead>
+                  <TableHead className="text-right pr-6">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <AnimatePresence>
-                  {filteredInventory.map((item) => (
-                    <TableRow key={item.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <TableCell className="px-8 py-6 font-bold text-gray-400 italic text-xs">{item.id}</TableCell>
-                      <TableCell className="px-8 py-6 font-black text-gray-900 tracking-tight">{item.name}</TableCell>
-                      <TableCell className="px-8 py-6">
-                        <div className="flex flex-col">
-                          <span className={`font-black text-lg ${item.stock < 10 ? 'text-[#C41E6B]' : 'text-gray-900'}`}>
-                            {item.stock} <span className="text-[10px] uppercase font-bold text-gray-400">Units</span>
-                          </span>
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Min: {item.reorder}</span>
+                {products.map((product) => (
+                  <TableRow key={product.id} className="border-b border-gray-50">
+                    <TableCell className="pl-6">
+                      <div className="flex items-center gap-4 py-2">
+                        <div className="h-20 w-20 rounded-xl bg-gray-100 overflow-hidden shadow-sm border border-gray-100 shrink-0">
+                          {product.image && <img src={product.image} className="h-full w-full object-cover" alt="" />}
                         </div>
-                      </TableCell>
-                      <TableCell className="px-8 py-6">
-                        <Badge className={`rounded-full px-4 py-1 font-bold border shadow-none ${
-                          item.status === 'Critical' ? 'bg-red-50 text-red-600 border-red-100' :
-                          item.status === 'Low' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                          'bg-emerald-50 text-emerald-600 border-emerald-100'
-                        }`}>
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="px-8 py-6 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedProduct(item)}
-                          className="rounded-xl border-gray-200 font-black italic hover:bg-black hover:text-white transition-all shadow-sm"
-                        >
-                          Update
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </AnimatePresence>
+                        <div className="flex flex-col gap-1">
+                          <p className="font-bold text-gray-900">{product.title}</p>
+                          {product.isFeatured && (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-full w-max">
+                              <Sparkles className="h-3 w-3 text-amber-500 fill-amber-500" /> Featured
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><span className="font-bold">{product.stock}</span></TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-2">
+                        {product.variants?.map((v, i) => (
+                          <div key={i} className="flex items-center gap-3">
+                            <Badge variant="outline" className="bg-gray-50 border-gray-100 text-gray-500 font-bold min-w-[60px] justify-center">
+                              {v.weight}
+                            </Badge>
+                            <span className={`text-sm font-bold ${v.stock <= 5 ? 'text-red-600 animate-pulse' : 'text-gray-900'}`}>
+                              {v.stock}
+                            </span>
+                            {v.stock <= 5 && v.stock > 0 && (
+                              <Badge className="bg-red-50 text-red-600 border-red-100 text-[9px] font-bold italic">
+                                ONLY {v.stock} LEFT
+                              </Badge>
+                            )}
+                            {v.stock === 0 && (
+                              <Badge className="bg-gray-100 text-gray-500 border-gray-100 text-[9px] font-bold italic">
+                                OUT OF STOCK
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right pr-6">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setEditingProduct(product)} className="text-gray-500 hover:text-black"><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(product.id)} className="text-[#E83D6E] hover:text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
-        </Card>
-      </motion.div>
-
-      {/* --- STOCK ADJUSTMENT DIALOG --- */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="max-w-md rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
-          <div className="bg-black p-8 text-white">
-            <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">Update Inventory</p>
-            <DialogTitle className="text-3xl font-black italic tracking-tighter">
-              {selectedProduct?.name}.
-            </DialogTitle>
+          <div className="p-6 bg-gray-50 border-t border-gray-50 flex items-center justify-between">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              Page {currentPage}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => fetchProducts(currentPage - 1, searchQuery, false)}
+                className="rounded-xl border-gray-100 font-bold text-xs h-9"
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!hasMore}
+                onClick={() => fetchProducts(currentPage + 1, searchQuery, false)}
+                className="rounded-xl border-gray-100 font-bold text-xs h-9"
+              >
+                Next
+              </Button>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Current Balance</Label>
-                <p className="text-4xl font-black text-gray-900 tracking-tighter">{selectedProduct?.stock} Units</p>
+      <Dialog open={isAddModalOpen || !!editingProduct} onOpenChange={(open) => { if (!open) { setIsAddModalOpen(false); setEditingProduct(null); } }}>
+        <DialogContent className="max-w-2xl rounded-3xl p-4 sm:p-8 border-0 shadow-2xl bg-white border border-gray-100 overflow-y-auto max-h-[90vh] w-[95vw]">
+          <DialogHeader className="mb-4 sm:mb-6"><DialogTitle className="text-xl sm:text-2xl font-bold italic">{editingProduct ? 'Edit Product.' : 'New Product.'}</DialogTitle></DialogHeader>
+          <form onSubmit={handleAction} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Primary Media (Main Image)</Label>
+                  <div onClick={() => fileInputRef.current.click()} className="h-44 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all">
+                    {formData.image ? <img src={formData.image} className="h-full w-full object-cover" alt="" /> : <ImageIcon className="h-8 w-8 text-gray-700" />}
+                  </div>
+                  <input type="file" ref={fileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, image: b })))} className="hidden" accept="image/*" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Secondary Media (Alternate View)</Label>
+                  <div onClick={() => secondaryFileInputRef.current.click()} className="h-36 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all relative group">
+                    {formData.secondaryImage ? (
+                      <>
+                        <img src={formData.secondaryImage} className="h-full w-full object-cover" alt="" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, secondaryImage: null })); }}
+                          className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                        <span className="text-[10px] font-bold text-gray-400">+ Add Secondary Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={secondaryFileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, secondaryImage: b })))} className="hidden" accept="image/*" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Vitamin / Nutrition Table Image</Label>
+                  <div onClick={() => tertiaryFileInputRef.current.click()} className="h-36 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all relative group">
+                    {formData.tertiaryImage ? (
+                      <>
+                        <img src={formData.tertiaryImage} className="h-full w-full object-cover" alt="" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, tertiaryImage: null })); }}
+                          className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                        <span className="text-[10px] font-bold text-gray-400">+ Add Vitamin Table Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={tertiaryFileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, tertiaryImage: b })))} className="hidden" accept="image/*" />
+                </div>
               </div>
-              <Package className="h-12 w-12 text-gray-100" />
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Title</Label>
+                  <Input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value.toUpperCase()})} className="rounded-xl h-12 bg-gray-50 font-bold tracking-tight" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Category (Select via Checkbox)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'Cookies', label: 'Cookies' },
+                      { id: 'Health Mixtures', label: 'Health Mixtures' },
+                      { id: 'Honey', label: 'Honey' },
+                      { id: 'Jaggery', label: 'Jaggery' }
+                    ].map((cat) => {
+                      const isChecked = (formData.category || '').toLowerCase() === cat.id.toLowerCase();
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => setFormData({ ...formData, category: cat.id })}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold transition-all cursor-pointer ${
+                            isChecked
+                              ? 'bg-[#920075] text-white border-[#920075] shadow-xs scale-[1.02]'
+                              : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+                          }`}
+                        >
+                          <span>{cat.label}</span>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => setFormData({ ...formData, category: cat.id })}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-4 w-4 rounded border-gray-300 text-[#920075] focus:ring-[#920075] cursor-pointer"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="pt-1">
+                    <Input
+                      placeholder="Or enter custom category name..."
+                      value={['cookies', 'health mixtures', 'honey', 'jaggery'].includes((formData.category || '').toLowerCase()) ? '' : formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="rounded-xl h-10 bg-gray-50 text-xs font-bold"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3.5 bg-amber-50/60 border border-amber-200/80 rounded-xl cursor-pointer hover:bg-amber-50 transition-colors" onClick={() => setFormData(prev => ({ ...prev, isFeatured: !prev.isFeatured }))}>
+                  <input
+                    type="checkbox"
+                    id="isFeatured"
+                    checked={Boolean(formData.isFeatured)}
+                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                  />
+                  <label htmlFor="isFeatured" className="text-xs font-bold text-gray-800 cursor-pointer flex items-center gap-1.5 select-none">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Featured Product (Show on Homepage)
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Featured Card Badges (comma-separated)</Label>
+                  <Input
+                    value={Array.isArray(formData.badges) ? formData.badges.join(', ') : (formData.badges || '')}
+                    onChange={(e) => setFormData({ ...formData, badges: e.target.value })}
+                    className="rounded-xl h-10 bg-gray-50 text-xs font-bold"
+                    placeholder="e.g. Cookies, 100% Natural, Heritage Grain"
+                  />
+                  <p className="text-[10px] text-gray-400 font-medium ml-1">Shown as pills under the product on the homepage Featured section. Leave blank to use defaults.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Primary Description</Label>
+                  <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl bg-gray-50 h-20 text-xs" placeholder="Main product summary..." />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Product Highlights (Left Panel Paragraph)</Label>
+                  <Textarea value={formData.secondaryDescription} onChange={(e) => setFormData({...formData, secondaryDescription: e.target.value})} className="rounded-xl bg-gray-50 h-24 text-xs" placeholder="Short highlights paragraph shown in the 'Product Highlights' card. Leave blank to hide that card." />
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Adjustment Quantity</Label>
-              <Input
-                type="number"
-                placeholder="00"
-                value={stockAdjustment}
-                onChange={(e) => setStockAdjustment(e.target.value)}
-                className="h-16 text-2xl font-black rounded-2xl border-2 border-gray-50 bg-gray-50 focus:bg-white transition-all text-center"
-              />
+            <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-[#920075]" /> Product Page Content (leave any field blank to hide that section)
+              </Label>
+              <div className="space-y-2">
+                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Clean Promises (one per line)</Label>
+                <Textarea
+                  value={Array.isArray(formData.cleanPromises) ? formData.cleanPromises.join('\n') : (formData.cleanPromises || '')}
+                  onChange={(e) => setFormData({ ...formData, cleanPromises: e.target.value })}
+                  className="rounded-xl bg-white h-32 text-xs"
+                  placeholder={"100% Heritage Grain Base\nZero Refined White Sugar\nNo Maida or Refined Flour"}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Nutrition Facts</Label>
+                  <Button type="button" onClick={addNutritionRow} className="h-7 px-2.5 rounded-lg bg-[#920075] hover:bg-[#72005b] text-white text-[11px] font-bold flex items-center gap-1">
+                    <Plus className="h-3 w-3" /> Add Row
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(formData.nutritionFacts || []).map((row, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        placeholder="Label (e.g. Energy)"
+                        value={row.label || ''}
+                        onChange={(e) => handleNutritionChange(i, 'label', e.target.value)}
+                        className="rounded-xl h-9 bg-white border-gray-100 text-xs flex-1"
+                      />
+                      <Input
+                        placeholder="Value (e.g. 420 kcal)"
+                        value={row.value || ''}
+                        onChange={(e) => handleNutritionChange(i, 'value', e.target.value)}
+                        className="rounded-xl h-9 bg-white border-gray-100 text-xs flex-1"
+                      />
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeNutritionRow(i)} className="h-9 w-9 shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(formData.nutritionFacts || []).length === 0 && (
+                    <p className="text-[10px] text-gray-400 font-medium ml-1">No rows — the nutrition table stays hidden on the product page.</p>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Button 
-                onClick={() => handleStockUpdate('add')} 
-                className="h-24 bg-emerald-500 hover:bg-emerald-600 text-white rounded-[2rem] flex flex-col gap-1 transition-transform active:scale-95"
-              >
-                <Plus className="h-6 w-6 mb-1" />
-                <span className="font-black italic">Restock</span>
+            <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
+                    <Scale className="h-3.5 w-3.5 text-[#920075]" /> Variant Management (Custom Weight, Price & Stock)
+                  </Label>
+                  <Button
+                    type="button"
+                    onClick={handleAddVariant}
+                    className="h-8 px-3 rounded-xl bg-[#920075] hover:bg-[#72005b] text-white text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
+                  >
+                    <Plus className="h-3.5 w-3.5" /> Add Variant
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                    {formData.variants.map((v, i) => (
+                        <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-xs relative group">
+                            <div className="flex-1 space-y-1">
+                                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Weight / Unit</Label>
+                                <Input
+                                    type="text"
+                                    placeholder="e.g. 250g, 1kg, 500ml"
+                                    value={v.weight}
+                                    onChange={(e) => handleVariantChange(i, 'weight', e.target.value)}
+                                    className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
+                                />
+                            </div>
+                            <div className="w-full sm:w-28 space-y-1">
+                                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Price (₹)</Label>
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Price"
+                                    value={v.price}
+                                    onChange={(e) => handleVariantChange(i, 'price', e.target.value)}
+                                    className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
+                                />
+                            </div>
+                            <div className="w-full sm:w-28 space-y-1">
+                                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Stock (Units)</Label>
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    placeholder="Stock"
+                                    value={v.stock}
+                                    onChange={(e) => handleVariantChange(i, 'stock', e.target.value)}
+                                    className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
+                                />
+                            </div>
+                            {formData.variants.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveVariant(i)}
+                                className="h-10 w-10 shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors self-end"
+                                title="Remove variant"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <DialogFooter className="pt-4 flex gap-4">
+              <Button type="button" variant="ghost" onClick={() => { setIsAddModalOpen(false); setEditingProduct(null); }} className="font-bold text-gray-500">Cancel</Button>
+              <Button type="submit" className="bg-black !text-white px-10 h-14 rounded-2xl font-bold flex-1 active:scale-95 transition-all shadow-lg shadow-black/40">
+                {editingProduct ? 'Update Product' : 'Create Product'}
               </Button>
-              <Button 
-                onClick={() => handleStockUpdate('remove')} 
-                className="h-24 bg-black hover:bg-zinc-800 text-white rounded-[2rem] flex flex-col gap-1 transition-transform active:scale-95"
-              >
-                <Minus className="h-6 w-6 mb-1" />
-                <span className="font-black italic">Dispatch</span>
-              </Button>
-            </div>
-
-            <Button 
-              variant="ghost" 
-              className="w-full font-bold text-gray-400" 
-              onClick={() => setSelectedProduct(null)}
-            >
-              Cancel Transaction
-            </Button>
-          </div>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
-        </>
-      )}
-    </motion.div>
+    </div>
   );
 }

@@ -1,65 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
-import useSkeletonLoader from '../../hooks/useSkeletonLoader';
+import { motion } from 'framer-motion';
 import {
-  ShoppingBag, Package, Users, TrendingUp,
-  AlertTriangle, DollarSign, ArrowUpRight,
-  Layers, Activity, Bell
+  ShoppingBag, Package, Users, IndianRupee, TrendingUp, AlertTriangle,
+  Layers, PieChart as PieIcon,
 } from 'lucide-react';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, PieChart, Pie,
-  Cell, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area,
 } from 'recharts';
 import { authenticatedFetch } from '../../lib/api';
+import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
+import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
+import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
+const EASE = [0.16, 1, 0.3, 1];
 
-
-
-
-// Animation Variants
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
+/* Chart palette — Alimenture light-glass tokens. The categorical set
+   (berry / gold / leaf / blue) is validated colour-blind-safe for ≤4 slots;
+   anything past 4 folds into "Other". */
+const C = {
+  ink: '#221B1F', inkSoft: '#5A4F55', muted: '#8E848B', grid: '#EEE6D6',
+  berry: '#A50D5A', gold: '#B27B26', leaf: '#2E7D51',
+  cat: ['#A50D5A', '#D98A1E', '#1F7A4D', '#3E6DB0'],
+  catOther: '#B8AEB4',
 };
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
-};
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
+const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } } };
 
-const DashboardTooltip = ({ active, payload, label }) => {
+const money = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+
+function ChartTip({ active, payload, label, valuePrefix = '' }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-white/95 dark:bg-[#1A1021]/95 backdrop-blur border border-gray-100 dark:border-white/10 rounded-xl shadow-xl p-3 text-xs font-bold text-gray-900 dark:text-gray-100 z-[100]">
-      {label && <p className="text-gray-500 dark:text-gray-400 mb-1 text-[10px] uppercase tracking-wider">{label}</p>}
+    <div className="glass-sm rounded-xl px-3.5 py-2.5 text-[12px]">
+      {label && <p className="kicker text-[9px] text-ink-muted mb-1">{label}</p>}
       {payload.map((p, i) => (
-        <p key={i} className="flex items-center justify-between gap-3 text-xs">
-          <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-            <span className="w-2 h-2 rounded-full inline-block" style={{ background: p.color || p.fill }} />
+        <p key={i} className="flex items-center justify-between gap-4">
+          <span className="flex items-center gap-1.5 text-ink-soft">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.color || p.fill }} />
             {p.name || 'Value'}
           </span>
-          <span className="font-bold text-[#E83D6E]">
-            {typeof p.value === 'number' && (p.dataKey === 'sales' || p.name?.toLowerCase().includes('revenue')) ? `₹${p.value.toLocaleString()}` : p.value}
-          </span>
+          <span className="display-md text-[12.5px]">{valuePrefix}{Number(p.value).toLocaleString('en-IN')}</span>
         </p>
       ))}
     </div>
   );
-};
+}
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    totalRevenue: 0,
-    totalOrders: 0,
-    activeProducts: 0,
-    totalCustomers: 0
-  });
+  const [stats, setStats] = useState({ totalRevenue: 0, totalOrders: 0, activeProducts: 0, totalCustomers: 0 });
   const [topProducts, setTopProducts] = useState([]);
   const [criticalStock, setCriticalStock] = useState([]);
   const [salesTrend, setSalesTrend] = useState([]);
@@ -74,116 +64,66 @@ export default function AdminDashboard() {
         const [usersRes, productsRes, ordersRes] = await Promise.all([
           authenticatedFetch(`${import.meta.env.VITE_API_URL}/users`),
           authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`),
-          authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`)
+          authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`),
         ]);
-
         if (!usersRes || !productsRes || !ordersRes) return;
 
-        const usersResData = await usersRes.json();
-        const productsResData = await productsRes.json();
-        const ordersResData = await ordersRes.json();
+        const users = (await usersRes.json()).data || [];
+        const products = (await productsRes.json()).data || [];
+        const orders = (await ordersRes.json()).data || [];
 
-        const users = usersResData.data || [];
-        const products = productsResData.data || [];
-        const orders = ordersResData.data || [];
+        setStats({
+          totalCustomers: users.filter((u) => u.role?.toLowerCase() === 'customer').length,
+          activeProducts: products.length,
+          totalOrders: orders.length,
+          totalRevenue: orders.reduce((s, o) => s + (o.totalAmount || 0), 0),
+        });
 
-        // 1. Basic Stats
-        const totalCustomers = users.filter(u => u.role?.toLowerCase() === 'customer').length;
-        const activeProducts = products.length;
-        const totalOrders = orders.length;
-        const totalRevenue = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-        setStats({ totalRevenue, totalOrders, activeProducts, totalCustomers });
-
-        // 2. Sales Trend (Last 6 Months) - Chronological Order
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const trendData = [];
-        
+        const trend = [];
         for (let i = 5; i >= 0; i--) {
-          const d = new Date();
-          d.setMonth(d.getMonth() - i);
-          trendData.push({ 
-            month: monthNames[d.getMonth()], 
-            sales: 0,
-            monthIdx: d.getMonth(),
-            year: d.getFullYear()
-          });
+          const d = new Date(); d.setMonth(d.getMonth() - i);
+          trend.push({ month: monthNames[d.getMonth()], year: d.getFullYear(), sales: 0 });
         }
-
-        orders.forEach(order => {
-          const date = order.createdAt?._seconds ? new Date(order.createdAt._seconds * 1000) : new Date();
-          const month = monthNames[date.getMonth()];
-          const year = date.getFullYear();
-          
-          const monthBucket = trendData.find(t => t.month === month && t.year === year);
-          if (monthBucket) {
-            monthBucket.sales += (order.totalAmount || 0);
-          }
+        orders.forEach((o) => {
+          const date = o.createdAt?._seconds ? new Date(o.createdAt._seconds * 1000) : new Date();
+          const b = trend.find((t) => t.month === monthNames[date.getMonth()] && t.year === date.getFullYear());
+          if (b) b.sales += o.totalAmount || 0;
         });
+        setSalesTrend(trend);
 
-        setSalesTrend(trendData);
-
-        // 3. Category Distribution
         const catCounts = {};
-        products.forEach(p => {
-          const cat = p.category || 'General';
-          catCounts[cat] = (catCounts[cat] || 0) + 1;
-        });
+        products.forEach((p) => { const c = p.category || 'General'; catCounts[c] = (catCounts[c] || 0) + 1; });
+        const sorted = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+        const top4 = sorted.slice(0, 4).map(([name, value], i) => ({ name, value, color: C.cat[i] }));
+        const rest = sorted.slice(4).reduce((s, [, v]) => s + v, 0);
+        if (rest > 0) top4.push({ name: 'Other', value: rest, color: C.catOther });
+        setCategoryDistribution(top4.length ? top4 : [{ name: 'No products', value: 1, color: C.grid }]);
 
-        const colors = ['#E83D6E', '#1A1A1A', '#4F46E5', '#F59E0B', '#10B981', '#6366F1'];
-        const dist = Object.keys(catCounts).map((cat, i) => ({
-          name: cat,
-          value: catCounts[cat],
-          color: colors[i % colors.length]
+        const freq = {};
+        orders.forEach((o) => (o.items || []).forEach((it) => {
+          const t = it.name || it.title || 'Unknown';
+          freq[t] = freq[t] || { sold: 0, revenue: 0 };
+          freq[t].sold += Number(it.quantity) || 1;
+          freq[t].revenue += (Number(it.price) || 0) * (Number(it.quantity) || 1);
         }));
-        setCategoryDistribution(dist.length > 0 ? dist : [{ name: 'No Products', value: 1, color: '#F3F4F6' }]);
+        const maxSold = Math.max(1, ...Object.values(freq).map((f) => f.sold));
+        setTopProducts(
+          Object.entries(freq).map(([name, f]) => ({ name, sold: f.sold, revenue: money(f.revenue), progress: (f.sold / maxSold) * 100 }))
+            .sort((a, b) => b.sold - a.sold).slice(0, 5),
+        );
 
-        // 4. Top Products (By Order Frequency)
-        const productFrequency = {};
-        orders.forEach(order => {
-          (order.items || []).forEach(item => {
-            const title = item.name || item.title || 'Unknown Product';
-            if (!productFrequency[title]) {
-              productFrequency[title] = { sold: 0, revenue: 0 };
-            }
-            productFrequency[title].sold += (Number(item.quantity) || 1);
-            productFrequency[title].revenue += (Number(item.price || 0) * Number(item.quantity || 1));
-          });
-        });
-
-        const top = Object.keys(productFrequency)
-          .map(title => ({
-            name: title,
-            sold: productFrequency[title].sold,
-            revenue: `₹${productFrequency[title].revenue.toLocaleString()}`,
-            progress: Math.min(100, (productFrequency[title].sold / 20) * 100) 
-          }))
-          .sort((a, b) => b.sold - a.sold)
-          .slice(0, 4);
-        
-        setTopProducts(top);
-
-        // 5. Critical Stock (Variant-Sensitive)
-        const lowStock = [];
-        products.forEach(p => {
+        const low = [];
+        products.forEach((p) => {
           const totalStock = p.stock !== undefined ? p.stock : (p.variants ? p.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0) : 0);
-          
-          // Find if any specific variant is low
-          const lowVariants = (p.variants || []).filter(v => Number(v.stock) < 10);
-          
-          if (totalStock < 10 || lowVariants.length > 0) {
-            lowStock.push({
-              title: p.title || p.name || 'Unknown Product',
-              stock: totalStock,
-              isVariantLow: lowVariants.length > 0 && totalStock >= 10,
-              lowVariantCount: lowVariants.length
-            });
+          const lowVariants = (p.variants || []).filter((v) => Number(v.stock) < 10);
+          if (totalStock < 10 || lowVariants.length) {
+            low.push({ title: p.title || p.name || 'Unknown', stock: totalStock, isVariantLow: lowVariants.length > 0 && totalStock >= 10, lowVariantCount: lowVariants.length });
           }
         });
-
-        setCriticalStock(lowStock.sort((a, b) => a.stock - b.stock).slice(0, 5));
-
+        setCriticalStock(low.sort((a, b) => a.stock - b.stock).slice(0, 5));
       } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
+        console.error('Failed to fetch dashboard data:', err);
       } finally {
         setIsLoading(false);
       }
@@ -193,207 +133,164 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     if (showSkeleton) return <DashboardSkeleton />;
-    return <div className="min-h-screen bg-transparent"></div>;
+    return <div className="min-h-screen" />;
   }
 
+  const STATS = [
+    { title: 'Total revenue', value: money(stats.totalRevenue), icon: IndianRupee, gold: false, sub: `${stats.totalOrders} orders` },
+    { title: 'Total orders', value: stats.totalOrders.toLocaleString('en-IN'), icon: ShoppingBag, gold: true, sub: 'lifetime' },
+    { title: 'Active products', value: stats.activeProducts.toLocaleString('en-IN'), icon: Package, gold: false, sub: `${categoryDistribution.length} categories` },
+    { title: 'Customers', value: stats.totalCustomers.toLocaleString('en-IN'), icon: Users, gold: true, sub: 'registered' },
+  ];
+
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="p-3 sm:p-6 lg:p-10 space-y-6 sm:space-y-10 bg-transparent min-h-screen"
-    >
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4">
-        <motion.div variants={item}>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Analytics Dashboard</h1>
-          <div className="flex items-center justify-center sm:justify-start gap-2 mt-1.5 sm:mt-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <p className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">Live System Status</p>
+    <div className="relative min-h-screen font-sans text-ink">
+      <Field orbs={[{ size: 520, color: ORB_BERRY, top: -180, right: -160 }, { size: 460, color: ORB_GOLD, bottom: -160, left: -140 }]} />
+
+      <motion.div variants={container} initial="hidden" animate="show" className="relative z-[2] p-4 sm:p-6 lg:p-8 space-y-7">
+
+        {/* header */}
+        <motion.div variants={item} className="flex flex-col gap-3.5">
+          <span className="kicker text-berry">Management hub</span>
+          <div className="flex items-center gap-3.5">
+            <span className="ico-chip h-11 w-11 rounded-2xl"><TrendingUp className="h-5 w-5" /></span>
+            <h1 className="display-lg text-[2.3rem] sm:text-[2.6rem]">Analytics <span className="accent-text">dashboard</span></h1>
           </div>
+          <span className="rule-berry" />
+          <p className="text-[12.5px] text-ink-soft inline-flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-leaf opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-leaf" />
+            </span>
+            Live system status · updated just now
+          </p>
         </motion.div>
-      </div>
 
-      {/* High-Impact Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[
-          { title: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-rose-600 bg-rose-50 group-hover:bg-rose-100', trend: '+12.5%', trendColor: 'text-emerald-700 bg-emerald-50' },
-          { title: 'Total Orders', value: stats.totalOrders.toString(), icon: ShoppingBag, color: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100', trend: '+8.2%', trendColor: 'text-emerald-700 bg-emerald-50' },
-          { title: 'Active Products', value: stats.activeProducts.toString(), icon: Package, color: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100', trend: 'Stable', trendColor: 'text-gray-600 bg-gray-100' },
-          { title: 'Total Customers', value: stats.totalCustomers.toString(), icon: Users, color: 'text-emerald-600 bg-emerald-50 group-hover:bg-emerald-100', trend: '+15.3%', trendColor: 'text-emerald-700 bg-emerald-50' },
-        ].map((stat, i) => (
-          <motion.div key={i} variants={item} whileHover={{ y: -4 }} className="group">
-            <Card className="shadow-sm hover:shadow-md border border-gray-200/60 rounded-2xl overflow-hidden bg-white transition-shadow duration-300">
-              <CardContent className="p-5 sm:p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`p-3 rounded-2xl transition-colors ${stat.color}`}>
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg ${stat.trendColor}`}>
-                    {stat.trend}
-                  </span>
-                </div>
-                <p className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">{stat.title}</p>
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-1.5">{stat.value}</h3>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+        {/* stat tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {STATS.map((s, i) => (
+            <motion.div key={i} variants={item} className="glass rounded-panel p-5 sm:p-6 group">
+              <div className="flex items-start justify-between mb-4">
+                <span className={`ico-chip ${s.gold ? 'ico-chip-gold' : ''} h-11 w-11 rounded-2xl`}><s.icon className="h-5 w-5" /></span>
+                <span className="pill-berry-soft inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-bold uppercase tracking-widest">{s.sub}</span>
+              </div>
+              <p className="kicker text-[9.5px] text-ink-soft">{s.title}</p>
+              <p className="display-lg text-[1.9rem] sm:text-[2.1rem] mt-1.5">{s.value}</p>
+            </motion.div>
+          ))}
+        </div>
 
-      {/* Main Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-        {/* Sales Trend (Spans 2 columns) */}
-        <motion.div variants={item} className="lg:col-span-2">
-          <Card className="shadow-sm border border-gray-200/60 rounded-2xl bg-white p-2 sm:p-4 overflow-hidden">
-            <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between">
+        {/* charts row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <motion.div variants={item} className="relative lg:col-span-2 glass foil-top rounded-panel p-5 sm:p-7">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <CardTitle className="text-base sm:text-lg font-bold">Revenue Growth</CardTitle>
-                <p className="text-xs text-gray-500 mt-1">Monthly sales performance</p>
+                <p className="display-md text-lg">Revenue growth</p>
+                <p className="text-[11.5px] text-ink-muted mt-0.5">Last 6 months</p>
               </div>
-              <TrendingUp className="h-5 w-5 text-rose-500" />
-            </CardHeader>
-            <CardContent className="p-1 sm:p-4">
-              <div className="h-[240px] sm:h-[350px] w-full pt-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={salesTrend} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#E83D6E" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#E83D6E" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0F0F0" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11 }} dy={6} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10 }} />
-                    <Tooltip content={<DashboardTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="sales"
-                      stroke="#E83D6E"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorSales)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              <span className="ico-chip h-9 w-9 rounded-xl"><TrendingUp className="h-4 w-4" /></span>
+            </div>
+            <div className="h-[240px] sm:h-[320px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={salesTrend} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={C.berry} stopOpacity={0.18} />
+                      <stop offset="100%" stopColor={C.berry} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={C.grid} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: C.muted, fontSize: 11, fontWeight: 600 }} dy={6} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: C.muted, fontSize: 10 }} width={54} tickFormatter={(v) => (v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`)} />
+                  <Tooltip cursor={{ stroke: C.berry, strokeOpacity: 0.35, strokeWidth: 1.5 }} content={<ChartTip valuePrefix="₹" />} />
+                  <Area type="monotone" dataKey="sales" name="Revenue" stroke={C.berry} strokeWidth={2.5} fill="url(#revFill)" dot={{ r: 0 }} activeDot={{ r: 5, strokeWidth: 2, stroke: '#fff', fill: C.berry }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
 
-        {/* Category Distribution */}
-        <motion.div variants={item}>
-          <Card className="shadow-sm border border-gray-200/60 rounded-2xl bg-white h-full p-2 sm:p-4 overflow-hidden">
-            <CardHeader className="p-4 pb-0">
-              <CardTitle className="text-base sm:text-lg font-bold">Category Share</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center p-2 sm:p-4">
-              <div className="h-[210px] sm:h-[280px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryDistribution}
-                      innerRadius="55%"
-                      outerRadius="80%"
-                      paddingAngle={6}
-                      dataKey="value"
-                    >
-                      {categoryDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<DashboardTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 w-full mt-2 sm:mt-4">
-                {categoryDistribution.slice(0, 4).map((cat, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                    <span className="text-xs font-bold text-gray-600 whitespace-nowrap">{cat.name}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+          <motion.div variants={item} className="glass rounded-panel p-5 sm:p-7">
+            <div className="flex items-start justify-between mb-3">
+              <p className="display-md text-lg">Category share</p>
+              <span className="ico-chip ico-chip-gold h-9 w-9 rounded-xl"><PieIcon className="h-4 w-4" /></span>
+            </div>
+            <div className="h-[180px] sm:h-[220px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={categoryDistribution} innerRadius="58%" outerRadius="86%" paddingAngle={3} dataKey="value" stroke="#fff" strokeWidth={2}>
+                    {categoryDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip content={<ChartTip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-col gap-2 mt-3">
+              {categoryDistribution.map((c, i) => (
+                <div key={i} className="flex items-center justify-between text-[12px]">
+                  <span className="flex items-center gap-2 text-ink-soft">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: c.color }} />
+                    <span className="truncate">{c.name}</span>
+                  </span>
+                  <span className="display-md text-[12px]">{c.value}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
 
-      {/* Bottom Insights Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Top Products */}
-        <motion.div variants={item}>
-          <Card className="shadow-sm border border-gray-200/60 rounded-2xl bg-white overflow-hidden">
-            <CardHeader className="p-5 sm:p-6 pb-2">
-              <CardTitle className="text-base sm:text-lg font-bold flex items-center gap-2">
-                <Layers className="h-5 w-5 text-indigo-500" /> Top Performers
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 sm:p-6 pt-2">
-              <div className="space-y-4 sm:space-y-5">
-                {topProducts.map((product, idx) => (
-                  <div key={idx} className="space-y-1.5">
-                    <div className="flex justify-between items-end gap-2">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{product.name}</p>
-                        <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">{product.sold} units</p>
-                      </div>
-                      <p className="font-bold text-gray-900 text-xs sm:text-sm shrink-0">{product.revenue}</p>
+        {/* insights row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <motion.div variants={item} className="glass rounded-panel p-5 sm:p-7">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="ico-chip h-9 w-9 rounded-xl"><Layers className="h-4 w-4" /></span>
+              <p className="display-md text-lg">Top performers</p>
+            </div>
+            <div className="flex flex-col gap-4">
+              {topProducts.length === 0 ? (
+                <p className="text-[13px] text-ink-muted">No sales yet.</p>
+              ) : topProducts.map((p, i) => (
+                <div key={i} className="flex flex-col gap-1.5">
+                  <div className="flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-ink truncate">{p.name}</p>
+                      <p className="kicker text-[9px] text-ink-muted">{p.sold} units</p>
                     </div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${product.progress}%` }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        className="bg-[#1A1A1A] h-full rounded-full"
-                      />
-                    </div>
+                    <p className="display-md text-[13px] shrink-0">{p.revenue}</p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                  <div className="h-1.5 rounded-full bg-cream-deep overflow-hidden">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${p.progress}%` }} transition={{ duration: 0.9, delay: 0.2, ease: EASE }}
+                      className="h-full rounded-full bg-gradient-to-r from-berry to-gold-light" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
 
-        {/* Improved Low Stock Alert */}
-        <motion.div variants={item}>
-          <Card className="bg-white border border-rose-200 shadow-sm rounded-2xl h-full overflow-hidden">
-            <CardHeader className="p-5 sm:p-6 pb-2 border-b border-rose-50 bg-rose-50/30">
-              <CardTitle className="flex items-center gap-2 text-rose-600 font-bold text-base sm:text-lg">
-                <AlertTriangle className="h-5 w-5" /> Critical Stock
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-5 sm:p-6 pt-4">
-              <div className="space-y-3">
-                {criticalStock.length > 0 ? criticalStock.map((item, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-white border border-rose-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${item.isVariantLow ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
-                        {item.stock}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{item.title}</p>
-                        <p className={`text-[9px] sm:text-[10px] font-bold uppercase ${item.isVariantLow ? 'text-amber-500' : 'text-rose-500'}`}>
-                          {item.isVariantLow ? `LOW ON ${item.lowVariantCount} VARIANT(S)` : 'Total Stock Critical'}
-                        </p>
-                      </div>
-                    </div>
-                    <button className="text-[10px] font-bold bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 px-3.5 py-1.5 sm:py-2 rounded-lg transition-all self-end sm:self-auto shrink-0 shadow-sm">
-                      Reorder
-                    </button>
+          <motion.div variants={item} className="glass rounded-panel p-5 sm:p-7">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="ico-chip h-9 w-9 rounded-xl text-danger"><AlertTriangle className="h-4 w-4" /></span>
+              <p className="display-md text-lg">Critical stock</p>
+            </div>
+            <div className="flex flex-col gap-2.5">
+              {criticalStock.length === 0 ? (
+                <p className="text-[13px] text-leaf font-medium">All stock levels are healthy.</p>
+              ) : criticalStock.map((it, i) => (
+                <div key={i} className="glass-sm rounded-2xl p-3.5 flex items-center gap-3.5">
+                  <span className={`h-10 w-10 rounded-xl flex items-center justify-center display-md text-[13px] shrink-0 ${
+                    it.isVariantLow ? 'bg-gold-tint text-gold' : 'bg-danger/10 text-danger'
+                  }`}>{it.stock}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-ink truncate">{it.title}</p>
+                    <p className={`kicker text-[8.5px] ${it.isVariantLow ? 'text-gold' : 'text-danger'}`}>
+                      {it.isVariantLow ? `Low on ${it.lowVariantCount} variant(s)` : 'Total stock critical'}
+                    </p>
                   </div>
-                )) : (
-                  <div className="text-xs sm:text-sm font-bold text-gray-500 text-center py-4">All stock levels are healthy.</div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </motion.div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

@@ -50,7 +50,6 @@ export function SelectValue({ value, placeholder }) {
     customer: "Customer",
     admin: "Administrator",
     staff: "Staff Member",
-    delivery: "Delivery Personnel"
   };
   
   const displayValue = labels[value] || (value ? value.charAt(0).toUpperCase() + value.slice(1) : null);

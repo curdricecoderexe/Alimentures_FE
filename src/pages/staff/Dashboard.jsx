@@ -1,254 +1,263 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
-import { Button } from '../../components/ui/button';
-import { 
-  ShoppingBag, Package, AlertTriangle, CheckCircle, 
-  ArrowUpRight, Activity, PieChart as PieIcon 
+import { motion } from 'framer-motion';
+import {
+  ShoppingBag, Package, AlertTriangle, CheckCircle, Truck,
+  Activity, PieChart as PieIcon, ArrowUpRight, LayoutGrid,
 } from 'lucide-react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, ResponsiveContainer, Cell, PieChart, Pie 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Cell, PieChart, Pie,
 } from 'recharts';
 import { authenticatedFetch } from '../../lib/api';
-
+import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
 import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
+
+const EASE = [0.16, 1, 0.3, 1];
+
+const C = {
+  ink: '#221B1F', muted: '#8E848B', grid: '#EEE6D6',
+  berry: '#A50D5A',
+  status: { good: '#2E7D51', warn: '#D98A1E', crit: '#C0392B' },
+};
+
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
+const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } } };
+
+function ChartTip({ active, payload, label, suffix = '' }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="glass-sm rounded-xl px-3.5 py-2.5 text-[12px]">
+      {label && <p className="kicker text-[9px] text-ink-muted mb-1">{label}</p>}
+      {payload.map((p, i) => (
+        <p key={i} className="flex items-center justify-between gap-4">
+          <span className="flex items-center gap-1.5 text-ink-soft">
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color || p.payload?.color || p.fill }} />
+            {p.name || 'Orders'}
+          </span>
+          <span className="display-md text-[12.5px]">{p.value}{suffix}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
 
 export default function StaffDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const showSkeleton = useSkeletonLoader(loading);
   const [stats, setStats] = useState({
-    pending: 0,
-    completed: 0,
-    lowStock: 0,
-    assigned: 0,
-    performanceData: [],
-    stockDistribution: [],
-    recentOrders: [],
-    deliveryPersonnel: []
+    pending: 0, completed: 0, lowStock: 0, inTransit: 0,
+    weeklyOrders: [], stockDistribution: [], criticalStock: [],
   });
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [oRes, pRes, dRes] = await Promise.all([
-        authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`).catch(() => null),
-        authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`).catch(() => null),
-        authenticatedFetch(`${import.meta.env.VITE_API_URL}/users/delivery`).catch(() => null)
-      ]);
-
-      let orderList = [];
-      let prodList = [];
-      let deliveryStaff = [];
-
-      if (oRes && oRes.ok) {
-        const oData = await oRes.json();
-        if (oData.success) orderList = oData.data || [];
-      }
-      
-      if (pRes && pRes.ok) {
-        const pData = await pRes.json();
-        if (pData.success) prodList = pData.data || [];
-      }
-
-      if (dRes && dRes.ok) {
-        const dData = await dRes.json();
-        if (dData.success) deliveryStaff = dData.data || [];
-      }
-
-      // Process Stats
-      const pending = orderList.filter(o => o.status === 'pending' || o.status === 'processing').length;
-      const completed = orderList.filter(o => o.status === 'delivered').length;
-      const assigned = orderList.filter(o => o.status === 'shipped').length;
-      const recentOrders = orderList.slice(0, 5);
-
-      const lowStock = prodList.filter(p => (p.stock || 0) < 10).length;
-      const critical = prodList.filter(p => (p.stock || 0) < 5).length;
-      const healthy = Math.max(0, prodList.length - lowStock);
-
-      const perf = [
-        { name: '08:00', orders: Math.floor(Math.random() * 10) + 5 },
-        { name: '12:00', orders: pending || 2 },
-        { name: '16:00', orders: assigned || 4 },
-        { name: '20:00', orders: completed || 1 },
-      ];
-
-      setStats({
-        pending,
-        completed,
-        lowStock,
-        assigned,
-        performanceData: perf,
-        recentOrders,
-        deliveryPersonnel: deliveryStaff,
-        stockDistribution: [
-          { name: 'Healthy', value: healthy || 1, color: '#10b981' },
-          { name: 'Low', value: lowStock - critical, color: '#f59e0b' },
-          { name: 'Critical', value: critical, color: '#C41E6B' },
-        ]
-      });
-    } catch (err) {
-      console.error("Dashboard Global Error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [oRes, pRes] = await Promise.all([
+          authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`).catch(() => null),
+          authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`).catch(() => null),
+        ]);
+
+        let orderList = [];
+        let prodList = [];
+        if (oRes && oRes.ok) { const d = await oRes.json(); if (d.success) orderList = d.data || []; }
+        if (pRes && pRes.ok) { const d = await pRes.json(); if (d.success) prodList = d.data || []; }
+
+        const pending = orderList.filter((o) => o.status === 'pending' || o.status === 'processing').length;
+        const completed = orderList.filter((o) => o.status === 'delivered').length;
+        const inTransit = orderList.filter((o) => o.status === 'shipped' || o.status === 'out_for_delivery').length;
+
+        // Variant-aware low-stock check — matches admin Dashboard exactly: a
+        // product counts as low/critical if its TOTAL is low, or if any single
+        // variant (pack size) is low even while the total still looks healthy.
+        const critical = [];
+        prodList.forEach((p) => {
+          const totalStock = p.stock !== undefined ? p.stock : (p.variants ? p.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0) : 0);
+          const lowVariants = (p.variants || []).filter((v) => Number(v.stock) < 10);
+          if (totalStock < 10 || lowVariants.length > 0) {
+            critical.push({ title: p.title || p.name || 'Unknown', stock: totalStock, isVariantLow: lowVariants.length > 0 && totalStock >= 10, lowVariantCount: lowVariants.length });
+          }
+        });
+        const lowStock = critical.length;
+        const criticalCount = critical.filter((c) => !c.isVariantLow && c.stock < 5).length;
+        const healthy = Math.max(0, prodList.length - lowStock);
+
+        // real order volume for the last 7 days
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+          days.push({ key: d.toISOString().slice(0, 10), label: d.toLocaleDateString('en-IN', { weekday: 'short' }), orders: 0 });
+        }
+        orderList.forEach((o) => {
+          const ts = o.createdAt?._seconds ? new Date(o.createdAt._seconds * 1000) : null;
+          if (!ts) return;
+          const key = new Date(ts.getFullYear(), ts.getMonth(), ts.getDate()).toISOString().slice(0, 10);
+          const b = days.find((x) => x.key === key);
+          if (b) b.orders += 1;
+        });
+
+        setStats({
+          pending, completed, lowStock, inTransit,
+          weeklyOrders: days,
+          criticalStock: critical.sort((a, b) => a.stock - b.stock).slice(0, 5),
+          stockDistribution: [
+            { name: 'Healthy', value: healthy || 0, color: C.status.good },
+            { name: 'Low', value: Math.max(0, lowStock - criticalCount), color: C.status.warn },
+            { name: 'Critical', value: criticalCount, color: C.status.crit },
+          ],
+        });
+      } catch (err) {
+        console.error('Dashboard Global Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
   }, []);
 
   if (loading) {
-    if (showSkeleton) return <div className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen"><DashboardSkeleton /></div>;
-    return <div className="min-h-screen bg-transparent"></div>;
+    if (showSkeleton) return <DashboardSkeleton />;
+    return <div className="min-h-screen" />;
   }
 
+  const STATS = [
+    { label: 'Pending orders', value: stats.pending, icon: ShoppingBag, chip: '' },
+    { label: 'Completed today', value: stats.completed, icon: CheckCircle, chip: 'ico-chip-gold' },
+    { label: 'Low stock alerts', value: stats.lowStock, icon: AlertTriangle, chip: '', danger: true },
+    { label: 'In transit', value: stats.inTransit, icon: Truck, chip: 'ico-chip-gold' },
+  ];
+  const stockTotal = stats.stockDistribution.reduce((s, x) => s + x.value, 0) || 1;
+
   return (
-    <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 bg-[#FAFAFA] min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter italic text-gray-900">Staff Dashboard</h1>
-          <p className="text-xs sm:text-sm text-gray-400 font-bold mt-1 sm:mt-2">Today's overview and tasks</p>
+    <div className="relative min-h-screen font-sans text-ink">
+      <Field orbs={[{ size: 520, color: ORB_BERRY, top: -180, right: -160 }, { size: 460, color: ORB_GOLD, bottom: -160, left: -140 }]} />
+
+      <motion.div variants={container} initial="hidden" animate="show" className="relative z-[2] p-4 sm:p-6 lg:p-8 space-y-7">
+
+        <motion.div variants={item} className="flex flex-col gap-3.5">
+          <span className="kicker text-berry">Operations</span>
+          <div className="flex items-center gap-3.5">
+            <span className="ico-chip h-11 w-11 rounded-2xl"><LayoutGrid className="h-5 w-5" /></span>
+            <h1 className="display-lg text-[2.3rem] sm:text-[2.6rem]">Staff <span className="accent-text">dashboard</span></h1>
+          </div>
+          <span className="rule-berry" />
+          <p className="text-[12.5px] text-ink-soft">Today&rsquo;s overview and tasks</p>
+        </motion.div>
+
+        {/* stat tiles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {STATS.map((s, i) => (
+            <motion.div key={i} variants={item} className="glass rounded-panel p-5 sm:p-6 group">
+              <div className="flex items-start justify-between mb-4">
+                <span className={`ico-chip ${s.chip} h-11 w-11 rounded-2xl ${s.danger ? 'text-danger' : ''}`}><s.icon className="h-5 w-5" /></span>
+              </div>
+              <p className="kicker text-[9.5px] text-ink-soft">{s.label}</p>
+              <p className={`display-lg text-[2.1rem] sm:text-[2.4rem] mt-1.5 ${s.danger && s.value > 0 ? 'text-danger' : ''}`}>{s.value}</p>
+            </motion.div>
+          ))}
         </div>
-      </div>
 
-      {/* --- TOP STATS --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {[
-          { label: 'Pending Orders', value: stats.pending, icon: ShoppingBag, color: 'text-amber-500' },
-          { label: 'Completed Today', value: stats.completed, icon: CheckCircle, color: 'text-emerald-500' },
-          { label: 'Low Stock Alerts', value: stats.lowStock, icon: AlertTriangle, color: 'text-red-500' },
-          { label: 'Deliveries Assigned', value: stats.assigned, icon: Package, color: 'text-[#C41E6B]' },
-        ].map((stat, i) => (
-          <Card key={i} className="border-0 shadow-sm rounded-[2rem] bg-white p-2 transition-transform hover:scale-[1.02]">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs sm:text-sm font-bold text-gray-500">{stat.label}</span>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-4xl sm:text-5xl font-black tracking-tighter ${stat.color}`}>{stat.value}</div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-2">Current Count</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+        {/* analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <motion.div variants={item} className="relative lg:col-span-2 glass foil-top rounded-panel p-5 sm:p-7">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <p className="display-md text-lg">Order velocity</p>
+                <p className="text-[11.5px] text-ink-muted mt-0.5">Orders received · last 7 days</p>
+              </div>
+              <span className="ico-chip h-9 w-9 rounded-xl"><Activity className="h-4 w-4" /></span>
+            </div>
+            <div className="h-[240px] sm:h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.weeklyOrders} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="4 4" vertical={false} stroke={C.grid} />
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 600, fill: C.muted }} dy={6} />
+                  <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fontSize: 10, fill: C.muted }} width={32} />
+                  <Tooltip cursor={{ fill: 'rgba(165,13,90,0.06)' }} content={<ChartTip />} />
+                  <Bar dataKey="orders" name="Orders" fill={C.berry} radius={[6, 6, 0, 0]} barSize={34} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
 
-      {/* --- ANALYTICS SECTION --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-        <Card className="lg:col-span-2 border-0 shadow-sm rounded-[2rem] sm:rounded-[2.5rem] bg-white p-4 sm:p-6">
-          <CardHeader className="px-2 sm:px-4 pb-6 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg sm:text-xl font-black italic">Order Velocity</CardTitle>
-            <Activity className="h-5 w-5 text-[#C41E6B]" />
-          </CardHeader>
-          <CardContent className="h-[250px] sm:h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.performanceData || []}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fontWeight: 700, fill: '#9ca3af'}} />
-                <Tooltip cursor={{fill: '#fdf2f8'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)'}} />
-                <Bar dataKey="orders" radius={[10, 10, 10, 10]} barSize={36}>
-                  {(stats.performanceData || []).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#C41E6B' : '#1A1A1A'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm rounded-[2rem] sm:rounded-[2.5rem] bg-white p-4 sm:p-6">
-          <CardHeader className="px-2 sm:px-4 pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg sm:text-xl font-black italic">Stock Health</CardTitle>
-            <PieIcon className="h-5 w-5 text-emerald-500" />
-          </CardHeader>
-          <CardContent className="flex flex-col items-center">
-            <div className="h-[200px] sm:h-[220px] w-full">
+          <motion.div variants={item} className="glass rounded-panel p-5 sm:p-7">
+            <div className="flex items-start justify-between mb-3">
+              <p className="display-md text-lg">Stock health</p>
+              <span className="ico-chip ico-chip-gold h-9 w-9 rounded-xl"><PieIcon className="h-4 w-4" /></span>
+            </div>
+            <div className="h-[180px] sm:h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={stats.stockDistribution || []} innerRadius={55} outerRadius={75} paddingAngle={8} dataKey="value">
-                    {(stats.stockDistribution || []).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                  <Pie data={stats.stockDistribution} innerRadius="58%" outerRadius="86%" paddingAngle={3} dataKey="value" stroke="#fff" strokeWidth={2}>
+                    {stats.stockDistribution.map((e, i) => <Cell key={i} fill={e.color} />)}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip content={<ChartTip suffix=" units" />} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="w-full space-y-3 mt-4">
-              {(stats.stockDistribution || []).map((item) => (
-                <div key={item.name} className="flex justify-between items-center text-xs font-bold">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-gray-400 uppercase tracking-widest">{item.name}</span>
-                  </div>
-                  <span className="text-gray-900">{item.value} Units</span>
+            <div className="flex flex-col gap-2 mt-3">
+              {stats.stockDistribution.map((s) => (
+                <div key={s.name} className="flex items-center justify-between text-[12px]">
+                  <span className="flex items-center gap-2 text-ink-soft">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.color }} />
+                    {s.name}
+                  </span>
+                  <span className="display-md text-[12px]">{s.value} · {Math.round((s.value / stockTotal) * 100)}%</span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* --- QUICK ACTIONS & FEED --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Button onClick={() => navigate('/staff/orders')} className="h-28 sm:h-32 bg-black hover:bg-zinc-800 text-white rounded-[2rem] flex flex-col gap-2 sm:gap-3 items-start p-6 sm:p-8 shadow-xl">
-            <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6 text-white/40" />
-            <div className="text-left">
-              <span className="font-black text-lg sm:text-xl italic block">Process Orders</span>
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Go to Module</span>
-            </div>
-          </Button>
-
-          <Button onClick={() => navigate('/staff/inventory')} className="h-28 sm:h-32 bg-white border-2 border-gray-100 hover:border-pink-200 text-gray-900 rounded-[2rem] flex flex-col gap-2 sm:gap-3 items-start p-6 sm:p-8 shadow-sm transition-all">
-            <Package className="h-5 w-5 sm:h-6 sm:w-6 text-[#C41E6B]" />
-            <div className="text-left">
-              <span className="font-black text-lg sm:text-xl italic block">Update Stock</span>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Manage Inventory</span>
-            </div>
-          </Button>
+          </motion.div>
         </div>
 
-        <Card className="border-0 shadow-sm rounded-[2rem] sm:rounded-[2.5rem] bg-white overflow-hidden">
-          <CardHeader className="p-5 sm:p-7 border-b border-gray-50 flex flex-row items-center justify-between gap-3">
-            <CardTitle className="text-base sm:text-lg lg:text-xl font-black italic whitespace-nowrap">Delivery Personnel</CardTitle>
-            <Badge className="bg-emerald-50 text-emerald-600 border-none font-bold uppercase tracking-widest text-[10px] px-3 py-1.5 whitespace-nowrap shrink-0 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{stats.deliveryPersonnel?.length || 0} Online</span>
-            </Badge>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="space-y-3 sm:space-y-4">
-              {stats.deliveryPersonnel?.length > 0 ? (
-                stats.deliveryPersonnel.map(person => (
-                  <div key={person.uid} className="flex items-center justify-between p-3.5 sm:p-4 bg-gray-50/50 rounded-2xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black italic border border-gray-100">DP</div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-black text-gray-900 leading-none text-xs sm:text-sm truncate">{person.name}</span>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1 truncate">{person.email}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                       <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase">Available</span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 sm:py-10">
-                  <p className="text-gray-400 font-bold italic text-sm">No delivery staff found</p>
-                </div>
-              )}
+        {/* quick actions + personnel */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onClick={() => navigate('/staff/orders')}
+              className="relative glass foil-top rounded-panel p-6 text-left flex flex-col justify-between min-h-[9rem] group transition-transform hover:-translate-y-1">
+              <span className="ico-chip h-10 w-10 rounded-xl"><ShoppingBag className="h-5 w-5" /></span>
+              <span>
+                <span className="display-md text-lg block flex items-center gap-1.5">Process orders <ArrowUpRight className="h-4 w-4 text-berry" /></span>
+                <span className="kicker text-[9px] text-ink-muted">Go to module</span>
+              </span>
+            </button>
+            <button onClick={() => navigate('/staff/inventory')}
+              className="glass rounded-panel p-6 text-left flex flex-col justify-between min-h-[9rem] group transition-transform hover:-translate-y-1">
+              <span className="ico-chip ico-chip-gold h-10 w-10 rounded-xl"><Package className="h-5 w-5" /></span>
+              <span>
+                <span className="display-md text-lg block flex items-center gap-1.5">Update stock <ArrowUpRight className="h-4 w-4 text-gold" /></span>
+                <span className="kicker text-[9px] text-ink-muted">Manage inventory</span>
+              </span>
+            </button>
+          </div>
+
+          <motion.div variants={item} className="glass rounded-panel p-5 sm:p-7">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="ico-chip h-9 w-9 rounded-xl text-danger"><AlertTriangle className="h-4 w-4" /></span>
+              <p className="display-md text-lg">Critical stock</p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex flex-col gap-2.5">
+              {stats.criticalStock.length === 0 ? (
+                <p className="text-[13px] text-leaf font-medium">All stock levels are healthy.</p>
+              ) : stats.criticalStock.map((it, i) => (
+                <div key={i} className="glass-sm rounded-2xl p-3.5 flex items-center gap-3.5">
+                  <span className={`h-10 w-10 rounded-xl flex items-center justify-center display-md text-[13px] shrink-0 ${
+                    it.isVariantLow ? 'bg-gold-tint text-gold' : 'bg-danger/10 text-danger'
+                  }`}>{it.stock}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-ink truncate">{it.title}</p>
+                    <p className={`kicker text-[8.5px] ${it.isVariantLow ? 'text-gold' : 'text-danger'}`}>
+                      {it.isVariantLow ? `Low on ${it.lowVariantCount} variant(s)` : 'Total stock critical'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 }

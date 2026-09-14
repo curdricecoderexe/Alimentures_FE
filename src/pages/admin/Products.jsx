@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Sparkles } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Sparkles, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
 
@@ -64,12 +64,50 @@ export default function AdminProducts() {
   const showSkeleton = useSkeletonLoader(isLoading);
   const fileInputRef = useRef(null);
   const secondaryFileInputRef = useRef(null);
+  const tertiaryFileInputRef = useRef(null);
+
+  // Shared canvas compression used by all image slots.
+  const compressImageFile = (file, onDone) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File is too large (Max 5MB). Please compress it first.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const img = new Image();
+      img.src = reader.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 1000;
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        if (compressedBase64.length > 900000) {
+          toast.error("Image is still too large. Try a different photo.");
+        } else {
+          onDone(compressedBase64);
+        }
+      };
+    };
+    reader.readAsDataURL(file);
+  };
   
   
 // Removed unused var assignment: const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
   const emptyForm = { 
-    title: '', category: 'Cookies', price: '', stock: '', description: '', secondaryDescription: '', image: null, secondaryImage: null, isFeatured: false,
+    title: '', category: 'Cookies', price: '', stock: '', description: '', secondaryDescription: '', image: null, secondaryImage: null, tertiaryImage: null, isFeatured: false,
+    badges: '', cleanPromises: '', cleanBadges: '', nutritionFacts: [],
     variants: [
       { weight: '250g', price: '', stock: '' },
       { weight: '500g', price: '', stock: '' },
@@ -122,15 +160,35 @@ export default function AdminProducts() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  // Initial fetch (run once on mount)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Initial fetch
   useEffect(() => { fetchProducts(1, '', true); }, []);
 
   useEffect(() => {
-    if (editingProduct) setFormData({ ...emptyForm, ...editingProduct });
-    else setFormData(emptyForm);
+    if (editingProduct) {
+      const p = { ...emptyForm, ...editingProduct };
+      // Hydrate array-backed fields into their editable text representation.
+      if (Array.isArray(p.badges)) p.badges = p.badges.join(', ');
+      if (Array.isArray(p.cleanPromises)) p.cleanPromises = p.cleanPromises.join('\n');
+      if (Array.isArray(p.cleanBadges)) {
+        p.cleanBadges = p.cleanBadges
+          .map(b => (typeof b === 'string' ? b : [b.icon, b.label].filter(Boolean).join(' | ')))
+          .join(', ');
+      }
+      if (!Array.isArray(p.nutritionFacts)) p.nutritionFacts = [];
+      setFormData(p);
+    } else {
+      setFormData(emptyForm);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingProduct, isAddModalOpen]);
+
+  const handleNutritionChange = (index, field, value) => {
+    const rows = [...(formData.nutritionFacts || [])];
+    rows[index] = { ...rows[index], [field]: value };
+    setFormData({ ...formData, nutritionFacts: rows });
+  };
+  const addNutritionRow = () => setFormData(prev => ({ ...prev, nutritionFacts: [...(prev.nutritionFacts || []), { label: '', value: '' }] }));
+  const removeNutritionRow = (index) => setFormData(prev => ({ ...prev, nutritionFacts: (prev.nutritionFacts || []).filter((_, i) => i !== index) }));
 
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...formData.variants];
@@ -161,10 +219,28 @@ export default function AdminProducts() {
       return;
     }
 
-    const finalData = { 
-      ...formData, 
+    const finalData = {
+      ...formData,
       isFeatured: Boolean(formData.isFeatured),
-      price: Number(validVariants[0]?.price || 0), 
+      badges: (Array.isArray(formData.badges)
+        ? formData.badges
+        : String(formData.badges || '').split(',')
+      ).map(b => b.trim()).filter(Boolean),
+      cleanPromises: (Array.isArray(formData.cleanPromises)
+        ? formData.cleanPromises
+        : String(formData.cleanPromises || '').split('\n')
+      ).map(s => s.trim()).filter(Boolean),
+      cleanBadges: (Array.isArray(formData.cleanBadges)
+        ? formData.cleanBadges.map(b => (typeof b === 'string' ? b : [b.icon, b.label].filter(Boolean).join(' | ')))
+        : String(formData.cleanBadges || '').split(',')
+      ).map(s => s.trim()).filter(Boolean).map(s => {
+        const [icon, label] = s.split('|').map(x => x.trim());
+        return label ? { icon, label } : { label: icon };
+      }),
+      nutritionFacts: (formData.nutritionFacts || [])
+        .map(r => ({ label: (r.label || '').trim(), value: (r.value || '').trim() }))
+        .filter(r => r.label || r.value),
+      price: Number(validVariants[0]?.price || 0),
       stock: validVariants.reduce((acc, v) => acc + Number(v.stock || 0), 0),
       variants: validVariants.map(v => ({ 
         weight: v.weight?.trim() || 'Standard', 
@@ -175,8 +251,10 @@ export default function AdminProducts() {
 
     const toastId = toast.loading(editingProduct ? 'Updating...' : 'Creating...');
     try {
-      if (finalData.image && finalData.image.length > 1048487) {
-        toast.error("Image is too large for database", { id: toastId });
+      const oversized = ['image', 'secondaryImage', 'tertiaryImage']
+        .find(k => finalData[k] && finalData[k].length > 1048487);
+      if (oversized) {
+        toast.error("An image is too large for the database. Try a smaller photo.", { id: toastId });
         return;
       }
       const url = editingProduct ? `${import.meta.env.VITE_API_URL}/products/${editingProduct.id}` : `${import.meta.env.VITE_API_URL}/products`;
@@ -418,47 +496,11 @@ export default function AdminProducts() {
                   <div onClick={() => fileInputRef.current.click()} className="h-44 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all">
                     {formData.image ? <img src={formData.image} className="h-full w-full object-cover" alt="" /> : <ImageIcon className="h-8 w-8 text-gray-700" />}
                   </div>
-                  <input type="file" ref={fileInputRef} onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      if (file.size > 5 * 1024 * 1024) {
-                        toast.error("File is too large (Max 5MB). Please compress it first.");
-                        return;
-                      }
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        const img = new Image();
-                        img.src = reader.result;
-                        img.onload = () => {
-                          const canvas = document.createElement('canvas');
-                          let width = img.width;
-                          let height = img.height;
-                          const MAX_SIZE = 1000;
-                          if (width > height) {
-                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                          } else {
-                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                          }
-                          canvas.width = width;
-                          canvas.height = height;
-                          const ctx = canvas.getContext('2d');
-                          ctx.drawImage(img, 0, 0, width, height);
-                          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                          
-                          if (compressedBase64.length > 900000) {
-                            toast.error("Image is still too large. Try a different photo.");
-                          } else {
-                            setFormData(prev => ({ ...prev, image: compressedBase64 }));
-                          }
-                        };
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} className="hidden" accept="image/*" />
+                  <input type="file" ref={fileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, image: b })))} className="hidden" accept="image/*" />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Secondary Media (2nd Image for Product Page Left Panel)</Label>
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Secondary Media (Alternate View)</Label>
                   <div onClick={() => secondaryFileInputRef.current.click()} className="h-36 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all relative group">
                     {formData.secondaryImage ? (
                       <>
@@ -478,43 +520,31 @@ export default function AdminProducts() {
                       </div>
                     )}
                   </div>
-                  <input type="file" ref={secondaryFileInputRef} onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      if (file.size > 5 * 1024 * 1024) {
-                        toast.error("File is too large (Max 5MB). Please compress it first.");
-                        return;
-                      }
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        const img = new Image();
-                        img.src = reader.result;
-                        img.onload = () => {
-                          const canvas = document.createElement('canvas');
-                          let width = img.width;
-                          let height = img.height;
-                          const MAX_SIZE = 1000;
-                          if (width > height) {
-                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                          } else {
-                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                          }
-                          canvas.width = width;
-                          canvas.height = height;
-                          const ctx = canvas.getContext('2d');
-                          ctx.drawImage(img, 0, 0, width, height);
-                          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                          
-                          if (compressedBase64.length > 900000) {
-                            toast.error("Image is still too large. Try a different photo.");
-                          } else {
-                            setFormData(prev => ({ ...prev, secondaryImage: compressedBase64 }));
-                          }
-                        };
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} className="hidden" accept="image/*" />
+                  <input type="file" ref={secondaryFileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, secondaryImage: b })))} className="hidden" accept="image/*" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Vitamin / Nutrition Table Image</Label>
+                  <div onClick={() => tertiaryFileInputRef.current.click()} className="h-36 w-full rounded-2xl bg-gray-50 border-2 border-dashed border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-gray-100 transition-all relative group">
+                    {formData.tertiaryImage ? (
+                      <>
+                        <img src={formData.tertiaryImage} className="h-full w-full object-cover" alt="" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setFormData(prev => ({ ...prev, tertiaryImage: null })); }}
+                          className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                        <span className="text-[10px] font-bold text-gray-400">+ Add Vitamin Table Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <input type="file" ref={tertiaryFileInputRef} onChange={(e) => compressImageFile(e.target.files[0], (b) => setFormData(prev => ({ ...prev, tertiaryImage: b })))} className="hidden" accept="image/*" />
                 </div>
               </div>
 
@@ -578,12 +608,70 @@ export default function AdminProducts() {
                   </label>
                 </div>
                 <div className="space-y-2">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Featured Card Badges (comma-separated)</Label>
+                  <Input
+                    value={Array.isArray(formData.badges) ? formData.badges.join(', ') : (formData.badges || '')}
+                    onChange={(e) => setFormData({ ...formData, badges: e.target.value })}
+                    className="rounded-xl h-10 bg-gray-50 text-xs font-bold"
+                    placeholder="e.g. Cookies, 100% Natural, Heritage Grain"
+                  />
+                  <p className="text-[10px] text-gray-400 font-medium ml-1">Shown as pills under the product on the homepage Featured section. Leave blank to use defaults.</p>
+                </div>
+                <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Primary Description</Label>
                   <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl bg-gray-50 h-20 text-xs" placeholder="Main product summary..." />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Secondary / Detailed Description (Left Side Banner)</Label>
-                  <Textarea value={formData.secondaryDescription} onChange={(e) => setFormData({...formData, secondaryDescription: e.target.value})} className="rounded-xl bg-gray-50 h-24 text-xs" placeholder="Add extra features, recipe origin, nutrition story, or ingredient highlights to display on the left side of product detail page..." />
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Product Highlights (Left Panel Paragraph)</Label>
+                  <Textarea value={formData.secondaryDescription} onChange={(e) => setFormData({...formData, secondaryDescription: e.target.value})} className="rounded-xl bg-gray-50 h-24 text-xs" placeholder="Short highlights paragraph shown in the 'Product Highlights' card. Leave blank to hide that card." />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
+              <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
+                <Sparkles className="h-3.5 w-3.5 text-[#920075]" /> Product Page Content (leave any field blank to hide that section)
+              </Label>
+              <div className="space-y-2">
+                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Clean Promises (one per line)</Label>
+                <Textarea
+                  value={Array.isArray(formData.cleanPromises) ? formData.cleanPromises.join('\n') : (formData.cleanPromises || '')}
+                  onChange={(e) => setFormData({ ...formData, cleanPromises: e.target.value })}
+                  className="rounded-xl bg-white h-32 text-xs"
+                  placeholder={"100% Heritage Grain Base\nZero Refined White Sugar\nNo Maida or Refined Flour"}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Nutrition Facts</Label>
+                  <Button type="button" onClick={addNutritionRow} className="h-7 px-2.5 rounded-lg bg-[#920075] hover:bg-[#72005b] text-white text-[11px] font-bold flex items-center gap-1">
+                    <Plus className="h-3 w-3" /> Add Row
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {(formData.nutritionFacts || []).map((row, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        placeholder="Label (e.g. Energy)"
+                        value={row.label || ''}
+                        onChange={(e) => handleNutritionChange(i, 'label', e.target.value)}
+                        className="rounded-xl h-9 bg-white border-gray-100 text-xs flex-1"
+                      />
+                      <Input
+                        placeholder="Value (e.g. 420 kcal)"
+                        value={row.value || ''}
+                        onChange={(e) => handleNutritionChange(i, 'value', e.target.value)}
+                        className="rounded-xl h-9 bg-white border-gray-100 text-xs flex-1"
+                      />
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeNutritionRow(i)} className="h-9 w-9 shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(formData.nutritionFacts || []).length === 0 && (
+                    <p className="text-[10px] text-gray-400 font-medium ml-1">No rows — the nutrition table stays hidden on the product page.</p>
+                  )}
                 </div>
               </div>
             </div>

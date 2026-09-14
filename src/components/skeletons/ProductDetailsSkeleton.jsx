@@ -1,24 +1,58 @@
 import React from 'react';
+import Sk, { SkCard } from './Sk';
+
 export default function ProductDetailsSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-pulse">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div className="aspect-square bg-gray-100 dark:bg-white/10 rounded-2xl"></div>
-        <div className="space-y-6 pt-6">
-          <div className="h-10 bg-gray-200 dark:bg-white/20 rounded-lg w-3/4"></div>
-          <div className="flex gap-2">
-            <div className="h-4 bg-gray-200 dark:bg-white/20 rounded w-20"></div>
-            <div className="h-4 bg-gray-100 dark:bg-white/10 rounded w-24"></div>
+    <div className="min-h-screen relative overflow-x-hidden font-sans">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1440px] py-24 sm:py-28 relative z-10">
+        <Sk className="h-9 w-32 mb-6 sm:mb-8" rounded="rounded-full" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-14 items-start">
+          {/* left — image showcase */}
+          <div className="lg:col-span-7 space-y-6">
+            <Sk className="w-full h-[420px] sm:h-[560px] lg:h-[620px]" rounded="rounded-[3.5rem]" />
+            <div className="grid grid-cols-3 gap-4">
+              <Sk className="h-24" rounded="rounded-2xl" />
+              <Sk className="h-24" rounded="rounded-2xl" />
+              <Sk className="h-24" rounded="rounded-2xl" />
+            </div>
           </div>
-          <div className="h-8 bg-gray-200 dark:bg-white/20 rounded w-1/3"></div>
-          <div className="space-y-3">
-            <div className="h-3 bg-gray-100 dark:bg-white/10 rounded w-full"></div>
-            <div className="h-3 bg-gray-100 dark:bg-white/10 rounded w-5/6"></div>
-            <div className="h-3 bg-gray-100 dark:bg-white/10 rounded w-4/5"></div>
-          </div>
-          <div className="flex gap-4 pt-6">
-            <div className="h-14 bg-gray-200 dark:bg-white/20 rounded-2xl w-32"></div>
-            <div className="h-14 bg-gray-200 dark:bg-white/20 rounded-2xl flex-1"></div>
+
+          {/* right — info panel */}
+          <div className="lg:col-span-5 space-y-6">
+            <Sk className="h-[22px] w-20" rounded="rounded-full" />
+            <Sk className="h-10 w-4/5" />
+            <div className="flex gap-2">
+              <Sk className="h-4 w-24" />
+              <Sk className="h-4 w-16" />
+            </div>
+            <Sk className="h-9 w-32" />
+
+            <SkCard className="p-5 space-y-3">
+              <Sk className="h-2.5 w-24" />
+              <div className="flex gap-3">
+                <Sk className="h-12 flex-1" rounded="rounded-2xl" />
+                <Sk className="h-12 flex-1" rounded="rounded-2xl" />
+                <Sk className="h-12 flex-1" rounded="rounded-2xl" />
+              </div>
+            </SkCard>
+
+            <div className="space-y-2.5">
+              <Sk className="h-3 w-full" />
+              <Sk className="h-3 w-5/6" />
+              <Sk className="h-3 w-11/12" />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Sk className="h-14 w-14" rounded="rounded-2xl" />
+              <Sk className="h-14 flex-1" rounded="rounded-full" />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <Sk className="h-16" rounded="rounded-2xl" />
+              <Sk className="h-16" rounded="rounded-2xl" />
+              <Sk className="h-16" rounded="rounded-2xl" />
+            </div>
           </div>
         </div>
       </div>

@@ -267,9 +267,7 @@ export default function CookiesAnalytics() {
       </div>
 
       {loading ? (
-        <div className="py-24">
-          showSkeleton ? <DashboardSkeleton /> : <div className="min-h-screen"></div>
-        </div>
+        <DashboardSkeleton />
       ) : (
         <>
           {/* ── OVERVIEW TAB ──────────────────────────────────── */}
@@ -334,7 +332,7 @@ export default function CookiesAnalytics() {
                   {devices?.devices?.length > 0 ? (
                     <ResponsiveContainer width="100%" height={220}>
                       <PieChart>
-                        <Pie data={devices.devices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={48} paddingAngle={3} label={({ percent }) => `${name} ${(percent*100).toFixed(0)}%`} labelLine={false}>
+                        <Pie data={devices.devices} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={48} paddingAngle={3} label={({ name, percent }) => `${name} ${(percent*100).toFixed(0)}%`} labelLine={false}>
                           {devices.devices.map((d, i) => <Cell key={i} fill={d.fill || COLORS[i % COLORS.length]} />)}
                         </Pie>
                         <Tooltip content={<CustomTooltip />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -71,7 +72,33 @@ const StatusBadge = ({ status }) => {
 import TableSkeleton from '../../components/skeletons/TableSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
+const METHOD_LABELS = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay Later' };
+
+/** Human-readable payment type for an order (COD / UPI / Card / Online …). */
+const paymentLabel = (order) => {
+  const pm = order?.customerInfo?.paymentMethod;
+  if (pm === 'cod') return 'Cash on Delivery';
+  if (pm === 'razorpay') {
+    const d = order?.paymentDetails;
+    if (d?.method) {
+      const m = METHOD_LABELS[d.method] || d.method;
+      return d.detail ? `${m} · ${d.detail}` : m;
+    }
+    return 'Online (Razorpay)';
+  }
+  return pm || '—';
+};
+
+/** Short tag for tables: COD / UPI / CARD / ONLINE. */
+const paymentTag = (order) => {
+  const pm = order?.customerInfo?.paymentMethod;
+  if (pm === 'cod') return 'COD';
+  if (pm === 'razorpay') return (METHOD_LABELS[order?.paymentDetails?.method] || 'Online').toUpperCase();
+  return (pm || '—').toUpperCase();
+};
+
 export default function AdminOrders() {
+  const [searchParams] = useSearchParams();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [orders, setOrders] = useState(initialOrders);
@@ -99,6 +126,25 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
+  // Deep-link support (e.g. "View" from the admin Reviews page): ?orderId=
+  // opens that order's detail modal directly, even if it's off the first page.
+  useEffect(() => {
+    const orderId = searchParams.get('orderId');
+    if (!orderId) return;
+    (async () => {
+      try {
+        const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders/${orderId}`);
+        if (!res) return;
+        const data = await res.json();
+        if (data.success) setSelectedOrder(data.data);
+        else toast.error('Order not found');
+      } catch {
+        toast.error('Failed to load order');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleExport = (format) => {
     if (format === 'excel' || format === 'csv') {
       const exportData = orders.map(o => ({
@@ -106,6 +152,7 @@ export default function AdminOrders() {
         Customer: o.customerInfo?.name,
         Email: o.customerInfo?.email,
         Amount: o.totalAmount,
+        Payment: paymentLabel(o),
         Status: o.status,
         Items: (o.items || []).map(i => `${i.name}(${i.quantity})`).join(', '),
         Date: o.createdAt ? new Date(o.createdAt._seconds * 1000).toLocaleString() : 'N/A'
@@ -217,7 +264,14 @@ export default function AdminOrders() {
 
                 <div className="flex items-center justify-between pt-1">
                   <div>
-                    <p className="text-xs text-gray-500 font-bold">{order.items?.length || order.items || 0} Items</p>
+                    <p className="text-xs text-gray-500 font-bold">
+                      {order.items?.length || order.items || 0} Items
+                      <span className={`ml-2 px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${
+                        order.customerInfo?.paymentMethod === 'cod'
+                          ? 'bg-amber-50 text-amber-700'
+                          : 'bg-emerald-50 text-emerald-700'
+                      }`}>{paymentTag(order)}</span>
+                    </p>
                     <p className="text-base font-bold text-gray-900">₹{order.totalAmount || order.total || 0}</p>
                   </div>
                   <Button
@@ -262,6 +316,11 @@ export default function AdminOrders() {
                         <div className="space-y-0.5">
                           <p className="text-sm font-bold text-gray-700">{order.items?.length || order.items || 0} Items</p>
                           <p className="text-lg font-bold text-gray-900 tracking-tight">₹{order.totalAmount || order.total || 0}</p>
+                          <span className={`inline-block mt-1 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider ${
+                            order.customerInfo?.paymentMethod === 'cod'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}>{paymentTag(order)}</span>
                         </div>
                       </TableCell>
                       <TableCell><StatusBadge status={order.status} /></TableCell>
@@ -356,6 +415,36 @@ export default function AdminOrders() {
                     <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Items Count</Label>
                     <p className="text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300">{selectedOrder.items?.length || selectedOrder.items || 0} Units</p>
                   </div>
+                  <div className="col-span-2 pt-3 sm:pt-4 border-t border-gray-200/50 dark:border-white/10 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Payment</Label>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{paymentLabel(selectedOrder)}</p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 px-2.5 py-1 rounded-xl border font-bold text-[9.5px] uppercase tracking-wider shadow-none ${
+                        selectedOrder.customerInfo?.paymentMethod === 'cod'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900'
+                      }`}
+                    >
+                      {paymentTag(selectedOrder)}
+                    </Badge>
+                  </div>
+
+                  <div className="col-span-2 pt-3 sm:pt-4 border-t border-gray-200/50 dark:border-white/10 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Delivery</Label>
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
+                        {selectedOrder.deliveryMethod === 'fastest' ? 'Fastest' : 'Standard'}
+                        {selectedOrder.deliveryPincode ? ` · ${selectedOrder.deliveryPincode}` : ''}
+                        {selectedOrder.deliveryEstimate ? ` · ${selectedOrder.deliveryEstimate}` : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-bold text-gray-900 dark:text-gray-100">
+                      {(selectedOrder.deliveryFee ?? selectedOrder.shipping ?? 0) === 0 ? 'Free' : `₹${selectedOrder.deliveryFee ?? selectedOrder.shipping}`}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -419,7 +508,7 @@ export default function AdminOrders() {
                     <div key={idx} className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-[#24162E] rounded-2xl border border-gray-100 dark:border-white/10">
                       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white dark:bg-[#1A1021] border border-gray-100 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-                          {item.image && <img src={item.image} alt="" className="h-full w-full object-cover" />}
+                          {item.image && <img src={item.image} className="h-full w-full object-cover" />}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-sm truncate">{item.name || item.title}</p>

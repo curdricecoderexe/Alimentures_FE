@@ -1,40 +1,59 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Field, ORB_BERRY, ORB_GOLD } from '../components/ui/motion';
 
 export default function NotFound() {
+  const still = useReducedMotion();
+
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
-      <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Abstract Background Elements */}
-        <div className="absolute top-0 left-0 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
-        
-        <div className="relative z-10 space-y-6 bg-white/50 backdrop-blur-xl p-8 sm:p-12 rounded-[2rem] border border-white shadow-xl shadow-gray-200/20">
-          <h1 className="text-8xl sm:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-500 tracking-tighter drop-shadow-sm">404</h1>
-          <div className="space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Page Not Found</h2>
-            <p className="text-gray-500 text-sm sm:text-base font-medium">
-              We couldn't find the page you're looking for. It might have been moved, deleted, or never existed in this timeline.
-            </p>
+    <div className="relative min-h-screen bg-cream flex flex-col items-center justify-center p-6 text-center overflow-hidden font-sans">
+      <Field
+        orbs={[
+          { size: 480, color: ORB_BERRY, top: -140, left: -120 },
+          { size: 440, color: ORB_GOLD, bottom: -160, right: -120 },
+        ]}
+      />
+
+      <motion.div
+        initial={still ? false : { opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-[2] max-w-lg w-full"
+      >
+        <div className="glass foil-top rounded-panel p-10 sm:p-14 flex flex-col items-center gap-5">
+          <div className="relative">
+            <span className="orb absolute w-[220px] h-[220px] bg-[rgba(165,13,90,.22)] -inset-6" />
+            <p className="relative display-xl text-[6rem] sm:text-[7rem] accent-text leading-none">404</p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6">
-            <button 
+
+          <span className="pill-berry-soft inline-flex items-center h-8 px-4 rounded-full text-[10px] font-bold uppercase tracking-[0.16em]">
+            Page not found
+          </span>
+          <h2 className="display-md text-2xl sm:text-[2rem] text-ink">
+            This page went the way of <span className="accent-text">refined sugar</span>
+          </h2>
+          <p className="text-ink-soft text-sm sm:text-[15px] font-medium leading-relaxed max-w-sm">
+            The link may be broken or the page may have moved. Let&rsquo;s get you back to something wholesome.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full">
+            <button
               onClick={() => window.history.back()}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-white border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 hover:text-gray-900 hover:shadow-md transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="btn-glass w-full sm:w-auto px-7 h-12 rounded-full font-extrabold text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4" /> Go Back
+              <ArrowLeft className="w-4 h-4" /> Go back
             </button>
-            <Link 
+            <Link
               to="/"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-black text-white font-bold hover:bg-zinc-800 hover:shadow-md transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="btn-berry w-full sm:w-auto px-7 h-12 rounded-full font-extrabold text-xs uppercase tracking-[0.12em] flex items-center justify-center gap-2"
             >
-              <Home className="w-4 h-4" /> Go Home
+              <Home className="w-4 h-4" /> Back to home
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles, Heart, ArrowRight, ShoppingCart } from 'lucide-react';
 import FallbackImg from '../../assets/lan.png';
 import { useCart } from '../../context/CartContext';
@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext';
 export default function ProductCard({ product }) {
   const { toggleWishlist: toggleWishlistCtx, isInWishlist: isInWishlistCtx } = useCart();
   const navigate = useNavigate();
+  const still = useReducedMotion();
 
   const itemId = product.id || product._id;
   const isInWishlist = isInWishlistCtx(itemId);
@@ -26,88 +27,108 @@ export default function ProductCard({ product }) {
   };
 
   const hasVariants = product.variants && product.variants.length > 0;
-  const displayPrice = hasVariants 
+  const displayPrice = hasVariants
     ? `From ₹${Math.min(...product.variants.map(v => Number(v.price)))}`
     : `₹${product.price}`;
 
-  const isOutOfStock = hasVariants 
+  const isOutOfStock = hasVariants
     ? product.variants.every(v => v.stock === 0)
     : product.stock === 0;
 
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={still ? false : { opacity: 0, y: 22 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative flex flex-col w-full rounded-3xl overflow-hidden group
-        bg-white/90 backdrop-blur-xl border border-white/80
-        shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(146,0,117,0.10)]
-        hover:border-[#920075]/20 hover:-translate-y-1 transition-all duration-300"
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      className="glass glass-hover zoom-parent relative flex flex-col w-full rounded-card overflow-hidden group"
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-[#FDFBF7] shrink-0">
-        <Link to={`/product/${itemId}`}>
+      {/* ── Image plate ── */}
+      <div className="relative aspect-square w-full overflow-hidden plate-berry shrink-0">
+        <span className="orb orb-sm absolute w-[170px] h-[170px] left-3.5 -bottom-8 bg-[rgba(165,13,90,.22)] pointer-events-none" />
+        <Link to={`/product/${itemId}`} className="block h-full w-full relative">
           <img
             src={product.image || FallbackImg}
             alt={product.name || product.title}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         </Link>
-        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/92 backdrop-blur-md text-[8.5px] font-bold text-[#0a0806] uppercase tracking-widest border border-white/30 shadow-xs z-20">
-          <Sparkles className="h-2.5 w-2.5 text-[#D4AF37]" /> Pure
+
+        <span className="pill-glass absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[8.5px] font-bold text-ink uppercase tracking-widest z-20">
+          <Sparkles className="h-2.5 w-2.5 text-gold-light" /> Pure
         </span>
-        <button
+
+        <motion.button
           onClick={handleWishlist}
           aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/92 backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/30 shadow-xs z-20"
+          whileTap={still ? undefined : { scale: 0.88 }}
+          className={`absolute top-3 right-3 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-300 z-20 ${
+            isInWishlist
+              ? 'btn-berry border-transparent'
+              : 'pill-glass hover:border-berry/45'
+          }`}
         >
-          <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist ? 'fill-[#920075] text-[#920075]' : 'text-gray-500 hover:text-[#920075]'}`} />
-        </button>
+          <Heart
+            className={`h-3.5 w-3.5 transition-all duration-300 ${
+              isInWishlist ? 'fill-white text-white' : 'text-ink-muted group-hover:text-berry'
+            }`}
+          />
+        </motion.button>
+
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-cream/55 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <span className="px-4 h-8 inline-flex items-center rounded-full bg-ink/85 text-white text-[10px] font-extrabold uppercase tracking-[0.14em]">
+              Sold out
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="relative p-5 flex-1 flex flex-col gap-3 bg-white/60 backdrop-blur-sm z-20">
+      {/* ── Body ── */}
+      <div className="relative p-5 flex-1 flex flex-col gap-3 z-20">
         <div className="flex items-center justify-between">
-          <span className="text-[8.5px] font-bold uppercase tracking-[0.18em] text-[#920075] bg-[#920075]/8 px-2.5 py-1 rounded-full">
+          <span className="pill-berry-soft text-[8.5px] font-bold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full">
             {product.category || 'Product'}
           </span>
-          <span className="flex items-center gap-0.5 text-[#D4AF37] font-bold text-[10px]">★ {product.rating || 4.8}</span>
+          <span className="flex items-center gap-0.5 text-gold-light font-bold text-[10px]">★ {product.rating || 4.8}</span>
         </div>
-        
+
         <Link to={`/product/${itemId}`}>
-          <h3 className="font-display font-bold text-[#0a0806] text-base leading-snug group-hover:text-[#920075] transition-colors line-clamp-1">
+          <h3 className="font-display font-bold text-ink text-base leading-snug group-hover:text-berry transition-colors duration-300 line-clamp-1">
             {product.name || product.title}
           </h3>
         </Link>
-        
-        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed font-medium flex-1">
+
+        <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed font-medium flex-1">
           {product.description}
         </p>
 
-        <div className="pt-3 border-t border-gray-100 space-y-3 mt-auto">
+        <div className="pt-3 border-t border-hairline space-y-3 mt-auto">
           <div className="flex items-baseline justify-between">
-            <span className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Price</span>
-            <span className="font-bold text-[#0a0806] text-lg tracking-tight">
+            <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
+            <span className="font-display font-extrabold text-ink text-lg tracking-tight">
               {displayPrice}
             </span>
           </div>
-          
+
           <div className="flex gap-2">
             <Link
               to={`/product/${itemId}`}
-              className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-gray-200 text-gray-600 hover:border-[#D4AF37] hover:text-[#b89312] bg-white transition-all"
+              className="btn-glass flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1"
             >
               <ArrowRight className="h-3 w-3" /> View
             </Link>
-            
+
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={still ? undefined : { scale: 0.95 }}
               onClick={handleAddClick}
               disabled={isOutOfStock}
               className={`flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 transition-all ${
                 isOutOfStock
-                  ? 'bg-gray-50 border border-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#920075] text-white hover:bg-[#7a0062] shadow-sm'
+                  ? 'bg-cream border border-hairline text-ink-muted cursor-not-allowed'
+                  : 'btn-berry'
               }`}
             >
               <ShoppingCart className="h-3 w-3" />
@@ -116,6 +137,9 @@ export default function ProductCard({ product }) {
           </div>
         </div>
       </div>
+
+      {/* berry→gold accent bar */}
+      {!isOutOfStock && <div className="h-1 foil shrink-0" />}
     </motion.article>
   );
 }

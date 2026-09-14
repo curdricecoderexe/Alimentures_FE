@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../components/ui/select';
-import { Plus, Pencil, Trash2, Search, UserPlus, ShieldCheck, Truck, Users, AlertTriangle, X, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, UserPlus, ShieldCheck, Users, AlertTriangle, X, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
 
@@ -41,10 +41,9 @@ const RoleBadge = ({ role }) => {
   const badgeClassMap = {
     'Admin': 'badge-admin',
     'Staff': 'badge-staff',
-    'Delivery': 'badge-delivery',
     'Customer': 'badge-customer',
   };
-  const Icon = { 'Admin': ShieldCheck, 'Staff': Users, 'Delivery': Truck, 'Customer': Search }[role] || Users;
+  const Icon = { 'Admin': ShieldCheck, 'Staff': Users, 'Customer': Search }[role] || Users;
 
   return (
     <Badge variant="outline" className={`px-2.5 py-0.5 rounded-lg border font-bold text-[9.5px] uppercase tracking-wider shrink-0 gap-1.5 shadow-none ${badgeClassMap[role] || 'badge-customer'}`}>
@@ -306,7 +305,6 @@ export default function AdminUsers() {
                 <SelectItem value="all">All Directories</SelectItem>
                 <SelectItem value="customer">Customers</SelectItem>
                 <SelectItem value="staff">Staff Only</SelectItem>
-                <SelectItem value="delivery">Fleet Personnel</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -416,7 +414,6 @@ export default function AdminUsers() {
                             <SelectContent className="rounded-xl z-[100]">
                               <SelectItem value="customer">Customer</SelectItem>
                               <SelectItem value="staff">Staff</SelectItem>
-                              <SelectItem value="delivery">Delivery</SelectItem>
                               <SelectItem value="admin">Admin</SelectItem>
                             </SelectContent>
                           </Select>
@@ -488,7 +485,7 @@ export default function AdminUsers() {
               <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider ml-1">System Role</Label>
               <Select value={newUser.role} onValueChange={(val) => setNewUser({...newUser, role: val})}>
                 <SelectTrigger className="h-12 sm:h-14 rounded-2xl bg-gray-50 dark:bg-[#24162E] border-gray-100 dark:border-white/10 font-bold"><SelectValue placeholder="Select role" /></SelectTrigger>
-                <SelectContent className="rounded-2xl dark:bg-[#1A1021] z-[110]"><SelectItem value="customer">Customer</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="staff">Staff</SelectItem><SelectItem value="delivery">Delivery</SelectItem></SelectContent>
+                <SelectContent className="rounded-2xl dark:bg-[#1A1021] z-[110]"><SelectItem value="customer">Customer</SelectItem><SelectItem value="admin">Admin</SelectItem><SelectItem value="staff">Staff</SelectItem></SelectContent>
               </Select>
             </div>
           </div>

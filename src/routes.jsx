@@ -48,7 +48,6 @@ const Loadable = (Component) => (props) => (
 import CustomerLayout from './layouts/CustomerLayout';
 import StaffLayout from './layouts/StaffLayout';
 import AdminLayout from './layouts/AdminLayout';
-import DeliveryLayout from './layouts/DeliveryLayout';
 
 // Pages
 const Login = Loadable(lazy(() => import('./pages/Login')));
@@ -66,6 +65,7 @@ const OrderTracking = Loadable(lazy(() => import('./pages/customer/OrderTracking
 const ProductDetails = Loadable(lazy(() => import('./pages/customer/ProductDetails')));
 const Wishlist = Loadable(lazy(() => import('./pages/customer/Wishlist')));
 const MyAddresses = Loadable(lazy(() => import('./pages/customer/MyAddresses')));
+const Policy = Loadable(lazy(() => import('./pages/customer/Policy')));
 
 // Staff Pages
 const StaffDashboard = Loadable(lazy(() => import('./pages/staff/Dashboard')));
@@ -85,10 +85,8 @@ const AdminChats = Loadable(lazy(() => import('./pages/admin/Chats')));
 const AdminHeroSlides = Loadable(lazy(() => import('./pages/admin/HeroSlides')));
 const AdminCookiesAnalytics = Loadable(lazy(() => import('./pages/admin/CookiesAnalytics')));
 const AdminCouponCodes = Loadable(lazy(() => import('./pages/admin/CouponCodes')));
-
-// Delivery Pages
-const DeliveryDashboard = Loadable(lazy(() => import('./pages/delivery/Dashboard')));
-const DeliveryOrders = Loadable(lazy(() => import('./pages/delivery/Orders')));
+const AdminPincodeDelivery = Loadable(lazy(() => import('./pages/admin/PincodeDelivery')));
+const AdminAppearance = Loadable(lazy(() => import('./pages/admin/Appearance')));
 
 export const router = createBrowserRouter([
   { path: '*', element: <NotFound />, errorElement: <RouteError /> },
@@ -125,6 +123,9 @@ export const router = createBrowserRouter([
       { path: "orders", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><OrderTracking /></ProtectedRoute> },
       { path: "product/:id", element: <ProductDetails /> },
       { path: "wishlist", element: <Wishlist /> },
+      { path: "addresses", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><MyAddresses /></ProtectedRoute> },
+      { path: "policies", element: <Policy /> },
+      { path: "policies/:slug", element: <Policy /> },
     ],
   },
   // Staff Routes
@@ -154,18 +155,10 @@ export const router = createBrowserRouter([
       { path: "reviews", element: <AdminReviews /> },
       { path: "chats", element: <AdminChats /> },
       { path: "hero-slides", element: <AdminHeroSlides /> },
+      { path: "appearance", element: <AdminAppearance /> },
       { path: 'cookies-analytics', element: <AdminCookiesAnalytics /> },
       { path: 'coupon-codes', element: <AdminCouponCodes /> },
-    ],
-  },
-  // Delivery Routes
-  {
-    path: "/delivery",
-    element: <ProtectedRoute allowedRoles={['delivery']}><DeliveryLayout /></ProtectedRoute>,
-    errorElement: <RouteError />,
-    children: [
-      { index: true, element: <DeliveryDashboard /> },
-      { path: "orders", element: <DeliveryOrders /> },
+      { path: 'pincode-delivery', element: <AdminPincodeDelivery /> },
     ],
   },
 ]);

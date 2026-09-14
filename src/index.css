@@ -2,16 +2,186 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════
+   ALIMENTURE — light glass design system
+   Tokens mirror tailwind.config.js so raw CSS can use them too.
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --paper: #FFFFFF;
+  --cream: #FBF7EF;
+  --cream-deep: #F4EBDA;
+
+  --berry: #A50D5A;
+  --berry-bright: #C21A75;
+  --berry-deep: #79083F;
+  --berry-tint: #FBEDF4;
+
+  --gold: #B27B26;
+  --gold-light: #D7A94E;
+  --gold-tint: #F9F1E1;
+
+  --ink: #221B1F;
+  --ink-soft: #5A4F55;
+  --ink-muted: #8E848B;
+  --hairline: #EEE6D6;
+  --leaf: #2E7D51;
+
+  --glass: rgba(255, 255, 255, .56);
+  --glass-strong: rgba(255, 255, 255, .74);
+  --glass-border: rgba(255, 255, 255, .70);
+  --glass-blur: blur(22px) saturate(180%);
+
+  --shadow-glass: 0 22px 54px -24px rgba(120, 10, 64, .22), 0 4px 14px -6px rgba(34, 27, 31, .10), inset 0 1px 0 rgba(255, 255, 255, .75);
+  --shadow-glass-sm: 0 14px 34px -18px rgba(120, 10, 64, .20), inset 0 1px 0 rgba(255, 255, 255, .7);
+  --shadow-glass-lift: 0 34px 62px -26px rgba(120, 10, 64, .34), inset 0 1px 0 rgba(255, 255, 255, .8);
+  --shadow-berry: 0 16px 32px -14px rgba(165, 13, 90, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
+
+  --foil: linear-gradient(90deg, transparent, var(--gold-light) 22%, var(--berry) 50%, var(--gold-light) 78%, transparent);
+}
+
 @layer base {
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
-    background-color: #FDFBF7;
-    color: #1A1A1A;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--cream);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+}
+
+@layer components {
+  /* ── Frosted surfaces ───────────────────────────────────── */
+  .glass {
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+  .glass-sm {
+    background: var(--glass-strong);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass-sm);
+  }
+  /* Lift on hover — used by product / feature cards */
+  .glass-hover {
+    transition: transform .45s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow .45s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color .45s ease;
+  }
+  .glass-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-glass-lift);
+    border-color: rgba(165, 13, 90, .28);
+  }
+
+  /* ── Ambient colour field behind glass ──────────────────── */
+  .field { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .orb   { position: absolute; border-radius: 9999px; filter: blur(90px); will-change: transform; }
+  .orb-sm { filter: blur(50px); }
+  .grain {
+    position: absolute; inset: 0; opacity: .5; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  }
+
+  /* ── Berry→gold foil hairline ───────────────────────────── */
+  .foil { background: var(--foil); }
+  .foil-top::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--foil); z-index: 3;
+  }
+
+  /* ── Type ───────────────────────────────────────────────── */
+  .display-xl { font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -.022em; line-height: 1.02; }
+  .display-lg { font-family: 'Outfit', sans-serif; font-weight: 800; letter-spacing: -.02em;  line-height: 1.04; }
+  .display-md { font-family: 'Outfit', sans-serif; font-weight: 700; letter-spacing: -.02em;  line-height: 1.06; }
+  .kicker {
+    font-family: 'Outfit', sans-serif; font-weight: 800; font-size: .7rem;
+    letter-spacing: .18em; text-transform: uppercase;
+  }
+  .accent-text {
+    background: linear-gradient(100deg, var(--berry), var(--gold-light));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .rule-berry {
+    display: block; width: 60px; height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--berry), var(--gold-light));
+  }
+
+  /* ── Controls ───────────────────────────────────────────── */
+  .btn-berry {
+    background: linear-gradient(120deg, var(--berry), var(--berry-bright));
+    color: #fff; box-shadow: var(--shadow-berry);
+    transition: filter .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s ease;
+  }
+  .btn-berry:hover { filter: brightness(1.07); transform: translateY(-2px); }
+  .btn-berry:active { transform: translateY(0); }
+
+  .btn-glass {
+    background: var(--glass-strong);
+    backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border); box-shadow: var(--shadow-glass-sm);
+    color: var(--ink);
+    transition: border-color .25s ease, color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-glass:hover { border-color: rgba(165, 13, 90, .45); color: var(--berry); transform: translateY(-2px); }
+
+  .pill-glass {
+    background: var(--glass-strong);
+    backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border); color: var(--ink-soft);
+  }
+  .pill-berry-soft {
+    background: rgba(165, 13, 90, .10); color: var(--berry-deep);
+    border: 1px solid rgba(165, 13, 90, .16);
+  }
+  .pill-leaf {
+    background: rgba(46, 125, 81, .13); color: var(--leaf);
+    border: 1px solid rgba(46, 125, 81, .20);
+  }
+
+  /* Icon chip used beside headings and list rows */
+  .ico-chip {
+    display: flex; align-items: center; justify-content: center; flex: none;
+    background: linear-gradient(150deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, .4));
+    border: 1px solid var(--glass-border); box-shadow: var(--shadow-glass-sm);
+    color: var(--berry);
+    transition: transform .4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .group:hover .ico-chip { transform: scale(1.08) rotate(-4deg); }
+  .ico-chip-gold { color: var(--gold); }
+
+  /* Tinted product-image plate that stands in for photography */
+  .plate-berry { background: linear-gradient(160deg, rgba(251, 237, 244, .75), rgba(249, 241, 225, .5)); }
+  .plate-gold  { background: linear-gradient(160deg, rgba(249, 241, 225, .75), rgba(255, 255, 255, .4)); }
+
+  /* Loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(34,27,31,.055), rgba(34,27,31,.10), rgba(34,27,31,.055));
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* Animated underline for nav links */
+  .link-underline { position: relative; }
+  .link-underline::after {
+    content: ""; position: absolute; left: 12px; right: 12px; bottom: 6px; height: 2px;
+    border-radius: 2px; background: linear-gradient(90deg, var(--berry), var(--gold-light));
+    transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-underline:hover::after, .link-underline[data-active="true"]::after { transform: scaleX(1); }
+
+  /* Image zoom inside an overflow-hidden plate */
+  .zoom-parent img, .zoom-parent .zoom-target {
+    transition: transform .8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .zoom-parent:hover img, .zoom-parent:hover .zoom-target { transform: scale(1.06); }
 }
 
 /* Custom Animations */
@@ -91,16 +261,22 @@ body {
   z-index: 1;
 }
 
-/* Prefers Reduced Motion — Full accessibility support.
-   JS-driven motion (Lenis smooth scroll, the particle canvas, GSAP on the home
-   page, and all framer-motion animations via <MotionConfig reducedMotion="user">)
-   is disabled in code; this block covers the CSS side. */
+/* Prefers Reduced Motion — Full accessibility support */
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   .animate-marquee { animation: none; }
   .section-reveal { opacity: 1; transform: none; transition: none; }
   .section-reveal.visible { opacity: 1; transform: none; }
   .stagger-children > * { opacity: 1; transform: none; transition: none; }
+
+  /* Design-system motion: hold every element at its resting state */
+  .orb, .glass-hover, .btn-berry, .btn-glass, .ico-chip,
+  .zoom-parent img, .zoom-parent .zoom-target, .link-underline::after {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .skeleton { animation: none !important; }
+
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -108,14 +284,6 @@ body {
     scroll-behavior: auto !important;
   }
 }
-
-/* Header drop-in on mount (replaces a GSAP tween so the layout doesn't pull in
-   GSAP; the reduced-motion block above collapses it to an instant appear). */
-@keyframes nav-drop {
-  from { opacity: 0; transform: translateY(-80px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.nav-drop-in { animation: nav-drop 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
 
 /* Glassmorphism Utility Class */
 .glass-panel {
@@ -480,17 +648,6 @@ html.dark .badge-staff,
   border-color: rgba(129, 140, 248, 0.3) !important;
 }
 
-.badge-delivery {
-  background-color: #E0F2FE !important;
-  color: #0369A1 !important;
-  border-color: #BAE6FD !important;
-}
-html.dark .badge-delivery,
-.dark-theme .badge-delivery {
-  background-color: rgba(12, 74, 110, 0.4) !important;
-  color: #38BDF8 !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
-}
 
 /* Sidebar Logout Light & Dark Theme Guarantee */
 .sidebar-footer-container {

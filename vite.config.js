@@ -10,9 +10,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            // gsap is only imported by the (lazily-loaded) Home route — let
-            // Rollup bundle it into that chunk instead of the eager vendor one.
-            if (id.includes('/gsap/') || id.includes('\\gsap\\')) return;
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'vendor-react';
             }

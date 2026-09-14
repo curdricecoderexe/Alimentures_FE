@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, SlidersHorizontal, PackageOpen, ChevronDown, Check, Zap, Sprout, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Search, SlidersHorizontal, PackageOpen, ChevronDown, Check, Zap } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import ProductCard from '../../components/ui/ProductCard';
 import ProductGridSkeleton from '../../components/skeletons/ProductGridSkeleton';
 import SEO from '../../components/SEO';
+import { Reveal } from '../../components/ui/motion';
 
 const CATEGORIES = ['All', 'Biscuit', 'Flakes', 'Rusk', 'Millet', 'Health Mix'];
 const SORT_OPTIONS = [
@@ -17,7 +18,8 @@ const SORT_OPTIONS = [
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
-    
+  const still = useReducedMotion();
+
   // URL State Extractors
   const query = searchParams.get('q') || '';
   const category = searchParams.get('category') || 'All';
@@ -117,154 +119,189 @@ export default function Shop() {
   }, [query, category, sort, minPrice, maxPrice, page, fetchProducts]);
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] pt-24 pb-20 font-sans text-gray-900">
-      <SEO 
+    <div className="relative min-h-screen pt-24 pb-20 font-sans text-ink overflow-hidden">
+      <SEO
         title={query ? `Search: ${query}` : "Shop Our Toxin-Free Products"}
         description="Discover our premium heritage grains and toxin-free millet products."
         url="/shop"
       />
-      
-      <div className="container mx-auto px-4 max-w-7xl">
-        
+
+      <div className="container mx-auto px-4 max-w-[1440px] relative z-[2]">
+
         {/* Header & Search Bar */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-display font-black tracking-tight mb-2">
-              {query ? `Results for "${query}"` : 'Our Collection'}
+        <Reveal className="mb-9 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="flex flex-col gap-3.5">
+            <span className="kicker text-berry">
+              {query ? 'Search results' : 'N⁰ 01 — Organic Treats'}
+            </span>
+            <h1 className="display-lg text-[2.6rem] sm:text-[3.2rem]">
+              {query ? <>Results for <span className="accent-text">&ldquo;{query}&rdquo;</span></> : <>Shop every <span className="accent-text">clean bake</span></>}
             </h1>
-            <p className="text-gray-500 text-sm font-medium">
-              Showing {products.length} of {totalCount} products
+            <span className="rule-berry" />
+            <p className="text-ink-soft text-[15px] font-medium max-w-lg">
+              Cookies, health mixes, raw honey and unrefined jaggery — all made without maida, white sugar or refined oil.
             </p>
           </div>
-          
+
           <div className="relative w-full md:w-96 flex-shrink-0">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search products..." 
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-[18px] w-[18px] text-berry pointer-events-none z-10" />
+            <input
+              type="text"
+              placeholder="Search millet cookies, honey, jaggery…"
               value={query}
               onChange={handleSearch}
-              className="w-full h-14 pl-12 pr-4 bg-white border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#920075]/30 focus:border-[#920075] transition-all font-semibold shadow-sm"
+              className="glass-sm w-full h-14 pl-[52px] pr-5 rounded-2xl text-[14px] focus:outline-none focus:border-berry/50 focus:ring-4 focus:ring-berry/10 transition-all duration-300 font-medium placeholder:text-ink-muted"
               aria-label="Search Products"
             />
           </div>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
-          
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+
           {/* Mobile Filter Toggle */}
           <div className="w-full flex gap-3 lg:hidden mb-2">
-            <button 
+            <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex-1 h-12 bg-white border border-gray-200 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+              className="btn-glass flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
             >
               <SlidersHorizontal className="h-4 w-4" /> Filters {category !== 'All' && '(1)'}
             </button>
-            <button 
+            <button
               onClick={() => setIsSortOpen(!isSortOpen)}
-              className="flex-1 h-12 bg-white border border-gray-200 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
+              className="btn-glass flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm"
             >
               Sort <ChevronDown className="h-4 w-4" />
             </button>
           </div>
 
           {/* Desktop/Collapsible Sidebar */}
-          <aside className={`w-full lg:w-64 flex-shrink-0 lg:block ${isFilterOpen ? 'block' : 'hidden'}`}>
-            <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm sticky top-28">
-              <h3 className="font-black uppercase text-xs tracking-wider text-gray-400 mb-4">Categories</h3>
-              <div className="space-y-1.5 mb-8">
-                {CATEGORIES.map(cat => (
-                  <button 
-                    key={cat}
-                    onClick={() => updateURLParams({ category: cat, page: '1' })}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                      category === cat ? 'bg-[#920075] text-white shadow-md' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {cat}
-                    {category === cat && <Check className="h-4 w-4" />}
-                  </button>
-                ))}
-              </div>
+          <aside className={`w-full lg:w-[272px] flex-shrink-0 lg:block ${isFilterOpen ? 'block' : 'hidden'}`}>
+            <div className="sticky top-28 flex flex-col gap-4">
+              <Reveal className="glass rounded-card p-6">
+                <h3 className="kicker text-ink-soft mb-4">Category</h3>
+                <div className="space-y-1.5">
+                  {CATEGORIES.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => updateURLParams({ category: cat, page: '1' })}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                        category === cat
+                          ? 'btn-berry'
+                          : 'text-ink-soft hover:bg-berry/[0.06] hover:text-berry'
+                      }`}
+                    >
+                      {cat}
+                      {category === cat && <Check className="h-4 w-4" />}
+                    </button>
+                  ))}
+                </div>
+              </Reveal>
 
-              <h3 className="font-black uppercase text-xs tracking-wider text-gray-400 mb-4">Sort By</h3>
-              <div className="space-y-1.5">
-                {SORT_OPTIONS.map(opt => (
-                  <button 
-                    key={opt.value}
-                    onClick={() => updateURLParams({ sort: opt.value, page: '1' })}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                      sort === opt.value ? 'bg-gray-900 text-white shadow-md' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
+              <Reveal delay={0.06} className="glass rounded-card p-6">
+                <h3 className="kicker text-ink-soft mb-4">Sort by</h3>
+                <div className="space-y-1.5">
+                  {SORT_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => updateURLParams({ sort: opt.value, page: '1' })}
+                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                        sort === opt.value
+                          ? 'bg-ink text-white shadow-glass-sm'
+                          : 'text-ink-soft hover:bg-berry/[0.06] hover:text-berry'
+                      }`}
+                    >
+                      {opt.label}
+                      {sort === opt.value && <Check className="h-4 w-4" />}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-hairline">
+                  <button
+                    onClick={() => setSearchParams(new URLSearchParams())}
+                    className="w-full kicker text-berry hover:opacity-70 transition-opacity"
                   >
-                    {opt.label}
-                    {sort === opt.value && <Check className="h-4 w-4" />}
+                    Clear all filters
                   </button>
-                ))}
-              </div>
-              
-              <div className="mt-8 pt-6 border-t border-gray-100">
-                <button 
-                  onClick={() => setSearchParams(new URLSearchParams())}
-                  className="w-full text-xs font-bold text-[#920075] hover:underline"
-                >
-                  Clear All Filters
-                </button>
-              </div>
+                </div>
+              </Reveal>
+
+              {/* Free shipping promo */}
+              <Reveal delay={0.12} className="btn-berry rounded-card p-5 text-left cursor-default">
+                <p className="kicker text-gold-light">Free shipping</p>
+                <p className="display-md text-[19px] text-white mt-2">On orders above ₹799</p>
+                <p className="text-[12.5px] text-white/75 mt-1.5 font-medium">Dispatched from Chennai in 24–48 hrs.</p>
+              </Reveal>
             </div>
           </aside>
 
           {/* Product Grid */}
           <main className="flex-1 w-full">
+            {/* Results bar */}
+            {!error && products.length > 0 && (
+              <div className="glass-sm rounded-2xl h-14 px-5 flex items-center justify-between mb-6">
+                <p className="text-[12.5px] text-ink-soft font-medium">
+                  Showing <strong className="text-ink">{products.length}</strong> of <strong className="text-ink">{totalCount}</strong> products
+                </p>
+                <span className="pill-berry-soft hidden sm:inline-flex items-center h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  {category === 'All' ? 'All products' : category}
+                </span>
+              </div>
+            )}
+
             {error ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Zap className="h-16 w-16 text-red-400 mb-4 opacity-50" />
-                <h3 className="text-xl font-black mb-2">Oops, something went wrong.</h3>
-                <button onClick={() => fetchProducts(false)} className="text-[#920075] font-bold hover:underline">Try Again</button>
+              <div className="glass rounded-panel flex flex-col items-center justify-center py-20 text-center">
+                <span className="ico-chip w-[104px] h-[104px] rounded-full mb-5 text-danger">
+                  <Zap className="h-10 w-10" />
+                </span>
+                <h3 className="display-md text-xl mb-2">Oops, something went wrong.</h3>
+                <button onClick={() => fetchProducts(false)} className="btn-glass mt-4 h-11 px-7 rounded-full kicker">Try again</button>
               </div>
             ) : loading && page === 1 ? (
               <ProductGridSkeleton count={8} />
             ) : products.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 px-4 bg-white rounded-[3rem] border border-gray-100 border-dashed text-center">
-                <PackageOpen className="h-20 w-20 text-gray-200 mb-5" />
-                <h2 className="text-2xl font-black text-gray-800 mb-3">No products found</h2>
-                <p className="text-gray-500 font-medium mb-8 max-w-sm mx-auto">
-                  We couldn't find any items matching "{query}". Try adjusting your filters or search terms.
+              <div className="glass rounded-panel flex flex-col items-center justify-center py-24 px-4 text-center">
+                <span className="ico-chip w-[120px] h-[120px] rounded-full mb-6">
+                  <PackageOpen className="h-11 w-11" />
+                </span>
+                <h2 className="display-md text-2xl text-ink mb-3">No products found</h2>
+                <p className="text-ink-soft font-medium mb-8 max-w-sm mx-auto text-sm leading-relaxed">
+                  We couldn&rsquo;t find any items matching &ldquo;{query}&rdquo;. Try adjusting your filters or search terms.
                 </p>
-                <button 
+                <button
                   onClick={() => setSearchParams(new URLSearchParams())}
-                  className="px-8 py-3.5 bg-gray-900 hover:bg-[#920075] text-white rounded-full font-black text-sm uppercase tracking-wider transition-colors"
+                  className="btn-berry px-8 py-3.5 rounded-full font-extrabold text-xs uppercase tracking-[0.12em]"
                 >
-                  View All Products
+                  View all products
                 </button>
               </div>
             ) : (
               <div className="space-y-12">
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
                   <AnimatePresence>
-                    {products.map((product) => (
+                    {products.map((product, i) => (
                       <motion.div
                         key={product.id || product._id}
                         layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={still ? false : { opacity: 0, y: 22, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.45, delay: still ? 0 : Math.min(i, 7) * 0.05, ease: [0.16, 1, 0.3, 1] }}
                       >
                         <ProductCard product={product} />
                       </motion.div>
                     ))}
                   </AnimatePresence>
                 </div>
-                
+
                 {hasMore && (
                   <div className="flex justify-center pt-8">
                     <button
                       onClick={() => updateURLParams({ page: (page + 1).toString() })}
                       disabled={loading}
-                      className="px-10 py-4 bg-white border border-gray-200 hover:border-[#920075] text-gray-800 hover:text-[#920075] rounded-full font-black text-sm uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm"
+                      className="btn-glass px-10 py-4 rounded-full font-extrabold text-xs uppercase tracking-[0.14em] disabled:opacity-50"
                     >
-                      {loading ? 'Loading...' : 'Load More'}
+                      {loading ? 'Loading…' : 'Load more'}
                     </button>
                   </div>
                 )}

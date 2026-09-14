@@ -30,14 +30,14 @@ const COOKIE_TYPES = [
     label: 'Analytics Cookies',
     desc:  'Help us understand how visitors interact with our website to improve performance.',
     icon:  BarChart2,
-    color: '#920075',
+    color: '#A50D5A',
   },
   {
     id:    'marketing',
     label: 'Marketing Cookies',
     desc:  'Used to deliver relevant advertisements and track campaign performance.',
     icon:  Target,
-    color: '#D4AF37',
+    color: '#D7A94E',
   },
   {
     id:    'preferences',
@@ -102,7 +102,7 @@ export default function CookieConsent() {
           className="pointer-events-auto w-full max-w-lg bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_32px_80px_rgba(0,0,0,0.18)] border border-white/80 overflow-hidden"
         >
           {/* Gradient accent bar */}
-          <div className="h-1 w-full bg-gradient-to-r from-[#920075] via-[#D4AF37] to-[#6366f1]" />
+          <div className="h-1 w-full bg-gradient-to-r from-[#A50D5A] via-[#D7A94E] to-[#6366f1]" />
 
           {mode === 'banner' ? (
             /* ── BANNER MODE ─────────────────────────────────── */
@@ -110,12 +110,12 @@ export default function CookieConsent() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-[#920075]/10 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-[#920075]" />
+                    <div className="w-8 h-8 rounded-xl bg-[#A50D5A]/10 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-[#A50D5A]" />
                     </div>
-                    <h3 className="font-bold text-base text-[#0a0806]">We value your privacy</h3>
+                    <h3 className="font-bold text-base text-[#221B1F]">We value your privacy</h3>
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                  <p className="text-xs text-ink-muted leading-relaxed font-medium">
                     We use cookies to enhance your experience, analyse site traffic, and personalise content.
                     Your consent choices are stored for 12 months and can be changed at any time.
                   </p>
@@ -127,9 +127,9 @@ export default function CookieConsent() {
                 {COOKIE_TYPES.map(c => {
                   const Icon = c.icon;
                   return (
-                    <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100">
+                    <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cream border border-hairline">
                       <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: c.color }} />
-                      <span className="text-[10px] font-bold text-gray-600 truncate">{c.label.replace(' Cookies', '')}</span>
+                      <span className="text-[10px] font-bold text-ink-soft truncate">{c.label.replace(' Cookies', '')}</span>
                       {c.required && <span className="ml-auto text-[8px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-full">Always</span>}
                     </div>
                   );
@@ -140,20 +140,20 @@ export default function CookieConsent() {
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => save('all')}
-                  className="w-full h-11 rounded-xl bg-[#920075] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#7a0062] transition-all shadow-sm"
+                  className="w-full h-11 rounded-xl bg-[#A50D5A] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#7a0062] transition-all shadow-sm"
                 >
                   Accept All Cookies
                 </button>
                 <div className="flex gap-2">
                   <button
                     onClick={() => save('essential', { analytics: false, marketing: false, preferences: false })}
-                    className="flex-1 h-10 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-all"
+                    className="flex-1 h-10 rounded-xl border border-hairline text-xs font-bold text-ink-soft hover:bg-cream transition-all"
                   >
                     Reject Non-Essential
                   </button>
                   <button
                     onClick={() => setMode('customize')}
-                    className="flex-1 h-10 rounded-xl border border-[#920075]/30 text-xs font-bold text-[#920075] hover:bg-[#920075]/5 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 h-10 rounded-xl border border-[#A50D5A]/30 text-xs font-bold text-[#A50D5A] hover:bg-[#A50D5A]/5 transition-all flex items-center justify-center gap-1.5"
                   >
                     <Settings className="w-3.5 h-3.5" />
                     Customize
@@ -161,11 +161,11 @@ export default function CookieConsent() {
                 </div>
               </div>
 
-              <p className="text-[9px] text-gray-400 text-center font-medium">
+              <p className="text-[9px] text-ink-muted text-center font-medium">
                 By using this site you agree to our{' '}
-                <a href="/privacy" className="text-[#920075] hover:underline">Privacy Policy</a>
+                <a href="/privacy" className="text-[#A50D5A] hover:underline">Privacy Policy</a>
                 {' '}and{' '}
-                <a href="/cookies" className="text-[#920075] hover:underline">Cookie Policy</a>.
+                <a href="/cookies" className="text-[#A50D5A] hover:underline">Cookie Policy</a>.
               </p>
             </div>
           ) : (
@@ -174,13 +174,13 @@ export default function CookieConsent() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setMode('banner')}
-                  className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-all"
+                  className="w-8 h-8 rounded-full border border-hairline flex items-center justify-center text-ink-muted hover:bg-cream transition-all"
                 >
                   <ChevronRight className="w-4 h-4 rotate-180" />
                 </button>
                 <div>
-                  <h3 className="font-bold text-sm text-[#0a0806]">Cookie Preferences</h3>
-                  <p className="text-[10px] text-gray-400 font-medium">Customise which cookies you allow</p>
+                  <h3 className="font-bold text-sm text-[#221B1F]">Cookie Preferences</h3>
+                  <p className="text-[10px] text-ink-muted font-medium">Customise which cookies you allow</p>
                 </div>
               </div>
 
@@ -191,14 +191,14 @@ export default function CookieConsent() {
                   return (
                     <div
                       key={ct.id}
-                      className={`p-4 rounded-2xl border transition-all ${enabled ? 'border-[#920075]/25 bg-[#920075]/3' : 'border-gray-100 bg-gray-50/60'}`}
+                      className={`p-4 rounded-2xl border transition-all ${enabled ? 'border-[#A50D5A]/25 bg-[#A50D5A]/3' : 'border-hairline bg-cream/60'}`}
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: ct.color + '15' }}>
                             <Icon className="w-3.5 h-3.5" style={{ color: ct.color }} />
                           </div>
-                          <span className="text-xs font-bold text-[#0a0806]">{ct.label}</span>
+                          <span className="text-xs font-bold text-[#221B1F]">{ct.label}</span>
                         </div>
 
                         {/* Toggle Switch */}
@@ -207,7 +207,7 @@ export default function CookieConsent() {
                           disabled={ct.required}
                           className={`relative w-10 h-5.5 rounded-full transition-colors duration-200 ${
                             ct.required ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
-                          } ${enabled ? 'bg-[#920075]' : 'bg-gray-200'}`}
+                          } ${enabled ? 'bg-[#A50D5A]' : 'bg-gray-200'}`}
                           style={{ height: '22px', width: '40px' }}
                           aria-label={`Toggle ${ct.label}`}
                         >
@@ -221,7 +221,7 @@ export default function CookieConsent() {
                           />
                         </button>
                       </div>
-                      <p className="text-[10px] text-gray-500 leading-relaxed font-medium pl-9">{ct.desc}</p>
+                      <p className="text-[10px] text-ink-muted leading-relaxed font-medium pl-9">{ct.desc}</p>
                     </div>
                   );
                 })}
@@ -230,13 +230,13 @@ export default function CookieConsent() {
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => save('all')}
-                  className="flex-1 h-10 rounded-xl bg-[#920075] text-white text-[10px] font-bold uppercase tracking-wider hover:bg-[#7a0062] transition-all"
+                  className="flex-1 h-10 rounded-xl bg-[#A50D5A] text-white text-[10px] font-bold uppercase tracking-wider hover:bg-[#7a0062] transition-all"
                 >
                   Accept All
                 </button>
                 <button
                   onClick={() => save('custom')}
-                  className="flex-1 h-10 rounded-xl border border-gray-200 text-[10px] font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                  className="flex-1 h-10 rounded-xl border border-hairline text-[10px] font-bold text-ink-soft hover:bg-cream transition-all"
                 >
                   Save My Choices
                 </button>
