@@ -8,7 +8,11 @@ import {
   Minus, Plus, Check, Leaf, Zap, Sparkles,
   Tag, X, TicketPercent, IndianRupee
 } from 'lucide-react';
+<<<<<<< HEAD
 import FallbackImg from '../../assets/lan.png';
+=======
+import FallbackImg from '../../assets/lan.webp';
+>>>>>>> 059c68a (Update frontend features)
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 import ProductDetailsSkeleton from '../../components/skeletons/ProductDetailsSkeleton';
@@ -449,6 +453,17 @@ export default function ProductDetails() {
             <motion.div variants={fadeUp} className="mb-8">
               <div className="flex items-baseline gap-4 mb-3">
                 <span className="text-5xl font-extrabold text-[#C21A75]">₹{displayPrice}</span>
+<<<<<<< HEAD
+=======
+                {Number(selectedVariant?.mrp) > Number(displayPrice) && (
+                  <>
+                    <s className="text-xl font-semibold text-ink-muted" aria-label={`MRP ₹${selectedVariant.mrp}`}>₹{selectedVariant.mrp}</s>
+                    <span className="text-sm font-extrabold text-emerald-600">
+                      {Math.round(((selectedVariant.mrp - displayPrice) / selectedVariant.mrp) * 100)}% off
+                    </span>
+                  </>
+                )}
+>>>>>>> 059c68a (Update frontend features)
                 {selectedVariant && product.variants && product.variants.length > 1 && (
                   <span className="text-sm text-ink-muted font-semibold">for {selectedVariant.weight}</span>
                 )}

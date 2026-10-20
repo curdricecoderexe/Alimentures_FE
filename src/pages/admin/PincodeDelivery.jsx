@@ -22,7 +22,11 @@ const labelCls = 'block text-[10px] font-bold uppercase tracking-wider text-gray
 
 const EMPTY_FORM = {
   pincode: '', state: '', city: '', deliveryAvailable: true,
+<<<<<<< HEAD
   deliveryFee: '', fastestDeliveryAvailable: false, fastestDeliveryFee: '',
+=======
+  standardFeeType: 'default', deliveryFee: '', fastestDeliveryAvailable: false, fastestDeliveryFee: '',
+>>>>>>> 059c68a (Update frontend features)
   standardEta: '', fastestEta: '', note: '',
 };
 
@@ -36,7 +40,11 @@ async function api(path, opts = {}) {
 
 /* ───────────────────────── PIN-code add/edit modal ───────────────────── */
 
+<<<<<<< HEAD
 function PincodeModal({ open, editing, onClose, onSaved }) {
+=======
+function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
+>>>>>>> 059c68a (Update frontend features)
   const [form, setForm] = useState(EMPTY_FORM);
   const [cities, setCities] = useState([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
@@ -48,7 +56,12 @@ function PincodeModal({ open, editing, onClose, onSaved }) {
       ? {
         pincode: editing.pincode, state: editing.state || '', city: editing.city || '',
         deliveryAvailable: editing.deliveryAvailable !== false,
+<<<<<<< HEAD
         deliveryFee: editing.standardDeliveryFee ?? '',
+=======
+        standardFeeType: editing.standardFeeType || 'default',
+        deliveryFee: editing.standardFeeType === 'custom' ? (editing.standardDeliveryFee ?? 0) : '',
+>>>>>>> 059c68a (Update frontend features)
         fastestDeliveryAvailable: !!editing.fastestDeliveryAvailable,
         fastestDeliveryFee: editing.fastestDeliveryFee ?? '',
         standardEta: editing.standardDeliveryEta || '', fastestEta: editing.fastestDeliveryEta || '',
@@ -69,12 +82,21 @@ function PincodeModal({ open, editing, onClose, onSaved }) {
     e.preventDefault();
     if (!/^[1-9][0-9]{5}$/.test(form.pincode)) return toast.error('PIN code must be 6 digits');
     if (!form.state) return toast.error('Select a state');
+<<<<<<< HEAD
+=======
+    if (form.standardFeeType === 'custom' && form.deliveryFee === '') return toast.error('Enter the custom standard fee (0 for free)');
+>>>>>>> 059c68a (Update frontend features)
     setSaving(true);
     try {
       const payload = {
         pincode: form.pincode, state: form.state, city: form.city,
         deliveryAvailable: form.deliveryAvailable,
+<<<<<<< HEAD
         deliveryFee: Number(form.deliveryFee) || 0,
+=======
+        standardFeeType: form.standardFeeType,
+        deliveryFee: form.standardFeeType === 'custom' ? Number(form.deliveryFee) || 0 : '',
+>>>>>>> 059c68a (Update frontend features)
         fastestDeliveryAvailable: form.fastestDeliveryAvailable,
         fastestDeliveryFee: Number(form.fastestDeliveryFee) || 0,
         standardEta: form.standardEta, fastestEta: form.fastestEta, note: form.note,
@@ -137,12 +159,43 @@ function PincodeModal({ open, editing, onClose, onSaved }) {
                   triggerClassName={adminSelectCls} ariaLabel="City" />
               </div>
 
+<<<<<<< HEAD
               <div>
                 <label className={labelCls}>Standard fee (₹)</label>
                 <input type="number" min="0" value={form.deliveryFee}
                   onChange={(e) => setForm((f) => ({ ...f, deliveryFee: e.target.value }))} placeholder="50" className={inputCls} />
               </div>
               <div>
+=======
+              <div className="col-span-2 border-t border-gray-100 pt-4">
+                <label className={labelCls}>Standard delivery fee</label>
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-gray-50 border border-gray-100">
+                  {[
+                    ['default', `Default${defaultFee != null ? ` (₹${defaultFee})` : ''}`],
+                    ['custom', 'Custom fee'],
+                  ].map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, standardFeeType: v }))}
+                      className={`h-9 rounded-lg text-xs font-bold transition-all ${
+                        form.standardFeeType === v ? 'bg-white text-[#C41E6B] shadow-sm border border-[#C41E6B]/20' : 'text-gray-400 hover:text-gray-600'}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  {form.standardFeeType === 'custom'
+                    ? 'Charged for standard delivery to this PIN instead of the default. Enter 0 for free delivery.'
+                    : 'Follows the default fee in Delivery Rules — changes there apply here automatically.'}
+                </p>
+              </div>
+              {form.standardFeeType === 'custom' && (
+                <div>
+                  <label className={labelCls}>Custom standard fee (₹) *</label>
+                  <input type="number" min="0" value={form.deliveryFee}
+                    onChange={(e) => setForm((f) => ({ ...f, deliveryFee: e.target.value }))} placeholder="e.g. 80" className={inputCls} />
+                </div>
+              )}
+              <div className={form.standardFeeType === 'custom' ? '' : 'col-span-2'}>
+>>>>>>> 059c68a (Update frontend features)
                 <label className={labelCls}>Standard ETA</label>
                 <input value={form.standardEta} onChange={(e) => setForm((f) => ({ ...f, standardEta: e.target.value }))}
                   placeholder="3–5 business days" className={inputCls} />
@@ -247,7 +300,11 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 max-w-2xl">
       {tab === 'standard' ? (
         <>
+<<<<<<< HEAD
           <Row label="Default delivery fee" hint="Charged when a PIN code has no specific fee"><NumInput k="defaultDeliveryFee" ph="50" /></Row>
+=======
+          <Row label="Default delivery fee" hint="Charged for unlisted PIN codes and PIN codes set to Default fee"><NumInput k="defaultDeliveryFee" ph="50" /></Row>
+>>>>>>> 059c68a (Update frontend features)
           <Row label="Default standard ETA"><TextInput k="defaultStandardEta" ph="3–5 business days" /></Row>
           <Row label="Free delivery over a threshold"><Toggle k="freeDeliveryEnabled" /></Row>
           {form.freeDeliveryEnabled && <Row label="Free-delivery threshold" hint="Standard delivery is free at or above this subtotal"><NumInput k="freeDeliveryThreshold" ph="500" /></Row>}
@@ -561,7 +618,15 @@ export default function PincodeDelivery() {
                           <td className="p-4 font-mono font-bold text-gray-900 tracking-wider">{r.pincode}</td>
                           <td className="p-4 text-gray-600">{r.city || '—'}</td>
                           <td className="p-4 text-gray-500">{r.state || '—'}</td>
+<<<<<<< HEAD
                           <td className="p-4 text-right font-bold text-gray-800">{r.standardDeliveryFee ? `₹${r.standardDeliveryFee}` : 'Default'}</td>
+=======
+                          <td className="p-4 text-right">
+                            {r.standardFeeType === 'custom'
+                              ? <span className="font-bold text-gray-800">{r.standardDeliveryFee ? `₹${r.standardDeliveryFee}` : 'Free'}<span className="ml-1.5 text-[9px] font-bold uppercase tracking-wider text-[#C41E6B]">Custom</span></span>
+                              : <span className="text-gray-400">Default{settings ? ` · ₹${settings.defaultDeliveryFee}` : ''}</span>}
+                          </td>
+>>>>>>> 059c68a (Update frontend features)
                           <td className="p-4 text-center">
                             {r.fastestDeliveryAvailable
                               ? <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#C41E6B] bg-[#C41E6B]/8 px-2 py-0.5 rounded-full"><Rocket className="w-3 h-3" />Yes</span>
@@ -610,7 +675,11 @@ export default function PincodeDelivery() {
         </>
       )}
 
+<<<<<<< HEAD
       <PincodeModal open={modal.open} editing={modal.editing}
+=======
+      <PincodeModal open={modal.open} editing={modal.editing} defaultFee={settings?.defaultDeliveryFee}
+>>>>>>> 059c68a (Update frontend features)
         onClose={() => setModal({ open: false, editing: null })}
         onSaved={() => { loadRows(); loadSummary(); }} />
     </div>

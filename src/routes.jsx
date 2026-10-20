@@ -46,8 +46,14 @@ const Loadable = (Component) => (props) => (
 
 // Layouts
 import CustomerLayout from './layouts/CustomerLayout';
+<<<<<<< HEAD
 import StaffLayout from './layouts/StaffLayout';
 import AdminLayout from './layouts/AdminLayout';
+=======
+// Staff/admin shells are lazy so storefront visitors never download them.
+const StaffLayout = Loadable(lazy(() => import('./layouts/StaffLayout')));
+const AdminLayout = Loadable(lazy(() => import('./layouts/AdminLayout')));
+>>>>>>> 059c68a (Update frontend features)
 
 // Pages
 const Login = Loadable(lazy(() => import('./pages/Login')));

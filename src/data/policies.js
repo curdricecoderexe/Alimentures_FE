@@ -11,7 +11,11 @@ export const POLICIES = [
     key: 'privacy',
     name: 'Privacy Policy',
     title: 'Privacy Policy',
+<<<<<<< HEAD
     updated: 'August 2026',
+=======
+    updated: 'October 2026',
+>>>>>>> 059c68a (Update frontend features)
     summary: 'What information we collect when you use Alimenture, and how it is used and protected.',
     intro:
       'Alimenture Industries Private Limited ("Alimenture", "we", "us") respects your privacy. This policy explains what information we collect when you use our website or place an order, and how that information is used and protected.',
@@ -49,7 +53,16 @@ export const POLICIES = [
       },
       {
         heading: 'Data Sharing & Third-Party Services',
+<<<<<<< HEAD
         body: 'We do not sell or rent your personal data. Information may be shared only with service providers who help us operate — such as payment processors, courier and logistics partners, communication and analytics providers — and only to the extent needed to deliver their service, or where required by law.',
+=======
+        body: 'We do not sell or rent your personal data. We share information only with service providers who help us operate, and only as much as they need to provide their service, or where the law requires it. These providers are:',
+        items: [
+          'Payment processors (Razorpay), to process your payment',
+          'Our logistics partner, Shiprocket (Bigfoot Retail Solutions Private Limited), and the courier company it assigns. They receive your name, phone number, email address, delivery address, and order contents to ship, deliver, and track your order, and they may send you shipment updates by SMS, email, or WhatsApp',
+          'Communication and analytics providers that help us send order emails and improve the website',
+        ],
+>>>>>>> 059c68a (Update frontend features)
       },
       {
         heading: 'Data Security & Retention',
@@ -70,7 +83,11 @@ export const POLICIES = [
     key: 'terms',
     name: 'Terms of Service',
     title: 'Terms of Service',
+<<<<<<< HEAD
     updated: 'August 2026',
+=======
+    updated: 'October 2026',
+>>>>>>> 059c68a (Update frontend features)
     summary: 'The terms that govern your use of the Alimenture website and your purchases.',
     intro:
       'These Terms of Service govern your use of the Alimenture website and your purchase of products through it. By accessing the website or placing an order, you agree to these terms.',
@@ -89,7 +106,15 @@ export const POLICIES = [
       },
       {
         heading: 'Pricing & Payment',
+<<<<<<< HEAD
         body: 'All prices are listed in Indian Rupees and include applicable taxes unless stated otherwise. Delivery charges, where applicable, are shown at checkout before you confirm your order. You are responsible for providing accurate billing, delivery, and contact details.',
+=======
+        body: 'All prices are listed in Indian Rupees and include applicable taxes unless stated otherwise. Orders are paid online at checkout; cash on delivery is not offered. Delivery charges, where applicable, are shown at checkout before you confirm your order. You are responsible for providing accurate billing, delivery, and contact details.',
+      },
+      {
+        heading: 'Shipping & Delivery',
+        body: 'Orders are delivered through our logistics partner, Shiprocket, and its partner courier companies, as described in our Shipping Policy. We can only accept orders for PIN codes that a courier serves. Delivery dates shown on the website are estimates. Orders that cannot be delivered because of incorrect details or the recipient being unavailable are handled as set out in the Shipping Policy.',
+>>>>>>> 059c68a (Update frontend features)
       },
       {
         heading: 'Cancellations, Returns & Refunds',
@@ -114,6 +139,7 @@ export const POLICIES = [
     key: 'shipping',
     name: 'Shipping Policy',
     title: 'Shipping Policy',
+<<<<<<< HEAD
     updated: 'August 2026',
     summary: 'How orders are processed, dispatched, and delivered across India.',
     intro:
@@ -138,6 +164,58 @@ export const POLICIES = [
       {
         heading: 'Delivery Issues',
         body: `If a package arrives visibly damaged, tampered with, or is not delivered within a reasonable time, please contact ${SUPPORT_LINE} promptly with your order number and photographs of the packaging where available.`,
+=======
+    updated: 'October 2026',
+    summary: 'How orders are dispatched and delivered across India through our logistics partner, Shiprocket.',
+    intro:
+      'We ship across India through Shiprocket, our logistics partner, which hands each order to one of its courier companies. This policy explains how orders are processed, shipped, tracked, and delivered.',
+    sections: [
+      {
+        heading: 'Our Delivery Partner',
+        body: 'Orders are shipped through Shiprocket (operated by Bigfoot Retail Solutions Private Limited), which assigns each shipment to one of its partner courier companies, such as Delhivery, Blue Dart, Xpressbees, Ekart, DTDC, or another courier serving your area. The courier is chosen based on serviceability, delivery speed, and reliability for your PIN code. We cannot guarantee a particular courier company.',
+      },
+      {
+        heading: 'Serviceable Locations',
+        body: 'When you enter your delivery PIN code at checkout, we check it against the courier network. If no courier currently serves your PIN code, we cannot accept the order for that address. Deliveries to remote areas, hilly regions, the North-East, Jammu & Kashmir, Ladakh, and island territories may take longer.',
+      },
+      {
+        heading: 'Order Processing & Dispatch',
+        body: 'Orders are processed once payment is confirmed. We pack and hand orders over to the courier, usually within 1–2 working days. Orders placed on Sundays or public holidays are processed on the next working day. Payment is online only; we do not offer cash on delivery.',
+      },
+      {
+        heading: 'Delivery Timelines',
+        body: 'After dispatch, delivery usually takes 2–7 working days, depending on your location and the courier assigned. The estimate shown at checkout combines our dispatch time with the courier’s transit estimate for your PIN code. It is an estimate, not a guaranteed delivery date. Courier operations, weather, strikes, festivals, regional restrictions, and other events outside our control can cause delays.',
+      },
+      {
+        heading: 'Shipping Charges',
+        body: 'Shipping charges, if any, are shown at checkout before you pay. Where free delivery is offered above a minimum order value, it is applied automatically at checkout. We pay the courier’s charges; you are never asked to pay anything to the delivery agent.',
+      },
+      {
+        heading: 'Order Tracking',
+        body: 'Once a courier is assigned, your order gets an AWB (tracking) number. You can track the shipment in the following ways:',
+        items: [
+          'On the "My Orders" page of our website, which shows the courier name, AWB number, and the latest scan updates',
+          'Through the Shiprocket tracking link shared with your order',
+          'Through SMS, email, or WhatsApp notifications sent by Shiprocket or the courier to the phone number and email address on your order',
+        ],
+      },
+      {
+        heading: 'Delivery Attempts & Undelivered Orders',
+        body: 'Couriers usually make up to three delivery attempts. Please keep your phone reachable, because the delivery agent may call you before delivering. If the order cannot be delivered (for example, you were unavailable, the address or phone number was incorrect or incomplete, or the delivery was refused), the courier returns it to us. This is called Return to Origin (RTO). For RTO orders:',
+        items: [
+          'If the RTO happened because of an issue on our side or the courier’s side, we will re-ship the order or refund it in full',
+          'Otherwise, once the shipment reaches us, we refund the order value minus the forward and return shipping costs, or re-ship it if you pay the re-delivery charges',
+          'Because our products are perishable, an RTO shipment cannot be held for re-delivery indefinitely',
+        ],
+      },
+      {
+        heading: 'Address Changes',
+        body: `Please check your delivery address, PIN code, and phone number carefully before paying. Address changes are only possible before a courier is assigned. To request one, contact ${SUPPORT_LINE} as soon as possible with your order number. Once a courier is assigned and the AWB is generated, the address cannot be changed.`,
+      },
+      {
+        heading: 'Damaged, Tampered, or Lost Shipments',
+        body: `Please check the outer packaging when your order is delivered. If the package looks damaged or tampered with, refuse it or accept it only after the agent records the issue, and contact ${SUPPORT_LINE} within 3 days of delivery with your order number, photographs, and an unboxing video if possible. If the courier confirms a shipment as lost in transit, we will re-ship your order or refund it in full.`,
+>>>>>>> 059c68a (Update frontend features)
       },
     ],
   },
@@ -146,7 +224,11 @@ export const POLICIES = [
     key: 'returns',
     name: 'Returns & Refunds',
     title: 'Returns & Refunds Policy',
+<<<<<<< HEAD
     updated: 'August 2026',
+=======
+    updated: 'October 2026',
+>>>>>>> 059c68a (Update frontend features)
     summary: 'When returns are accepted for our perishable food products, and how refunds are processed.',
     intro:
       'We take care to ensure every order reaches you in good condition. Because our products are perishable food items, returns are accepted only in specific situations set out below.',
@@ -166,10 +248,24 @@ export const POLICIES = [
         body: `Contact ${SUPPORT_LINE} within 3 days of delivery with your order number, the product details, the reason for the return, and photographs or video where requested. Our team will review the request and confirm whether it is approved.`,
       },
       {
+<<<<<<< HEAD
+=======
+        heading: 'Return Pickup',
+        body: 'For an approved return, we arrange a reverse pickup through our logistics partner, Shiprocket, at no cost to you. Please hand over the product in its original packaging. If reverse pickup is not available at your PIN code, our team will suggest another option. For damaged or incorrect items, we may issue a replacement or refund based on photographs alone, without asking for a pickup.',
+      },
+      {
+>>>>>>> 059c68a (Update frontend features)
         heading: 'Refunds',
         body: 'Once a return is approved and, where applicable, the product is received and verified, the eligible refund is initiated to the original payment method or to a bank account you register for the refund. Refunds are processed within 7 working days of approval. The time for the amount to reflect in your account depends on your bank or payment provider.',
       },
       {
+<<<<<<< HEAD
+=======
+        heading: 'Undelivered (Return to Origin) Orders',
+        body: 'If a shipment is returned to us because it could not be delivered, the refund or re-shipping terms in the "Delivery Attempts & Undelivered Orders" section of our Shipping Policy apply. Shipments lost in transit are re-shipped or refunded in full.',
+      },
+      {
+>>>>>>> 059c68a (Update frontend features)
         heading: 'Damaged or Incorrect Products',
         body: 'If you receive a product that is damaged, incorrect, or appears tampered with, contact us as soon as possible with your order details and supporting photographs. Depending on the case, we will arrange a replacement or a full refund.',
       },
@@ -184,7 +280,11 @@ export const POLICIES = [
     key: 'cancellation',
     name: 'Cancellation Policy',
     title: 'Cancellation Policy',
+<<<<<<< HEAD
     updated: 'August 2026',
+=======
+    updated: 'October 2026',
+>>>>>>> 059c68a (Update frontend features)
     summary: 'Orders cannot be cancelled once placed.',
     intro:
       'Once an order is successfully placed and paid for, it cannot be cancelled — by you or by us. Please review your cart and shipping details carefully before completing payment.',
@@ -198,6 +298,17 @@ export const POLICIES = [
         body: 'If a payment attempt is not completed (for example, you close the payment window or the payment fails), no order is placed and nothing is charged. This is not an order cancellation — it simply means the order was never confirmed.',
       },
       {
+<<<<<<< HEAD
+=======
+        heading: 'Orders We Are Unable to Ship',
+        body: 'In rare cases we may be unable to ship a paid order, for example if the courier network stops serving your PIN code after the order is placed, or a product becomes unavailable. If that happens, we will contact you and refund the amount paid in full.',
+      },
+      {
+        heading: 'Refused or Undelivered Orders',
+        body: 'Refusing a delivery is not a cancellation. Refused or undelivered shipments are returned to us and handled under the "Delivery Attempts & Undelivered Orders" section of our Shipping Policy.',
+      },
+      {
+>>>>>>> 059c68a (Update frontend features)
         heading: 'Need Help?',
         body: `If there is a genuine issue with an order (e.g. an item is missing, damaged, or incorrect on delivery), contact ${SUPPORT_LINE} with your order number and we will assist under our Returns & Refunds Policy.`,
       },
@@ -208,7 +319,11 @@ export const POLICIES = [
     key: 'quality',
     name: 'Quality Guidelines',
     title: 'Quality & Food Safety Guidelines',
+<<<<<<< HEAD
     updated: 'August 2026',
+=======
+    updated: 'October 2026',
+>>>>>>> 059c68a (Update frontend features)
     summary: 'Our food safety registration and the quality standards we hold ourselves to.',
     intro:
       'Alimenture is committed to maintaining appropriate food safety and quality standards across our products and operations.',
@@ -223,7 +338,11 @@ export const POLICIES = [
       },
       {
         heading: 'Packing & Dispatch',
+<<<<<<< HEAD
         body: 'Before dispatch, products are checked and packed to be suitable for transit. Best-before or expiry information is printed on the product where applicable.',
+=======
+        body: 'Before dispatch, products are checked and packed to survive courier handling, then handed to our logistics partner, Shiprocket, for delivery. Best-before or expiry information is printed on the product where applicable.',
+>>>>>>> 059c68a (Update frontend features)
       },
       {
         heading: 'Customer Responsibility',

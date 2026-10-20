@@ -1,6 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+<<<<<<< HEAD
+=======
+// Only the React core is pinned to its own long-cached chunk. Everything else
+// is left to Rollup so libraries ride with the lazy pages that import them —
+// a catch-all "vendor" chunk would make every visitor download the PDF/Excel/
+// chart helpers that only admin screens use.
+const REACT_CORE = /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/;
+
+>>>>>>> 059c68a (Update frontend features)
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -9,6 +18,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+<<<<<<< HEAD
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'vendor-react';
@@ -27,6 +37,9 @@ export default defineConfig({
             }
             return 'vendor';
           }
+=======
+          if (REACT_CORE.test(id)) return 'vendor-react';
+>>>>>>> 059c68a (Update frontend features)
         }
       }
     }
