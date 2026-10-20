@@ -2,11 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Sparkles, Heart, ArrowRight, ShoppingCart } from 'lucide-react';
-<<<<<<< HEAD
-import FallbackImg from '../../assets/lan.png';
-=======
 import FallbackImg from '../../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import { useCart } from '../../context/CartContext';
 
 export default function ProductCard({ product }) {
@@ -31,11 +27,6 @@ export default function ProductCard({ product }) {
   };
 
   const hasVariants = product.variants && product.variants.length > 0;
-<<<<<<< HEAD
-  const displayPrice = hasVariants
-    ? `From ₹${Math.min(...product.variants.map(v => Number(v.price)))}`
-    : `₹${product.price}`;
-=======
   // The cheapest variant drives the shown price and its (admin-set) MRP strike-through.
   const cheapest = hasVariants
     ? product.variants.reduce((a, v) => (Number(v.price) < Number(a.price) ? v : a))
@@ -44,7 +35,6 @@ export default function ProductCard({ product }) {
   const mrp = Number(cheapest.mrp) || 0;
   const showMrp = mrp > price;
   const displayPrice = `${hasVariants && product.variants.length > 1 ? 'From ' : ''}₹${price}`;
->>>>>>> 059c68a (Update frontend features)
 
   const isOutOfStock = hasVariants
     ? product.variants.every(v => v.stock === 0)
@@ -67,11 +57,7 @@ export default function ProductCard({ product }) {
             alt={product.name || product.title}
             loading="lazy"
             decoding="async"
-<<<<<<< HEAD
-            className="w-full h-full object-cover"
-=======
             className="w-full h-full object-contain"
->>>>>>> 059c68a (Update frontend features)
           />
         </Link>
 
@@ -127,10 +113,6 @@ export default function ProductCard({ product }) {
         <div className="pt-3 border-t border-hairline space-y-3 mt-auto">
           <div className="flex items-baseline justify-between">
             <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
-<<<<<<< HEAD
-            <span className="font-display font-extrabold text-ink text-lg tracking-tight">
-              {displayPrice}
-=======
             <span className="flex items-baseline gap-2">
               {showMrp && (
                 <>
@@ -141,7 +123,6 @@ export default function ProductCard({ product }) {
               <span className="font-display font-extrabold text-ink text-lg tracking-tight">
                 {displayPrice}
               </span>
->>>>>>> 059c68a (Update frontend features)
             </span>
           </div>
 

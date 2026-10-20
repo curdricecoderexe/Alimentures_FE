@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Truck, Package, CheckCircle, MapPin, CreditCard, Star, ArrowLeft, ArrowRight,
-<<<<<<< HEAD
-  ChevronDown, Check, MessageCircle, FileText, RotateCcw, Boxes,
-=======
   ChevronDown, Check, MessageCircle, FileText, RotateCcw, Boxes, ExternalLink,
->>>>>>> 059c68a (Update frontend features)
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-<<<<<<< HEAD
-import FallbackImg from '../../assets/lan.png';
-=======
 import FallbackImg from '../../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import { authenticatedFetch } from '../../lib/api';
 import { useCart } from '../../context/CartContext';
 import OrderListSkeleton from '../../components/skeletons/OrderListSkeleton';
@@ -23,13 +15,8 @@ import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 const EASE = [0.16, 1, 0.3, 1];
 
 const ORDER_FAQS = [
-<<<<<<< HEAD
-  { q: 'How do I track my order in real time?', a: 'Your order status updates live on this page. Once shipped, you receive an SMS with a courier tracking link.' },
-  { q: 'What should I do if my order is delayed?', a: 'Deliveries take 4–7 business days. If delayed beyond 10 days, contact support via chat with your Order ID.' },
-=======
   { q: 'How do I track my order in real time?', a: 'We ship through Shiprocket. Once a courier is assigned, this page shows the courier name, AWB number and live scan updates, and Shiprocket/the courier also sends tracking by SMS, email or WhatsApp.' },
   { q: 'What should I do if my order is delayed?', a: 'Orders are dispatched within 1–2 working days and usually delivered within 2–7 working days after that. If it is delayed beyond 10 working days, contact support via chat with your Order ID.' },
->>>>>>> 059c68a (Update frontend features)
   { q: 'Can I cancel my order after placing it?', a: 'Orders cannot be cancelled once placed. If there is an issue with your order, please contact support via chat with your Order ID.' },
   { q: 'How do I return or exchange a product?', a: 'We offer a 3-day return window from delivery for damaged or incorrect items. Raise a request via support chat for a free pickup.' },
   { q: 'Will I receive an invoice?', a: 'A GST-compliant digital invoice is emailed to your registered address after payment confirmation.' },
@@ -70,15 +57,12 @@ const fmtDate = (ts) =>
     ? new Date(ts._seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
 
-<<<<<<< HEAD
-=======
 /** Shiprocket ETAs arrive as "2026-10-21 18:00:00" — show just the day. */
 const fmtEtd = (etd) => {
   const d = new Date(String(etd).replace(' ', 'T'));
   return Number.isNaN(d.getTime()) ? etd : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 };
 
->>>>>>> 059c68a (Update frontend features)
 const StatusPill = ({ status }) => {
   const s = (status || '').toLowerCase();
   const cls =
@@ -106,10 +90,7 @@ export default function MyOrders() {
   const [itemRatings, setItemRatings] = useState({});
   const [submittingKey, setSubmittingKey] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
-<<<<<<< HEAD
-=======
   const [tracking, setTracking] = useState(null);
->>>>>>> 059c68a (Update frontend features)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -168,8 +149,6 @@ export default function MyOrders() {
     navigate('/cart');
   };
 
-<<<<<<< HEAD
-=======
   const activeStates = ['pending', 'payment_pending', 'processing', 'packed', 'shipped', 'out_for_delivery'];
   const activeOrder = orders.find((o) => activeStates.includes((o.status || '').toLowerCase()));
   const history = orders.filter((o) => o.id !== activeOrder?.id);
@@ -195,7 +174,6 @@ export default function MyOrders() {
     return () => { alive = false; };
   }, [activeId, activeAwb]);
 
->>>>>>> 059c68a (Update frontend features)
   if (loading) {
     if (showSkeleton) {
       return (
@@ -209,13 +187,6 @@ export default function MyOrders() {
     return <div className="min-h-screen" />;
   }
 
-<<<<<<< HEAD
-  const activeStates = ['pending', 'payment_pending', 'processing', 'packed', 'shipped', 'out_for_delivery'];
-  const activeOrder = orders.find((o) => activeStates.includes((o.status || '').toLowerCase()));
-  const history = orders.filter((o) => o.id !== activeOrder?.id);
-
-=======
->>>>>>> 059c68a (Update frontend features)
   const counts = {
     active: orders.filter((o) => activeStates.includes((o.status || '').toLowerCase())).length,
     delivered: orders.filter((o) => o.status === 'delivered').length,
@@ -329,21 +300,6 @@ export default function MyOrders() {
               )}
 
               {/* courier strip */}
-<<<<<<< HEAD
-              {['shipped', 'out_for_delivery'].includes((activeOrder.status || '').toLowerCase()) && (
-                <div className="glass-sm rounded-card p-4 sm:px-5 flex items-center gap-4 mb-6">
-                  <span className="ico-chip ico-chip-gold h-11 w-11 rounded-2xl shrink-0"><Truck className="h-5 w-5" /></span>
-                  <div className="flex-1 min-w-0">
-                    <p className="display-md text-[14px]">
-                      Dispatched from Chennai
-                    </p>
-                    <p className="text-[11.5px] text-ink-muted mt-0.5">
-                      {activeOrder.status === 'out_for_delivery' ? 'Out for delivery in your area today' : 'In transit · tracked shipment'}
-                    </p>
-                  </div>
-                </div>
-              )}
-=======
               {(() => {
                 const sh = tracking || activeOrder.shipment || null;
                 const inTransit = ['shipped', 'out_for_delivery'].includes((activeOrder.status || '').toLowerCase());
@@ -386,7 +342,6 @@ export default function MyOrders() {
                   </div>
                 );
               })()}
->>>>>>> 059c68a (Update frontend features)
 
               {/* items + address/payment */}
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">

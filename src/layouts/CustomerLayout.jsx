@@ -5,15 +5,9 @@ import {
   Sprout, Users, CheckCircle2, Quote, ShieldCheck, Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-<<<<<<< HEAD
-import { useState, useEffect, useRef } from 'react';
-import logo from '../assets/logo.png';
-import ImageWithFallback from '../assets/lan.png';
-=======
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import logo from '../assets/logo.png';
 import ImageWithFallback from '../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
@@ -21,12 +15,8 @@ import Lenis from 'lenis';
 import 'lenis/dist/lenis.css';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { toast } from 'sonner';
-<<<<<<< HEAD
-import ChatWidget from '../components/ChatWidget';
-=======
 // Lazy: keeps socket.io out of the first page load.
 const ChatWidget = lazy(() => import('../components/ChatWidget'));
->>>>>>> 059c68a (Update frontend features)
 import CookieConsent from '../components/CookieConsent';
 import { PageBackdrop } from '../components/ui/motion';
 import { pageview, initAutoTracking, initPerformance } from '../lib/analytics';
@@ -1037,11 +1027,7 @@ export default function CustomerLayout() {
       </footer>
 
       <CookieConsent />
-<<<<<<< HEAD
-      <ChatWidget />
-=======
       <Suspense fallback={null}><ChatWidget /></Suspense>
->>>>>>> 059c68a (Update frontend features)
     </div>
   );
 }

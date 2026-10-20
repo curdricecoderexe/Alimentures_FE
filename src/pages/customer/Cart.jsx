@@ -7,11 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
-<<<<<<< HEAD
-import FallbackImg from '../../assets/lan.png';
-=======
 import FallbackImg from '../../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import { cachedFetch } from '../../lib/api';
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
 
@@ -19,13 +15,8 @@ const EASE = [0.16, 1, 0.3, 1];
 
 const CART_FAQS = [
   { q: 'Is free shipping available on all orders?', a: 'Yes! All orders above ₹500 qualify for free shipping anywhere in India. Orders below ₹500 incur a flat ₹50 shipping fee.' },
-<<<<<<< HEAD
-  { q: 'How many days does delivery take?', a: 'Standard delivery takes 4–7 business days. Express delivery (available in select cities) takes 1–2 business days and charges apply.' },
-  { q: 'Can I modify my order after placing it?', a: 'Order modifications are possible within 2 hours of placing the order. Contact our support team immediately via chat or email.' },
-=======
   { q: 'How many days does delivery take?', a: 'We ship through Shiprocket and its courier partners. Orders are dispatched within 1–2 working days and usually arrive 2–7 working days after that — the estimate for your PIN code is shown at checkout.' },
   { q: 'Can I modify my order after placing it?', a: 'The delivery address can be changed only before a courier is assigned. Contact our support team immediately via chat or email with your order number.' },
->>>>>>> 059c68a (Update frontend features)
   { q: 'Are all Alimenture products 100% natural with no preservatives?', a: 'Absolutely. Every product we bake is free from maida, white sugar, refined oils, preservatives, and artificial additives. We use only ancient grains, palm jaggery, and pure cow butter.' },
   { q: 'What payment methods do you accept?', a: 'We accept UPI (GPay, PhonePe, Paytm), all major credit/debit cards, and net banking — all processed securely via Razorpay.' },
 ];

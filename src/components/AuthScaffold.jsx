@@ -3,11 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Star, ShieldCheck, Lock } from 'lucide-react';
 import logo from '../assets/logo.png';
-<<<<<<< HEAD
-import brandPhotoDefault from '../assets/login.png';
-=======
 import brandPhotoDefault from '../assets/login.webp';
->>>>>>> 059c68a (Update frontend features)
 import { Field, ORB_BERRY, ORB_GOLD } from './ui/motion';
 import { useAppearance } from '../lib/appearance';
 

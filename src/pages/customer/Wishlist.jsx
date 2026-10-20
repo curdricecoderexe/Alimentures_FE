@@ -3,11 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { ShoppingCart, Heart, Trash2, ArrowLeft, Sparkles, ArrowRight, Star, Shield, Leaf, Zap, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import FallbackImg from '../../assets/lan.png';
-=======
 import FallbackImg from '../../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import { toast } from 'sonner';
 
 const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };

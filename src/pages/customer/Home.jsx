@@ -9,31 +9,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Loader from '../../components/ui/loader';
 import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
 import { useAppearance } from '../../lib/appearance';
-<<<<<<< HEAD
-import lan from '../../assets/lan.png';
-import womenImage from '../../assets/cas/women.png';
-import nammalvarImage from '../../assets/nammalvar.jpg';
-import craftingBgDefault from '../../assets/Munnar.jpg';
-import commitmentBgDefault from '../../assets/bg-1.png';
-import superGrainsBgDefault from '../../assets/bf.png';
-import featuredBgDefault from '../../assets/feature-bg.png';
-
-import fingerMilletImg from '../../assets/fav/finger.png';
-import foxtailMilletImg from '../../assets/fav/foxtail.png';
-import pearlMilletImg from '../../assets/fav/pearl.png';
-import sorghumImg from '../../assets/fav/sorghum.png';
-import sorghumRedImg from '../../assets/fav/sorghum-red.png';
-import kodoMilletImg from '../../assets/fav/kodo.png';
-import karuppuKavaniImg from '../../assets/fav/karuppu_kavani.png';
-import kattuYaanamImg from '../../assets/fav/kattu-yaanam.png';
-import karunguruvaiImg from '../../assets/fav/karunguruvai.png';
-import mappillaiSambaImg from '../../assets/fav/mappillai_samba.png';
-
-import redMilletsMateImg from '../../assets/fav/red_millets_mate.png';
-import pentaBiteImg from '../../assets/fav/penta_bite.png';
-import triGrainGainImg from '../../assets/fav/tri_grain_gain.png';
-import classicCocletsImg from '../../assets/fav/classic_coclets.png';
-=======
 import { cachedFetch } from '../../lib/api';
 import lan from '../../assets/lan.webp';
 import womenImage from '../../assets/cas/women.webp';
@@ -58,7 +33,6 @@ import redMilletsMateImg from '../../assets/fav/red_millets_mate.webp';
 import pentaBiteImg from '../../assets/fav/penta_bite.webp';
 import triGrainGainImg from '../../assets/fav/tri_grain_gain.webp';
 import classicCocletsImg from '../../assets/fav/classic_coclets.webp';
->>>>>>> 059c68a (Update frontend features)
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -280,9 +254,6 @@ export default function Home() {
   };
 
   const DEFAULT_CATEGORIES = ['Cookies', 'Health Mixtures', 'Honey', 'Jaggery'];
-<<<<<<< HEAD
-  const allCategoryTabs = ['All Products', ...new Set([...DEFAULT_CATEGORIES, ...categories])];
-=======
   // 'biscuit' (and uncategorised products) are folded into Cookies, so they never get their own section.
   const COOKIE_ALIASES = ['biscuit', 'cookies'];
 
@@ -301,7 +272,6 @@ export default function Home() {
     if (catName === 'Cookies') return !productCat || COOKIE_ALIASES.includes(productCat);
     return productCat === catName.toLowerCase();
   };
->>>>>>> 059c68a (Update frontend features)
 
   const getCategoryMeta = (catName) => {
     const c = catName.toLowerCase();
@@ -356,27 +326,6 @@ export default function Home() {
       try {
         // Use the main products endpoint (already deployed) and filter isFeatured client-side
         // This avoids depending on the /api/featured-products endpoint which may be stale on Render
-<<<<<<< HEAD
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/products?limit=100`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && data.data) {
-            const featured = data.data.filter(p => p.isFeatured === true);
-            if (featured.length > 0) {
-              const normalized = featured.map(p => ({
-                ...p,
-                name: p.name || p.title || 'Product',
-                desc: p.desc || p.description || '',
-                tagline: p.tagline || p.category || 'Heritage Craft',
-                badges: p.badges && p.badges.length > 0
-                  ? p.badges
-                  : [p.category, '100% Natural', 'Heritage Grain'].filter(Boolean),
-                image: p.image || '',
-              }));
-              setFeaturedProducts(normalized);
-              return;
-            }
-=======
         const data = await cachedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`);
         if (data.success && data.data) {
           const featured = data.data.filter(p => p.isFeatured === true);
@@ -393,7 +342,6 @@ export default function Home() {
             }));
             setFeaturedProducts(normalized);
             return;
->>>>>>> 059c68a (Update frontend features)
           }
         }
       } catch (err) {
@@ -528,13 +476,8 @@ export default function Home() {
     let active = true;
     (async () => {
       try {
-<<<<<<< HEAD
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/products?limit=12`);
-        const data = await response.json();
-=======
         // Fetch the full catalogue (API max) so products in custom categories aren't cut off.
         const data = await cachedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`);
->>>>>>> 059c68a (Update frontend features)
         if (data.success && active) {
           setProducts(data.data);
           const distinctCategories = [...new Set(data.data.map(p => p.category).filter(Boolean))];
@@ -551,11 +494,7 @@ export default function Home() {
 
   const filteredProducts = activeCategory === 'All'
     ? products
-<<<<<<< HEAD
-    : products.filter(p => p.category === activeCategory);
-=======
     : products.filter(p => productInCategory(p, activeCategory));
->>>>>>> 059c68a (Update frontend features)
 
   const registerSectionRef = (el) => {
     if (el && !sectionsRef.current.includes(el)) {
@@ -1021,20 +960,10 @@ export default function Home() {
             </div>
           ) : activeCategory === 'All' ? (
             <div className="space-y-8 sm:space-y-10">
-<<<<<<< HEAD
-              {DEFAULT_CATEGORIES
-                .map((catName) => ({
-                  catName,
-                  catProducts: products.filter(p =>
-                    p.category?.toLowerCase() === catName.toLowerCase() ||
-                    (catName === 'Cookies' && (!p.category || p.category.toLowerCase() === 'biscuit' || p.category.toLowerCase() === 'cookies'))
-                  )
-=======
               {catalogCategories
                 .map((catName) => ({
                   catName,
                   catProducts: products.filter(p => productInCategory(p, catName))
->>>>>>> 059c68a (Update frontend features)
                 }))
                 .filter(({ catProducts }) => catProducts.length > 0)
                 .map(({ catName, catProducts }, catIdx, visibleCategories) => {
@@ -1244,11 +1173,8 @@ export default function Home() {
                         <img
                           src={item.image || lan}
                           alt={item.name || item.title}
-<<<<<<< HEAD
-=======
                           loading="lazy"
                           decoding="async"
->>>>>>> 059c68a (Update frontend features)
                           className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
                         />
                         <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full glass-sm text-[8.5px] font-bold text-[#221B1F] uppercase tracking-widest border border-white/30 shadow-xs z-20">
@@ -1616,11 +1542,8 @@ export default function Home() {
                 <img
                   src={nammalvarImage}
                   alt="Nammalvar — the green crusader who inspired Alimenture"
-<<<<<<< HEAD
-=======
                   loading="lazy"
                   decoding="async"
->>>>>>> 059c68a (Update frontend features)
                   className="w-full h-[420px] object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -1960,11 +1883,7 @@ export default function Home() {
                 {/* Modal Hero: Product Image + Title */}
                 <div className="relative h-44 w-full overflow-hidden bg-[#FBF7EF]">
                   {item.image && (
-<<<<<<< HEAD
-                    <img src={item.image} alt={name} className="w-full h-full object-cover" />
-=======
                     <img src={item.image} alt={name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
->>>>>>> 059c68a (Update frontend features)
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                   {/* Close btn */}

@@ -9,19 +9,11 @@ import { clearAppearanceCache } from '../../lib/appearance';
 import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
-<<<<<<< HEAD
-import authBgDefault from '../../assets/login.png';
-import featuredBgDefault from '../../assets/feature-bg.png';
-import craftingBgDefault from '../../assets/Munnar.jpg';
-import superGrainsBgDefault from '../../assets/bf.png';
-import commitmentBgDefault from '../../assets/bg-1.png';
-=======
 import authBgDefault from '../../assets/login.webp';
 import featuredBgDefault from '../../assets/feature-bg.webp';
 import craftingBgDefault from '../../assets/Munnar.jpg';
 import superGrainsBgDefault from '../../assets/bf.webp';
 import commitmentBgDefault from '../../assets/bg-1.webp';
->>>>>>> 059c68a (Update frontend features)
 
 // The exact bundled fallback for each slot, so "Reset" previews match what the
 // live site actually shows. The 5 catalog-category slots have no bundled

@@ -109,15 +109,9 @@ export default function AdminProducts() {
     title: '', category: 'Cookies', price: '', stock: '', description: '', secondaryDescription: '', image: null, secondaryImage: null, tertiaryImage: null, isFeatured: false,
     badges: '', cleanPromises: '', cleanBadges: '', nutritionFacts: [],
     variants: [
-<<<<<<< HEAD
-      { weight: '250g', price: '', stock: '' },
-      { weight: '500g', price: '', stock: '' },
-      { weight: '1000g', price: '', stock: '' }
-=======
       { weight: '250g', price: '', mrp: '', stock: '' },
       { weight: '500g', price: '', mrp: '', stock: '' },
       { weight: '1000g', price: '', mrp: '', stock: '' }
->>>>>>> 059c68a (Update frontend features)
     ]
   };
   const [formData, setFormData] = useState(emptyForm);
@@ -205,11 +199,7 @@ export default function AdminProducts() {
   const handleAddVariant = () => {
     setFormData(prev => ({
       ...prev,
-<<<<<<< HEAD
-      variants: [...prev.variants, { weight: '', price: '', stock: '' }]
-=======
       variants: [...prev.variants, { weight: '', price: '', mrp: '', stock: '' }]
->>>>>>> 059c68a (Update frontend features)
     }));
   };
 
@@ -228,14 +218,11 @@ export default function AdminProducts() {
       toast.error('Please add at least one variant with weight, price and stock');
       return;
     }
-<<<<<<< HEAD
-=======
     const badMrp = validVariants.find(v => v.mrp !== '' && v.mrp != null && Number(v.mrp) <= Number(v.price || 0));
     if (badMrp) {
       toast.error(`MRP for ${badMrp.weight || 'a variant'} must be higher than its selling price`);
       return;
     }
->>>>>>> 059c68a (Update frontend features)
 
     const finalData = {
       ...formData,
@@ -263,10 +250,7 @@ export default function AdminProducts() {
       variants: validVariants.map(v => ({ 
         weight: v.weight?.trim() || 'Standard', 
         price: Number(v.price || 0), 
-<<<<<<< HEAD
-=======
         mrp: v.mrp !== '' && v.mrp != null ? Number(v.mrp) : null,
->>>>>>> 059c68a (Update frontend features)
         stock: Number(v.stock || 0) 
       }))
     };
@@ -701,11 +685,7 @@ export default function AdminProducts() {
             <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
-<<<<<<< HEAD
-                    <Scale className="h-3.5 w-3.5 text-[#920075]" /> Variant Management (Custom Weight, Price & Stock)
-=======
                     <Scale className="h-3.5 w-3.5 text-[#920075]" /> Variant Management (Custom Weight, Price, MRP & Stock)
->>>>>>> 059c68a (Update frontend features)
                   </Label>
                   <Button
                     type="button"
@@ -741,8 +721,6 @@ export default function AdminProducts() {
                                 />
                             </div>
                             <div className="w-full sm:w-28 space-y-1">
-<<<<<<< HEAD
-=======
                                 <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">MRP (₹) <span className="normal-case font-semibold text-gray-400">strike</span></Label>
                                 <Input 
                                     type="number" 
@@ -754,7 +732,6 @@ export default function AdminProducts() {
                                 />
                             </div>
                             <div className="w-full sm:w-28 space-y-1">
->>>>>>> 059c68a (Update frontend features)
                                 <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Stock (Units)</Label>
                                 <Input 
                                     type="number" 

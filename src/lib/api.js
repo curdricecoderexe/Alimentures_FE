@@ -4,11 +4,8 @@ let isRedirecting = false;
 
 // In-memory SWR cache for GET requests
 const memoryCache = new Map();
-<<<<<<< HEAD
-=======
 // Requests already on the wire, so concurrent callers share one response.
 const inFlight = new Map();
->>>>>>> 059c68a (Update frontend features)
 
 export const cachedFetch = async (url, ttlMs = 120000) => {
   const now = Date.now();
@@ -16,17 +13,6 @@ export const cachedFetch = async (url, ttlMs = 120000) => {
   if (cached && (now - cached.timestamp < ttlMs)) {
     return cached.data;
   }
-<<<<<<< HEAD
-  try {
-    const res = await fetch(url);
-    const json = await res.json();
-    memoryCache.set(url, { timestamp: now, data: json });
-    return json;
-  } catch (err) {
-    if (cached) return cached.data; // Fallback to stale data on network error
-    throw err;
-  }
-=======
   if (inFlight.has(url)) return inFlight.get(url);
   const request = (async () => {
     try {
@@ -43,7 +29,6 @@ export const cachedFetch = async (url, ttlMs = 120000) => {
   })();
   inFlight.set(url, request);
   return request;
->>>>>>> 059c68a (Update frontend features)
 };
 
 export const clearApiCache = (url) => {

@@ -4,13 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   Sprout, Heart, ShieldCheck, Users, CheckCircle2, ArrowRight, Quote, Globe, Leaf
 } from 'lucide-react';
-<<<<<<< HEAD
-import bannerImage from '../../assets/cas/banner.png';
-import womenImage from '../../assets/cas/women.png';
-=======
 import bannerImage from '../../assets/cas/banner.webp';
 import womenImage from '../../assets/cas/women.webp';
->>>>>>> 059c68a (Update frontend features)
 
 // Floating ingredient data preserved for hero chips
 const floatingIngredients = [
@@ -174,11 +169,7 @@ export default function About() {
             {/* Story Image Composite */}
             <div className="lg:col-span-5 relative">
               <div className="rounded-[2.5rem] overflow-hidden border-2 border-[#FBF7EF] shadow-xl">
-<<<<<<< HEAD
-                <img src={womenImage} alt="Empowering farming communities" className="w-full h-[420px] object-cover" />
-=======
                 <img src={womenImage} alt="Empowering farming communities" loading="lazy" decoding="async" className="w-full h-[420px] object-cover" />
->>>>>>> 059c68a (Update frontend features)
               </div>
 
               <div className="absolute -bottom-6 -right-6 bg-[#FBF7EF] border border-[#A50D5A]/20 rounded-3xl p-6 shadow-xl max-w-xs space-y-2">

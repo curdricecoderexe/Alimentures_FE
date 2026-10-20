@@ -8,11 +8,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
-<<<<<<< HEAD
-import FallbackImg from '../../assets/lan.png';
-=======
 import FallbackImg from '../../assets/lan.webp';
->>>>>>> 059c68a (Update frontend features)
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
@@ -278,9 +274,6 @@ export default function Checkout() {
         const releaseAbandonedReservation = async () => {
           if (paymentCompleted) return;
           try {
-<<<<<<< HEAD
-            await authenticatedFetch(`${API_URL}/orders/${data.orderId}/abandon-payment`, { method: 'PUT' });
-=======
             const r = await authenticatedFetch(`${API_URL}/orders/${data.orderId}/abandon-payment`, { method: 'PUT' });
             const body = r ? await r.json() : null;
             // The server found a captured payment (e.g. the success callback never reached us).
@@ -290,7 +283,6 @@ export default function Checkout() {
               sessionStorage.removeItem('appliedCoupon');
               setTimeout(() => navigate('/orders'), 1500);
             }
->>>>>>> 059c68a (Update frontend features)
           } catch {
             // best-effort — the reservation-expiry cleanup still catches this eventually
           }
@@ -350,16 +342,10 @@ export default function Checkout() {
           theme: { color: '#A50D5A' },
         };
         const paymentObject = new window.Razorpay(options);
-<<<<<<< HEAD
-        paymentObject.on('payment.failed', () => {
-          toast.error('Payment failed. Please try again.');
-          releaseAbandonedReservation();
-=======
         // Fires per failed attempt while the Razorpay modal stays open for a
         // retry — the reservation is released on dismiss, not here.
         paymentObject.on('payment.failed', () => {
           toast.error('Payment failed. Please try again.');
->>>>>>> 059c68a (Update frontend features)
         });
         paymentObject.open();
         setLoading(false);

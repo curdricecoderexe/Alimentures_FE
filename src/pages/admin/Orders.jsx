@@ -32,10 +32,7 @@ import {
 import { Eye, Search, Filter, Calendar, Package, ChevronRight, Download, FileSpreadsheet, FileText, MapPin, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
-<<<<<<< HEAD
-=======
 import ShiprocketPanel from '../../components/ShiprocketPanel';
->>>>>>> 059c68a (Update frontend features)
 
 // --- MOCK DATA ---
 const initialOrders = [];
@@ -525,8 +522,6 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-<<<<<<< HEAD
-=======
               {/* SHIPROCKET */}
               <ShiprocketPanel
                 order={selectedOrder}
@@ -536,7 +531,6 @@ export default function AdminOrders() {
                 }}
               />
 
->>>>>>> 059c68a (Update frontend features)
               {/* SHIPPING DETAILS */}
               <div className="space-y-3 sm:space-y-4">
                 <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider ml-1">Shipping Logistics</Label>
