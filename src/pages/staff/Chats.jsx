@@ -149,7 +149,7 @@ export default function StaffChats() {
 
   useEffect(() => {
     if (selectedChat && selectedChat.status === 'active') {
-      const newSocket = io(SOCKET_URL, { auth: { token: localStorage.getItem('token') } });
+      const newSocket = io(SOCKET_URL, { auth: { token: localStorage.getItem('token') }, withCredentials: true });
        
       setSocket(newSocket);
       newSocket.on('connect_error', (err) => console.error('Chat connection failed:', err.message));

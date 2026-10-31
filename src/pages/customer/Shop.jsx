@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate, Link } from 'react-router-dom';
 import { Search, SlidersHorizontal, PackageOpen, ChevronDown, Check, Zap } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import ProductCard from '../../components/ui/ProductCard';
 import ProductGridSkeleton from '../../components/skeletons/ProductGridSkeleton';
 import SEO from '../../components/SEO';
 import { Reveal } from '../../components/ui/motion';
+import { useCategories } from '../../lib/categories';
+import { useDeliverySummary } from '../../lib/delivery';
+import { SHOP_SEO, categoryPath, slugify, breadcrumbJsonLd, displayName } from '../../lib/seo';
+import { CATEGORY_CONTENT, genericCategoryContent } from '../../data/categoryContent';
 
-const CATEGORIES = ['All', 'Biscuit', 'Flakes', 'Rusk', 'Millet', 'Health Mix'];
 const SORT_OPTIONS = [
   { value: 'relevance', label: 'Relevance' },
   { value: 'price_low_high', label: 'Price: Low to High' },
@@ -18,15 +21,34 @@ const SORT_OPTIONS = [
 
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { categorySlug } = useParams();
+  const navigate = useNavigate();
   const still = useReducedMotion();
 
-  // URL State Extractors
+  // Admin-managed (Admin → Categories); "All" shows the total across them.
+  const managedCategories = useCategories();
+  const routeCategory = categorySlug
+    ? managedCategories.find((c) => slugify(c.name) === categorySlug)
+    : null;
+
+  // URL State Extractors. Categories live at /categories/<slug>; the old
+  // /shop?category=<name> form is redirected there (see effect below).
   const query = searchParams.get('q') || '';
-  const category = searchParams.get('category') || 'All';
+  const legacyCategory = searchParams.get('category');
+  const category = categorySlug
+    ? (routeCategory?.name || categorySlug.replace(/-/g, ' '))
+    : 'All';
   const sort = searchParams.get('sort') || 'relevance';
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
   const page = parseInt(searchParams.get('page') || '1', 10);
+
+  // Free-shipping promo copy follows Admin → PIN Code Delivery.
+  const delivery = useDeliverySummary();
+
+  const allCount = managedCategories.reduce((n, c) => n + (c.productCount || 0), 0);
+  const categoryOptions = [{ name: 'All', productCount: allCount }, ...managedCategories];
+  const isActiveCategory = (name) => category.toLowerCase() === name.toLowerCase();
 
   // Local UI State
   const [products, setProducts] = useState([]);
@@ -53,6 +75,24 @@ export default function Shop() {
       }
     });
     setSearchParams(newParams);
+  };
+
+  useEffect(() => {
+    if (!legacyCategory) return;
+    const rest = new URLSearchParams(searchParams);
+    rest.delete('category');
+    const qs = rest.toString();
+    const base = legacyCategory === 'All' ? '/shop' : categoryPath(legacyCategory);
+    navigate(`${base}${qs ? `?${qs}` : ''}`, { replace: true });
+  }, [legacyCategory, searchParams, navigate]);
+
+  /** Link target for a category filter, keeping the other filters. */
+  const categoryHref = (name) => {
+    const rest = new URLSearchParams(searchParams);
+    rest.delete('category');
+    rest.delete('page');
+    const qs = rest.toString();
+    return `${name === 'All' ? '/shop' : categoryPath(name)}${qs ? `?${qs}` : ''}`;
   };
 
   const handleSearch = (e) => {
@@ -118,12 +158,32 @@ export default function Shop() {
     return () => clearTimeout(fetchTimeout.current);
   }, [query, category, sort, minPrice, maxPrice, page, fetchProducts]);
 
+  // Search results and empty/unknown categories stay out of the index; filter,
+  // sort and paging parameters canonicalise to the plain listing URL.
+  const categoryName = routeCategory?.name || category;
+  const content = categorySlug
+    ? (CATEGORY_CONTENT[categorySlug] || genericCategoryContent(categoryName, products.map((p) => displayName(p.title || p.name))))
+    : null;
+  const seo = query
+    ? { title: `Search results for “${query.replace(/[^\p{L}\p{N} &'-]/gu, '').trim().slice(0, 40)}”`, description: SHOP_SEO.description, path: '/shop', noindex: true }
+    : categorySlug
+      ? {
+        title: content.title,
+        description: content.description,
+        path: categoryPath(categoryName),
+        noindex: !routeCategory || !(routeCategory.productCount > 0),
+        crumbs: [{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop' }, { name: categoryName, path: categoryPath(categoryName) }],
+      }
+      : { title: SHOP_SEO.title, description: SHOP_SEO.description, path: '/shop', noindex: false };
+
   return (
     <div className="relative min-h-screen pt-24 pb-20 font-sans text-ink overflow-hidden">
       <SEO
-        title={query ? `Search: ${query}` : "Shop Our Toxin-Free Products"}
-        description="Discover our premium heritage grains and toxin-free millet products."
-        url="/shop"
+        title={seo.title}
+        description={seo.description}
+        url={seo.path}
+        noindex={seo.noindex}
+        jsonLd={seo.crumbs ? breadcrumbJsonLd(seo.crumbs) : null}
       />
 
       <div className="container mx-auto px-4 max-w-[1440px] relative z-[2]">
@@ -131,15 +191,27 @@ export default function Shop() {
         {/* Header & Search Bar */}
         <Reveal className="mb-9 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="flex flex-col gap-3.5">
-            <span className="kicker text-berry">
-              {query ? 'Search results' : 'N⁰ 01 — Organic Treats'}
-            </span>
+            {seo.crumbs ? (
+              <nav aria-label="Breadcrumb" className="kicker text-ink-muted flex items-center gap-1.5 flex-wrap">
+                <Link to="/" className="hover:text-berry transition-colors">Home</Link>
+                <span>/</span>
+                <Link to="/shop" className="hover:text-berry transition-colors">Shop</Link>
+                <span>/</span>
+                <span className="text-berry">{categoryName}</span>
+              </nav>
+            ) : (
+              <span className="kicker text-berry">
+                {query ? 'Search results' : 'Organic Treats'}
+              </span>
+            )}
             <h1 className="display-lg text-[2.6rem] sm:text-[3.2rem]">
-              {query ? <>Results for <span className="accent-text">&ldquo;{query}&rdquo;</span></> : <>Shop every <span className="accent-text">clean bake</span></>}
+              {query
+                ? <>Results for <span className="accent-text">&ldquo;{query}&rdquo;</span></>
+                : content ? content.h1 : <>Shop every <span className="accent-text">clean bake</span></>}
             </h1>
             <span className="rule-berry" />
-            <p className="text-ink-soft text-[15px] font-medium max-w-lg">
-              Cookies, health mixes, raw honey and unrefined jaggery — all made without maida, white sugar or refined oil.
+            <p className="text-ink-soft text-[15px] font-medium max-w-2xl">
+              {content?.intro || 'Cookies, health mixes, raw honey and unrefined jaggery — all made without maida, white sugar or refined oil.'}
             </p>
           </div>
 
@@ -180,20 +252,33 @@ export default function Shop() {
               <Reveal className="glass rounded-card p-6">
                 <h3 className="kicker text-ink-soft mb-4">Category</h3>
                 <div className="space-y-1.5">
-                  {CATEGORIES.map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => updateURLParams({ category: cat, page: '1' })}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-                        category === cat
-                          ? 'btn-berry'
-                          : 'text-ink-soft hover:bg-berry/[0.06] hover:text-berry'
-                      }`}
-                    >
-                      {cat}
-                      {category === cat && <Check className="h-4 w-4" />}
-                    </button>
-                  ))}
+                  {categoryOptions.map(({ name, productCount }) => {
+                    const active = isActiveCategory(name);
+                    return (
+                      <Link
+                        key={name}
+                        to={categoryHref(name)}
+                        aria-current={active ? 'page' : undefined}
+                        onClick={() => setIsFilterOpen(false)}
+                        className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                          active
+                            ? 'btn-berry'
+                            : 'text-ink-soft hover:bg-berry/[0.06] hover:text-berry'
+                        }`}
+                      >
+                        <span className="truncate text-left">{name}</span>
+                        {active ? (
+                          <Check className="h-4 w-4 shrink-0" />
+                        ) : (
+                          productCount > 0 && (
+                            <span className="shrink-0 min-w-[26px] h-6 px-2 rounded-full bg-ink/[0.05] text-[11px] font-bold text-ink-muted inline-flex items-center justify-center">
+                              {productCount}
+                            </span>
+                          )
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               </Reveal>
 
@@ -218,7 +303,7 @@ export default function Shop() {
 
                 <div className="mt-6 pt-5 border-t border-hairline">
                   <button
-                    onClick={() => setSearchParams(new URLSearchParams())}
+                    onClick={() => navigate("/shop")}
                     className="w-full kicker text-berry hover:opacity-70 transition-opacity"
                   >
                     Clear all filters
@@ -226,12 +311,14 @@ export default function Shop() {
                 </div>
               </Reveal>
 
-              {/* Free shipping promo */}
-              <Reveal delay={0.12} className="btn-berry rounded-card p-5 text-left cursor-default">
-                <p className="kicker text-gold-light">Free shipping</p>
-                <p className="display-md text-[19px] text-white mt-2">On orders above ₹799</p>
-                <p className="text-[12.5px] text-white/75 mt-1.5 font-medium">Dispatched from Chennai in 24–48 hrs.</p>
-              </Reveal>
+              {/* Free shipping promo (hidden when free delivery is switched off) */}
+              {delivery.freeDeliveryEnabled && (
+                <Reveal delay={0.12} className="btn-berry rounded-card p-5 text-left cursor-default">
+                  <p className="kicker text-gold-light">Free shipping</p>
+                  <p className="display-md text-[19px] text-white mt-2">On orders above ₹{delivery.freeDeliveryThreshold}</p>
+                  <p className="text-[12.5px] text-white/75 mt-1.5 font-medium">Dispatched from Chennai in 24–48 hrs.</p>
+                </Reveal>
+              )}
             </div>
           </aside>
 
@@ -269,7 +356,7 @@ export default function Shop() {
                   We couldn&rsquo;t find any items matching &ldquo;{query}&rdquo;. Try adjusting your filters or search terms.
                 </p>
                 <button
-                  onClick={() => setSearchParams(new URLSearchParams())}
+                  onClick={() => navigate("/shop")}
                   className="btn-berry px-8 py-3.5 rounded-full font-extrabold text-xs uppercase tracking-[0.12em]"
                 >
                   View all products

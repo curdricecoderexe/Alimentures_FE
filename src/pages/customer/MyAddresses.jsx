@@ -8,6 +8,7 @@ import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
 import { getCities } from '../../lib/deliveryApi';
+import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -151,6 +152,7 @@ export default function MyAddresses() {
 
   return (
     <div className="relative min-h-screen font-sans text-ink overflow-hidden">
+      <SEO title="Your addresses" noindex />
       <div className="relative z-[2] container mx-auto px-4 sm:px-6 py-24 sm:py-28 max-w-5xl">
         {/* header */}
         <motion.div

@@ -6,6 +6,7 @@ import { Lock, Mail, User, ArrowRight, ShieldCheck, Eye, EyeOff, Loader2, KeyRou
 import { API_BASE } from '../lib/api';
 import useOtpTimer from '../hooks/useOtpTimer';
 import AuthScaffold, { AuthField, AuthTabs } from '../components/AuthScaffold';
+import SEO from '../components/SEO';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -129,6 +130,7 @@ export default function Register() {
 
   return (
     <AuthScaffold>
+      <SEO title="Create an account" noindex />
       <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
         <AuthTabs active="register" />
 

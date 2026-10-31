@@ -11,6 +11,7 @@ import { Textarea } from '../../components/ui/textarea';
 import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Sparkles, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
+import { useCategories } from '../../lib/categories';
 
 function Select({ value, onValueChange, children, defaultValue }) {
   const [open, setOpen] = useState(false);
@@ -56,6 +57,12 @@ import TableSkeleton from '../../components/skeletons/TableSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
 export default function AdminProducts() {
+  // Managed in Admin → Categories; falls back to the original four if the list can't load.
+  const managedCategories = useCategories();
+  const categoryChoices = (managedCategories.length
+    ? managedCategories.map((c) => c.name)
+    : ['Cookies', 'Health Mixtures', 'Honey', 'Jaggery']
+  ).map((name) => ({ id: name, label: name }));
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingProduct, setEditingProduct] = useState(null);
@@ -562,12 +569,7 @@ export default function AdminProducts() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Category (Select via Checkbox)</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: 'Cookies', label: 'Cookies' },
-                      { id: 'Health Mixtures', label: 'Health Mixtures' },
-                      { id: 'Honey', label: 'Honey' },
-                      { id: 'Jaggery', label: 'Jaggery' }
-                    ].map((cat) => {
+                    {categoryChoices.map((cat) => {
                       const isChecked = (formData.category || '').toLowerCase() === cat.id.toLowerCase();
                       return (
                         <div
@@ -594,7 +596,7 @@ export default function AdminProducts() {
                   <div className="pt-1">
                     <Input
                       placeholder="Or enter custom category name..."
-                      value={['cookies', 'health mixtures', 'honey', 'jaggery'].includes((formData.category || '').toLowerCase()) ? '' : formData.category}
+                      value={categoryChoices.some((c) => c.id.toLowerCase() === (formData.category || '').toLowerCase()) ? '' : formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       className="rounded-xl h-10 bg-gray-50 text-xs font-bold"
                     />

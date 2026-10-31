@@ -11,6 +11,7 @@ import { authenticatedFetch } from '../../lib/api';
 import { useCart } from '../../context/CartContext';
 import OrderListSkeleton from '../../components/skeletons/OrderListSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
+import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -178,6 +179,7 @@ export default function MyOrders() {
     if (showSkeleton) {
       return (
         <div className="relative min-h-screen font-sans text-ink overflow-x-hidden pb-24">
+          <SEO title="Your orders" noindex />
           <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1264px] py-24 relative z-10">
             <OrderListSkeleton />
           </div>
@@ -197,6 +199,7 @@ export default function MyOrders() {
   if (orders.length === 0) {
     return (
       <div className="relative min-h-screen font-sans text-ink flex items-center justify-center px-4">
+        <SEO title="Your orders" noindex />
         <div className="glass rounded-panel foil-top max-w-md w-full text-center px-8 py-16 relative z-10">
           <span className="ico-chip h-16 w-16 rounded-2xl mx-auto mb-6"><Package className="h-7 w-7" /></span>
           <h1 className="display-md text-2xl mb-2">No orders yet</h1>
@@ -211,6 +214,7 @@ export default function MyOrders() {
 
   return (
     <div className="relative min-h-screen font-sans text-ink overflow-x-hidden pb-24">
+      <SEO title="Your orders" noindex />
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1264px] py-24 relative z-10">
 
         {/* Header */}

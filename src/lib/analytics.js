@@ -17,10 +17,17 @@ let _pendingPageview = null;
 
 // ─── VISITOR & SESSION ID ─────────────────────────────────────────────────────
 
+/** Unpredictable id (crypto RNG) — Math.random is not suitable for identifiers. */
+function randomId(prefix) {
+  if (crypto?.randomUUID) return `${prefix}_${crypto.randomUUID().replace(/-/g, '')}`;
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return `${prefix}_${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+}
+
 function getVisitorId() {
   let vid = localStorage.getItem('__alim_vid');
   if (!vid) {
-    vid = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    vid = randomId('v');
     localStorage.setItem('__alim_vid', vid);
   }
   return vid;
@@ -35,7 +42,7 @@ function getSessionId() {
     sessionStorage.setItem('__alim_last', now);
     return stored;
   }
-  const sid = 's_' + Math.random().toString(36).slice(2) + now.toString(36);
+  const sid = randomId('s');
   sessionStorage.setItem('__alim_sid', sid);
   sessionStorage.setItem('__alim_last', now);
   sessionStorage.setItem('__alim_start', now);

@@ -10,7 +10,9 @@ import Loader from '../../components/ui/loader';
 import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
 import { useAppearance } from '../../lib/appearance';
 import { cachedFetch } from '../../lib/api';
-import lan from '../../assets/lan.webp';
+import BrandFilm from '../../components/home/BrandFilm';
+import CatalogueDownload from '../../components/home/CatalogueDownload';
+import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
 import womenImage from '../../assets/cas/women.webp';
 import nammalvarImage from '../../assets/nammalvar.jpg';
 import craftingBgDefault from '../../assets/Munnar.jpg';
@@ -33,6 +35,11 @@ import redMilletsMateImg from '../../assets/fav/red_millets_mate.webp';
 import pentaBiteImg from '../../assets/fav/penta_bite.webp';
 import triGrainGainImg from '../../assets/fav/tri_grain_gain.webp';
 import classicCocletsImg from '../../assets/fav/classic_coclets.webp';
+import { productPath, HOME_SEO, organizationJsonLd, websiteJsonLd } from '../../lib/seo';
+import SEO from '../../components/SEO';
+import { SUPPORT_CONTACT } from '../../data/policies';
+import { useDeliverySummary } from '../../lib/delivery';
+import { useCategories } from '../../lib/categories';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -122,6 +129,146 @@ const refuseList = [
 ];
 
 /* Ornamental divider that sits between the catalog category bands. */
+/** Clean Snack Lineup photo — admin slots lineupImage1-3, crossfading with a slow zoom when more than one is set. */
+function LineupSlides({ images, active }) {
+  return (
+    <div className="absolute inset-0">
+      {images.map((src, i) => (
+        <motion.img
+          key={src}
+          src={src}
+          alt="Healthy & Mindful Living"
+          initial={{ opacity: i === active ? 1 : 0, scale: 1 }}
+          animate={{ opacity: i === active ? 1 : 0, scale: i === active ? 1.08 : 1 }}
+          transition={{ opacity: { duration: 1.2, ease: 'easeInOut' }, scale: { duration: 7, ease: 'easeOut' } }}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
+      ))}
+    </div>
+  );
+}
+
+const LINEUP_SLIDE_MS = 5500;
+const LINEUP_WITHOUT = ['Maida', 'Refined sugar', 'Preservatives'];
+
+/** Arch-framed, layered artwork for the Alchemi's / Clean Snack Lineup block. */
+function LineupArtwork({ images }) {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    if (images.length < 2) return undefined;
+    const id = setInterval(() => setActive((i) => (i + 1) % images.length), LINEUP_SLIDE_MS);
+    return () => clearInterval(id);
+  }, [images.length]);
+  const current = active % images.length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className="relative mx-auto w-full max-w-[460px] lg:max-w-[500px] group"
+    >
+      {/* dotted grain texture */}
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-8 -right-6 sm:-right-10 w-32 h-32 sm:w-40 sm:h-40 opacity-60 pointer-events-none"
+        style={{ backgroundImage: 'radial-gradient(#D7A94E 1.6px, transparent 1.6px)', backgroundSize: '13px 13px' }}
+      />
+
+      {/* tilted colour plate + gold outline arch */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 translate-x-3 translate-y-3 sm:translate-x-5 sm:translate-y-5 rotate-[3deg] rounded-t-[999px] rounded-b-[2.5rem] bg-gradient-to-br from-berry-deep via-berry to-gold-light group-hover:rotate-[5deg] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -inset-2.5 sm:-inset-4 -rotate-[2.5deg] rounded-t-[999px] rounded-b-[3rem] border-[1.5px] border-gold-light/60 pointer-events-none group-hover:-rotate-[4deg] transition-transform duration-700"
+      />
+
+      {/* the arch */}
+      <div className="relative aspect-[4/5] rounded-t-[999px] rounded-b-[2.5rem] overflow-hidden bg-cream-deep ring-[6px] ring-white shadow-[0_40px_80px_-30px_rgba(121,8,63,0.45)]">
+        <LineupSlides images={images} active={current} />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#1A0F14]/70 via-[#1A0F14]/5 to-transparent pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none mix-blend-soft-light"
+          style={{ background: 'radial-gradient(90% 60% at 50% 0%, rgba(215,169,78,0.45), transparent 70%)' }}
+        />
+
+        {/* bottom chips + slide progress */}
+        <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-7 flex flex-col items-center gap-3.5">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
+            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
+              <Leaf className="h-3.5 w-3.5 text-[#9BE28F]" /> 100% Native Base
+            </span>
+            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
+              <Sparkles className="h-3.5 w-3.5 text-gold-light" /> Honest Baking
+            </span>
+          </div>
+          {images.length > 1 && (
+            <div className="flex gap-1.5">
+              {images.map((src, i) => (
+                <button
+                  key={src}
+                  onClick={() => setActive(i)}
+                  aria-label={`Show image ${i + 1}`}
+                  className="relative h-1 w-8 sm:w-10 rounded-full bg-white/30 overflow-hidden"
+                >
+                  {i === current && (
+                    <motion.span
+                      key={`${current}-${src}`}
+                      className="absolute inset-y-0 left-0 bg-white rounded-full"
+                      initial={{ width: '0%' }}
+                      animate={{ width: '100%' }}
+                      transition={{ duration: LINEUP_SLIDE_MS / 1000, ease: 'linear' }}
+                    />
+                  )}
+                  {i < current && <span className="absolute inset-0 bg-white/80" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* rotating seal */}
+      <div className="absolute -top-3 -right-1 sm:-top-5 sm:-right-6 z-30 h-24 w-24 sm:h-32 sm:w-32 pointer-events-none">
+        <div className="absolute inset-0 rounded-full bg-[#FFFDF8]/95 backdrop-blur-md border border-gold-light/40 shadow-[0_18px_40px_-12px_rgba(178,123,38,0.45)]" />
+        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[spin_24s_linear_infinite]" aria-hidden="true">
+          <defs>
+            <path id="lineup-seal-path" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
+          </defs>
+          <text fill="#B27B26" style={{ fontSize: '8.4px', letterSpacing: '2.4px', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>
+            <textPath href="#lineup-seal-path">ALIMENTURE • CERTIFIED PURE • </textPath>
+          </text>
+        </svg>
+        <div className="absolute inset-0 m-auto h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-berry to-berry-bright text-white flex items-center justify-center shadow-berry">
+          <Sprout className="h-5 w-5 sm:h-6 sm:w-6" />
+        </div>
+      </div>
+
+      {/* floating "baked without" card */}
+      <motion.div
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        className="hidden sm:block absolute -left-12 bottom-[28%] z-30 rounded-2xl bg-white/90 backdrop-blur-xl border border-white shadow-[0_24px_50px_-18px_rgba(121,8,63,0.35)] p-3.5 sm:p-4 pr-5 sm:pr-6"
+      >
+        <p className="text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-[0.2em] text-ink-muted">Baked without</p>
+        <ul className="mt-2 space-y-1.5">
+          {LINEUP_WITHOUT.map((item) => (
+            <li key={item} className="flex items-center gap-2 text-[11.5px] sm:text-[12.5px] font-bold text-[#221B1F]">
+              <span className="inline-flex items-center justify-center h-5 min-w-[30px] px-1.5 rounded-full bg-berry/10 text-berry text-[9px] font-extrabold">0%</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 function CatalogDivider() {
   return (
     <div className="relative flex items-center justify-center py-7 sm:py-11 overflow-visible" aria-hidden="true">
@@ -172,6 +319,8 @@ export default function Home() {
   const superGrainsBg = appearance.superGrainsBg || superGrainsBgDefault;
   const craftingBg = appearance.craftingBg || craftingBgDefault;
   const commitmentBg = appearance.commitmentBg || commitmentBgDefault;
+  const lineupCustom = [appearance.lineupImage1, appearance.lineupImage2, appearance.lineupImage3].filter(Boolean);
+  const lineupImages = lineupCustom.length ? lineupCustom : [womenImage];
   const CATALOG_BG_KEY = {
     'Cookies': 'catalogCookiesBg',
     'Health Mixtures': 'catalogHealthMixturesBg',
@@ -231,7 +380,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [categories, setCategories] = useState([]);
+  const managedCategories = useCategories(); // Admin → Categories (name, order, visible)
   const [featuredProducts, setFeaturedProducts] = useState([]);
+  const delivery = useDeliverySummary();
+  const [storyOpen, setStoryOpen] = useState(false);
   const [superGrains, setSuperGrains] = useState([]);
 
   // Category Bar & Row Scroll Refs & Functions
@@ -257,21 +409,34 @@ export default function Home() {
   // 'biscuit' (and uncategorised products) are folded into Cookies, so they never get their own section.
   const COOKIE_ALIASES = ['biscuit', 'cookies'];
 
-  // Defaults first, then any admin-entered custom categories (case-insensitive de-dupe).
-  const catalogCategories = [...DEFAULT_CATEGORIES, ...categories]
-    .map((cat) => cat.trim())
-    .filter((cat, i, arr) =>
-      cat &&
-      !(COOKIE_ALIASES.includes(cat.toLowerCase()) && cat !== 'Cookies') &&
-      arr.findIndex((c) => c.toLowerCase() === cat.toLowerCase()) === i
-    );
-  const allCategoryTabs = ['All Products', ...catalogCategories];
-
   const productInCategory = (p, catName) => {
     const productCat = (p.category || '').trim().toLowerCase();
     if (catName === 'Cookies') return !productCat || COOKIE_ALIASES.includes(productCat);
     return productCat === catName.toLowerCase();
   };
+
+  // Tabs follow the live catalogue: Admin → Categories order (visible ones),
+  // then any other category found on products — and only categories that
+  // currently have products, so no tab ever opens onto an empty shelf.
+  const orderedCategoryNames = managedCategories.length
+    ? managedCategories.filter((c) => c.visible !== false).map((c) => c.name)
+    : DEFAULT_CATEGORIES;
+  const catalogCategories = [...orderedCategoryNames, ...categories]
+    .map((cat) => String(cat || '').trim())
+    .filter((cat, i, arr) =>
+      cat &&
+      !(COOKIE_ALIASES.includes(cat.toLowerCase()) && cat !== 'Cookies') &&
+      arr.findIndex((c) => c.toLowerCase() === cat.toLowerCase()) === i
+    )
+    .filter((cat) => products.some((p) => productInCategory(p, cat)));
+  const allCategoryTabs = ['All Products', ...catalogCategories];
+  const tabCount = (tab) => (tab === 'All Products' ? products.length : products.filter((p) => productInCategory(p, tab)).length);
+
+  // A selected tab whose products are gone (e.g. after a catalogue change) falls back to All.
+  const activeCategoryGone = activeCategory !== 'All' && products.length > 0 && !catalogCategories.includes(activeCategory);
+  useEffect(() => {
+    if (activeCategoryGone) setActiveCategory('All');
+  }, [activeCategoryGone]);
 
   const getCategoryMeta = (catName) => {
     const c = catName.toLowerCase();
@@ -350,27 +515,34 @@ export default function Home() {
       setFeaturedProducts(fallbackFeatured);
     };
 
+    // Admin-managed grains (Admin → Super Grains). The last good list is kept
+    // locally so a slow or unreachable API shows the real grains, not the
+    // built-in defaults; those only appear if nothing was ever loaded.
+    const GRAINS_CACHE = 'alim_super_grains_v1';
     const fetchGrains = async () => {
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(GRAINS_CACHE)); } catch { /* ignore */ }
+      if (Array.isArray(cached) && cached.length) setSuperGrains(cached);
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/super-grains`);
         if (res.ok) {
           const data = await res.json();
-          if (data.success && data.data && data.data.length > 0) {
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
             setSuperGrains(data.data);
+            try { localStorage.setItem(GRAINS_CACHE, JSON.stringify(data.data)); } catch { /* quota — fine */ }
             return;
           }
         }
       } catch (err) {
         console.error("Failed to fetch super grains", err);
       }
-      setSuperGrains(milletsBenefitList);
+      if (!(Array.isArray(cached) && cached.length)) setSuperGrains(milletsBenefitList);
     };
 
     fetchFeatured();
     fetchGrains();
   }, []);
 
-  const [loadedImages, setLoadedImages] = useState({});
 
   // Carousel Slider State
   const [_slideDirection, setSlideDirection] = useState(1);
@@ -400,15 +572,6 @@ export default function Home() {
     setSlideDirection(-1);
     setCurrentSlide(prev => (prev - 1 + activeSlides.length) % activeSlides.length);
   };
-
-  // Dynamic SEO Optimization
-  useEffect(() => {
-    document.title = 'Alimenture Industries — Premium Toxin-Free Nourishment & Ancient Grains';
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Explore Alimenture Industries. We redefine healthy snacking using ancient grains, organic millets, and clean ingredients. Free from maida, refined oils, or white sugars.');
-    }
-  }, []);
 
   // GSAP Smooth Visual Animations
   useEffect(() => {
@@ -519,6 +682,17 @@ export default function Home() {
 
   const closeQuickAdd = () => setQuickAddItem(null);
 
+  // Hero trust chips — each one is a fact stated elsewhere on the site.
+  const heroTrust = [
+    { Icon: ShieldCheck, label: 'FSSAI registered' },
+    { Icon: Leaf, label: 'Baked in Chennai' },
+    delivery?.freeDeliveryEnabled && delivery.freeDeliveryThreshold
+      ? { Icon: Award, label: `Free delivery over ₹${delivery.freeDeliveryThreshold}` }
+      : null,
+  ].filter(Boolean);
+
+  const scrollToFilm = () => document.getElementById('brand-film')?.scrollIntoView({ behavior: 'smooth' });
+
   const confirmQuickAdd = () => {
     if (!quickAddItem) return;
     const name = quickAddItem.name || quickAddItem.title;
@@ -536,13 +710,14 @@ export default function Home() {
     closeQuickAdd();
   };
 
-  // Image Lazy Loading handler
-  const handleImageLoad = (productId) => {
-    setLoadedImages(prev => ({ ...prev, [productId]: true }));
-  };
-
   return (
     <div className="min-h-screen bg-[#FCFBF9] text-brand-dark relative">
+      <SEO
+        title={HOME_SEO.title}
+        description={HOME_SEO.description}
+        url="/"
+        jsonLd={[organizationJsonLd({ email: SUPPORT_CONTACT.email, phones: SUPPORT_CONTACT.phones }), websiteJsonLd()]}
+      />
 
       {/* ——— AMBIENT GLASS PINK/YELLOW BACKGROUND BLOBS ——— */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -569,26 +744,13 @@ export default function Home() {
 
       {/* ⸻ HERO SECTION (DEDICATED LIGHT MOBILE COMPOSITION + DESKTOP SLIDESHOW) ⸻ */}
       <section ref={heroRef} className="relative w-full bg-[#FBF7EF] overflow-hidden select-none z-10 font-sans">
+        <h1 className="sr-only">Alimenture — millet cookies, ghee, honey and healthy bakes from Chennai</h1>
 
         {/* ── 1. LIGHT THEME MOBILE HERO VIEW (< 640px) ── */}
-        <div className="sm:hidden pt-20 pb-8 px-4 min-h-[85vh] flex flex-col justify-between relative z-10 bg-[#FBF7EF] text-[#221B1F]">
+        <div className="sm:hidden pt-[88px] pb-8 px-4 flex flex-col gap-4 relative z-10 bg-[#FBF7EF] text-[#221B1F]">
           {/* Animated Ambient Light Background Glows */}
           <div className="absolute top-12 right-0 w-72 h-72 bg-berry/8 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-12 left-0 w-72 h-72 bg-gold-light/10 rounded-full blur-[100px] pointer-events-none" />
-
-          {/* Top Brand Header */}
-          <div className="space-y-2.5 text-center relative z-10 pt-2">
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-berry/10 border border-berry/20 text-[9.5px] font-bold uppercase tracking-[0.25em] text-berry shadow-xs backdrop-blur-md">
-              <Sparkles className="h-3.5 w-3.5 text-berry" /> Heritage Grainlets
-            </span>
-            <h1 className="font-display font-bold text-3xl text-[#221B1F] tracking-tight leading-tight">
-              Crafting Grains <br />
-              <span className="accent-text">Into Gold</span>
-            </h1>
-            <p className="text-xs text-ink-soft font-bold max-w-xs mx-auto">
-              0% Maida · 0% Processed Sugar · 100% Pure Millets
-            </p>
-          </div>
 
           {/* Center Banner Artwork — Frameless natural fit */}
           <div className="my-3 relative z-10">
@@ -609,9 +771,9 @@ export default function Home() {
                 </AnimatePresence>
 
                 {/* Corner slide count badge */}
-                <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[8.5px] font-bold tracking-widest text-berry shadow-xs">
+                {activeSlides.length > 1 && <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[8.5px] font-bold tracking-widest text-berry shadow-xs">
                   0{currentSlide + 1} / 0{activeSlides.length}
-                </div>
+                </div>}
               </div>
             )}
           </div>
@@ -657,10 +819,36 @@ export default function Home() {
               </div>
             )}
           </div>
+
+          {/* Primary actions */}
+          <div className="relative z-10 grid grid-cols-2 gap-2.5 pt-1">
+            <Link
+              to="/shop"
+              className="btn-berry h-12 rounded-2xl inline-flex items-center justify-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em]"
+            >
+              <ShoppingCart className="h-4 w-4" /> Shop now
+            </Link>
+            <button
+              type="button"
+              onClick={scrollToFilm}
+              className="h-12 rounded-2xl bg-white border border-hairline text-ink inline-flex items-center justify-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em] shadow-sm active:scale-[0.98] transition-transform"
+            >
+              <Sparkles className="h-4 w-4 text-berry" /> Our story
+            </button>
+          </div>
+
+          {/* Trust chips */}
+          <ul className="relative z-10 flex flex-wrap justify-center gap-x-4 gap-y-2 pt-1">
+            {heroTrust.map(({ Icon, label }) => (
+              <li key={label} className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-ink-soft">
+                <Icon className="h-3.5 w-3.5 text-leaf" /> {label}
+              </li>
+            ))}
+          </ul>
         </div>
 
         {/* ── 2. DESKTOP HERO VIEW (>= 640px) ── */}
-        <div className="hidden sm:flex relative w-full h-[68vh] md:h-[88vh] lg:h-screen min-h-[480px] max-h-[1100px] items-center justify-center overflow-hidden">
+        <div className="hidden sm:flex relative w-full aspect-video max-h-[100svh] min-h-[380px] items-center justify-center overflow-hidden">
           {activeSlides.length > 0 ? (
             <>
               <AnimatePresence>
@@ -775,7 +963,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 2. FEATURED PRODUCTS ⸻ */}
-      <section id="signature-spotlight" className="relative z-10 overflow-hidden py-20 sm:py-28 font-sans">
+      <section id="signature-spotlight" className="relative z-10 overflow-hidden py-12 sm:py-24 font-sans">
         {/* photo backdrop with a warm cream wash */}
         <div className="absolute inset-0 -z-10">
           <img
@@ -796,30 +984,46 @@ export default function Home() {
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1240px] relative z-10">
           {/* centered header */}
-          <div className="flex flex-col items-center text-center gap-4 max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4 max-w-2xl mx-auto mb-8 sm:mb-14">
             <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
               <Sparkles className="h-3.5 w-3.5" /> Signature Blends
             </span>
-            <h2 className="font-display font-bold text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
+            <h2 className="font-display font-bold text-[2.2rem] sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
               Featured <span className="accent-text">products</span>
             </h2>
             <span className="rule-berry" />
             <p className="text-ink-soft text-[14px] sm:text-[15px] leading-relaxed font-medium">
-              Traditional baking at its peak — chemical-free heritage grainlets, country cow butter and pure organic palm sweeteners.
+              Our most-loved bakes and pantry staples — slow-baked with heritage grains, butter and country sugar.
             </p>
             <Link
               to="/shop"
-              className="btn-glass mt-2 inline-flex items-center gap-2 h-11 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em]"
+              className="btn-glass mt-1 inline-flex items-center gap-2 h-11 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em]"
             >
               View all <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          {/* grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {/* Real products: swipe row on phones, grid from tablet up */}
+          {featuredProducts.some((p) => p.id) && (
+            <div className="-mx-4 px-4 scroll-px-4 sm:mx-0 sm:px-0 sm:scroll-px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scrollbar-none pb-2">
+              {featuredProducts.filter((p) => p.id).map((item) => (
+                <div key={item.id} className="w-[78%] max-w-[300px] sm:w-auto sm:max-w-none shrink-0 snap-start flex">
+                  <ProductCard
+                    product={item}
+                    addLabel="Add"
+                    onAdd={(p) => openQuickAdd(p, 'cart')}
+                    onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Offline fallback (no product data) */}
+          <div className={`${featuredProducts.some((p) => p.id) ? 'hidden' : 'grid'} grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6`}>
             {featuredProducts.map((item, index) => {
               const pid = item.id || item._id;
-              const href = pid ? `/product/${pid}` : '/shop';
+              const href = pid ? productPath(item) : '/shop';
               return (
                 <motion.div
                   key={pid || index}
@@ -832,18 +1036,12 @@ export default function Home() {
                     to={href}
                     className="group relative flex flex-col h-full glass foil-top rounded-panel overflow-hidden hover:-translate-y-1.5 transition-transform duration-400"
                   >
-                    <div className="relative aspect-[4/3] overflow-hidden bg-cream">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-ink/40 via-transparent to-transparent" />
-                      <span className="absolute top-3 left-3 inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[8.5px] font-extrabold uppercase tracking-[0.14em] text-berry">
-                        <Sparkles className="h-3 w-3" /> Featured
-                      </span>
+                    <div className="p-2 pb-0">
+                      <ProductImageFrame src={item.image} alt={item.name} className="rounded-[20px]">
+                        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[8.5px] font-extrabold uppercase tracking-[0.14em] text-berry z-20">
+                          <Sparkles className="h-3 w-3" /> Featured
+                        </span>
+                      </ProductImageFrame>
                     </div>
 
                     <div className="flex flex-col flex-1 gap-2.5 p-5">
@@ -880,7 +1078,7 @@ export default function Home() {
       <section
         id="products"
         ref={registerSectionRef}
-        className={`py-24 sm:py-32 relative z-10 font-sans overflow-hidden bg-center bg-cover ${appearance.catalogAllBg ? '' : 'bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF]'}`}
+        className={`py-14 sm:py-28 relative z-10 font-sans overflow-hidden bg-center bg-cover ${appearance.catalogAllBg ? '' : 'bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF]'}`}
         style={appearance.catalogAllBg ? { backgroundImage: `url(${appearance.catalogAllBg})` } : undefined}
       >
 
@@ -938,6 +1136,9 @@ export default function Home() {
                       }`}
                   >
                     {category}
+                    {products.length > 0 && (
+                      <span className={`ml-1.5 tracking-normal ${isSelected ? 'text-white/75' : 'text-ink-muted'}`}>{tabCount(category)}</span>
+                    )}
                   </button>
                 );
               })}
@@ -1040,95 +1241,14 @@ export default function Home() {
                         ref={el => categoryRowRefs.current[catName] = el}
                         className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-1 sm:py-3 px-0.5 sm:px-2 scroll-smooth snap-x snap-mandatory sm:pr-24 w-full"
                       >
-                        {displayProducts.map((item, idx) => (
-                          <div key={item.id || item._id} className="w-full sm:w-[calc(25%-16px)] sm:min-w-[245px] sm:max-w-[290px] shrink-0 flex snap-center">
-                            <motion.article
-                              layout
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.4, delay: idx * 0.04 }}
-                              className="relative flex flex-col w-full rounded-3xl overflow-hidden group
-                                glass
-                                shadow-[0_8px_24px_-6px_rgba(0,0,0,0.06),0_2px_8px_rgba(146,0,117,0.04)]
-                                hover:shadow-[0_20px_45px_-10px_rgba(146,0,117,0.18),0_6px_20px_rgba(0,0,0,0.06)]
-                                hover:border-berry-bright/30 hover:-translate-y-1.5 transition-all duration-400 min-w-0"
-                            >
-                              {/* Image Container with Rounded Inset */}
-                              <div className="relative aspect-square w-full overflow-hidden bg-[#FBF7EF] shrink-0">
-                                {!loadedImages[item.id || item._id] && (
-                                  <div className="absolute inset-0 bg-[#F4EBDA] animate-pulse" />
-                                )}
-                                <img
-                                  src={item.image || lan}
-                                  alt={item.name || item.title}
-                                  className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${loadedImages[item.id || item._id] ? 'opacity-100' : 'opacity-0'}`}
-                                  loading="lazy"
-                                  onLoad={() => handleImageLoad(item.id || item._id)}
-                                />
-                                <span className="absolute top-3 left-3 inline-flex items-center gap-0.5 px-2.5 py-1 rounded-full glass-sm text-[8px] sm:text-[8.5px] font-bold text-[#221B1F] uppercase tracking-wider border border-white/40 shadow-xs z-20">
-                                  <Sparkles className="h-2.5 w-2.5 text-[#D7A94E]" /> Pure
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    const itemId = item.id || item._id;
-                                    if (isInWishlist(itemId)) { toggleWishlist(item); }
-                                    else { openQuickAdd(item, 'wishlist'); }
-                                  }}
-                                  className="absolute top-3 right-3 h-8 w-8 rounded-full glass-sm flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/40 shadow-xs z-20"
-                                  aria-label="Toggle Wishlist"
-                                >
-                                  <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-berry text-berry' : 'text-ink-muted hover:text-berry'}`} />
-                                </button>
-                                {item.stock === 0 && (
-                                  <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center z-10">
-                                    <span className="px-3.5 py-1.5 rounded-lg bg-black/80 text-[8.5px] sm:text-[9px] font-bold text-white uppercase tracking-wider">Sold Out</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Card Body with Non-Overflowing Min-W-0 Layout */}
-                              <div className="p-4 flex-1 flex flex-col gap-2 min-w-0">
-                                <div className="flex items-center justify-between gap-2 min-w-0">
-                                  <span className="text-[8px] font-bold uppercase tracking-wider text-berry bg-berry/8 px-2 py-0.5 rounded-md truncate max-w-[120px]">{item.category || catName}</span>
-                                  <span className="flex items-center gap-0.5 text-[#D7A94E] font-bold text-[9.5px] sm:text-[10px] shrink-0">★ {item.rating || 4.8}</span>
-                                </div>
-                                <Link to={`/product/${item.id || item._id}`}>
-                                  <h3 className="font-display font-bold text-[#221B1F] text-sm sm:text-[15px] leading-snug hover:text-berry transition-colors line-clamp-1">{item.name || item.title}</h3>
-                                </Link>
-                                <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed flex-1 font-medium">{item.description}</p>
-
-                                <div className="pt-4 border-t border-hairline space-y-3 mt-auto w-full">
-                                  <div className="flex items-baseline justify-between">
-                                    <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
-                                    <span className="font-bold text-[#221B1F] text-base sm:text-lg tracking-tight">
-                                      {item.variants && item.variants.length > 0
-                                        ? `From ₹${Math.min(...item.variants.map(v => Number(v.price)))}`
-                                        : `₹${item.price}`}
-                                    </span>
-                                  </div>
-                                  <div className="flex gap-2 w-full">
-                                    <Link
-                                      to={`/product/${item.id || item._id}`}
-                                      className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-hairline text-ink-soft hover:border-gold-light hover:text-gold-light bg-white transition-all shadow-sm"
-                                    >
-                                      View
-                                    </Link>
-                                    <motion.button
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={() => openQuickAdd(item, 'cart')}
-                                      disabled={item.stock === 0}
-                                      className={`flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1.5 transition-all shadow-sm ${item.stock === 0
-                                        ? 'bg-cream border border-hairline text-ink-muted cursor-not-allowed'
-                                        : 'btn-berry'
-                                        }`}
-                                    >
-                                      <ShoppingCart className="h-3.5 w-3.5" />
-                                      <span>{item.stock === 0 ? 'Sold Out' : 'Add'}</span>
-                                    </motion.button>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.article>
+                        {displayProducts.map((item) => (
+                          <div key={item.id || item._id} className="w-[78%] max-w-[300px] sm:w-[calc(25%-16px)] sm:min-w-[245px] sm:max-w-[290px] shrink-0 flex snap-start">
+                            <ProductCard
+                              product={item}
+                              addLabel="Add"
+                              onAdd={(p) => openQuickAdd(p, 'cart')}
+                              onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
+                            />
                           </div>
                         ))}
                       </div>
@@ -1159,81 +1279,12 @@ export default function Home() {
               <div className="flex flex-wrap justify-start gap-6">
                 {filteredProducts.map((item) => (
                   <div key={item.id || item._id} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-[320px] min-w-[220px]">
-                    <motion.article
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="relative flex flex-col w-full rounded-3xl overflow-hidden group
-                        glass
-                        shadow-[0_8px_24px_-6px_rgba(0,0,0,0.06),0_2px_8px_rgba(146,0,117,0.04)]
-                        hover:shadow-[0_20px_45px_-10px_rgba(146,0,117,0.18),0_6px_20px_rgba(0,0,0,0.06)]
-                        hover:border-berry-bright/30 hover:-translate-y-1.5 transition-all duration-400"
-                    >
-                      <div className="relative aspect-square w-full overflow-hidden bg-[#FBF7EF] shrink-0">
-                        <img
-                          src={item.image || lan}
-                          alt={item.name || item.title}
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
-                        />
-                        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full glass-sm text-[8.5px] font-bold text-[#221B1F] uppercase tracking-widest border border-white/30 shadow-xs z-20">
-                          <Sparkles className="h-2.5 w-2.5 text-[#D7A94E]" /> Pure
-                        </span>
-                        <button
-                          onClick={() => {
-                            const itemId = item.id || item._id;
-                            if (isInWishlist(itemId)) { toggleWishlist(item); }
-                            else { openQuickAdd(item, 'wishlist'); }
-                          }}
-                          className="absolute top-3 right-3 h-8 w-8 rounded-full glass-sm flex items-center justify-center hover:scale-110 active:scale-95 transition-all border border-white/30 shadow-xs z-20"
-                        >
-                          <Heart className={`h-3.5 w-3.5 transition-all duration-300 ${isInWishlist(item.id || item._id) ? 'fill-berry text-berry' : 'text-ink-muted hover:text-berry'}`} />
-                        </button>
-                      </div>
-
-                      <div className="relative p-5 flex-1 flex flex-col gap-3 bg-white/60 backdrop-blur-sm z-20">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[8.5px] font-bold uppercase tracking-[0.18em] text-berry bg-berry/8 px-2.5 py-1 rounded-full">{item.category || activeCategory}</span>
-                          <span className="flex items-center gap-0.5 text-[#D7A94E] font-bold text-[10px]">★ {item.rating || 4.8}</span>
-                        </div>
-                        <Link to={`/product/${item.id || item._id}`}>
-                          <h3 className="font-display font-bold text-[#221B1F] text-base leading-snug group-hover:text-berry transition-colors line-clamp-1">{item.name || item.title}</h3>
-                        </Link>
-                        <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed font-medium flex-1">{item.description}</p>
-
-                        <div className="pt-4 border-t border-hairline space-y-3 mt-auto w-full">
-                          <div className="flex items-baseline justify-between">
-                            <span className="text-ink-muted text-[9px] font-bold uppercase tracking-wider">Price</span>
-                            <span className="font-bold text-[#221B1F] text-lg tracking-tight">
-                              {item.variants && item.variants.length > 0
-                                ? `From ₹${Math.min(...item.variants.map(v => Number(v.price)))}`
-                                : `₹${item.price}`}
-                            </span>
-                          </div>
-                          <div className="flex gap-2 w-full">
-                            <Link
-                              to={`/product/${item.id || item._id}`}
-                              className="flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1 border border-hairline text-ink-soft hover:border-gold-light hover:text-gold-light bg-white transition-all shadow-sm"
-                            >
-                              View
-                            </Link>
-                            <motion.button
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => openQuickAdd(item, 'cart')}
-                              disabled={item.stock === 0}
-                              className={`flex-1 h-9 rounded-xl text-[9px] font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-1.5 transition-all shadow-sm ${item.stock === 0
-                                ? 'bg-cream border border-hairline text-ink-muted cursor-not-allowed'
-                                : 'btn-berry'
-                                }`}
-                            >
-                              <ShoppingCart className="h-3.5 w-3.5" />
-                              <span>{item.stock === 0 ? 'Sold Out' : 'Add'}</span>
-                            </motion.button>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.article>
+                    <ProductCard
+                      product={item}
+                      addLabel="Add"
+                      onAdd={(p) => openQuickAdd(p, 'cart')}
+                      onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
+                    />
                   </div>
                 ))}
               </div>
@@ -1254,9 +1305,12 @@ export default function Home() {
       </section>
 
       {/* ⸻ 3. WHY CHOOSE ALIMENTURE (Trust Pillars Checklist Cards) ⸻ */}
-      <section id="trust-pillars" className="py-28 px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative border-b border-hairline/60 overflow-hidden font-sans">
+      {/* ⸻ CATALOGUE DOWNLOAD — lead-gated PDF (Admin → Catalogue) ⸻ */}
+      <CatalogueDownload />
+
+      <section id="trust-pillars" className="py-14 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative border-b border-hairline/60 overflow-hidden font-sans">
         {/* ── Floating particles ── */}
-        <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-light bg-gold-light/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-gold-light/20 shadow-xs backdrop-blur-md">
               Trust Pillars
@@ -1266,37 +1320,41 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
               {
+                Icon: Leaf,
                 title: '100% Natural Ingredients',
                 desc: 'Made with carefully selected ingredients sourced directly from nature.'
               },
               {
+                Icon: ShieldCheck,
                 title: 'No Maida • No White Sugar • No Refined Oil',
                 desc: 'Pure, clean-label recipes free from maida, white sugar, and refined oils — only wholesome ingredients.'
               },
               {
+                Icon: Globe,
                 title: 'Sustainable Practices',
                 desc: 'Eco-friendly packaging and responsible sourcing reducing environmental impact.'
               },
               {
+                Icon: Users,
                 title: 'Farmer Empowerment',
                 desc: 'Ethical partnerships with farming communities encouraging natural agriculture.'
               }
-            ].map(item => (
+            ].map(({ Icon, ...item }) => (
               <div
                 key={item.title}
-                className="relative p-7 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(146,0,117,0.10)] hover:border-berry/30 hover:-translate-y-1.5 transition-all duration-300 space-y-4 group overflow-hidden"
+                className="relative p-4 sm:p-7 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[1.4rem] sm:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(146,0,117,0.10)] hover:border-berry/30 hover:-translate-y-1.5 transition-all duration-300 space-y-3 sm:space-y-4 group overflow-hidden"
               >
-                <div className="h-12 w-12 rounded-2xl bg-white/80 backdrop-blur-md text-berry border border-berry/20 flex items-center justify-center shrink-0 font-bold group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:shadow-[0_8px_20px_rgba(146,0,117,0.18)] transition-all duration-300 shadow-2xs">
-                  <CheckCircle2 className="h-6 w-6" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-berry/10 to-gold-light/15 text-berry border border-berry/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
+                  <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-display font-bold text-lg text-[#221B1F] group-hover:text-berry transition-colors leading-snug">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <h4 className="font-display font-bold text-[14px] sm:text-lg text-[#221B1F] group-hover:text-berry transition-colors leading-snug">
                     {item.title}
                   </h4>
-                  <p className="text-xs text-ink-soft font-medium leading-relaxed">
+                  <p className="text-[11.5px] sm:text-xs text-ink-soft font-medium leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -1306,56 +1364,18 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ⸻ BRAND FILM — admin-managed video (Admin → Templates) ⸻ */}
+      <BrandFilm />
+
       {/* ⸻ 4. HEALTHY SNACKING FOR MODERN LIVING ⸻ */}
-      <section id="company" ref={registerSectionRef} className="py-32 relative z-10 bg-[#FBF7EF] border-t border-hairline/60 overflow-hidden font-sans">
+      <section id="company" ref={registerSectionRef} className="py-16 sm:py-28 relative z-10 bg-[#FBF7EF] border-t border-hairline/60 overflow-hidden font-sans">
         {/* ── Floating particles ── */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="container mx-auto px-6 lg:px-12 max-w-[1400px] space-y-28 relative z-10">
           <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center">
-            <div className="lg:col-span-6 relative group px-2 sm:px-0">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#D7A94E]/20 to-berry/12 rounded-3xl sm:rounded-[4rem] rounded-tr-[6rem] sm:rounded-tr-[10rem] rounded-bl-[6rem] sm:rounded-bl-[10rem] blur-2xl -z-10 group-hover:scale-105 transition-transform duration-700" />
-
-              {/* Certified Pure Badge — Kept safely inside on mobile */}
-              <div className="absolute top-2 right-2 sm:-top-8 sm:-right-8 h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-gradient-to-br from-[#FBF7EF]/95 to-white/90 backdrop-blur-md border border-[#D7A94E]/30 shadow-[0_20px_45px_-10px_rgba(212,175,55,0.3)] flex flex-col items-center justify-center text-center p-2 sm:p-3 animate-[spin_25s_linear_infinite] group-hover:scale-110 transition-all duration-500 z-30 pointer-events-none">
-                <span className="text-[6.5px] sm:text-[7.5px] font-bold tracking-[0.2em] text-[#D7A94E] uppercase">Alimenture</span>
-                <span className="text-[7px] sm:text-[8px] font-bold text-[#221B1F] tracking-[0.1em] mt-1 sm:mt-1.5">CERTIFIED PURE</span>
-                <span className="text-[5.5px] sm:text-[6.5px] text-ink-muted mt-0.5 sm:mt-1">★ ★ ★ ★ ★</span>
-              </div>
-
-              {/* Main Artwork Container */}
-              <div className="relative overflow-hidden rounded-3xl sm:rounded-[4rem] rounded-tr-[6rem] sm:rounded-tr-[10rem] rounded-bl-[6rem] sm:rounded-bl-[10rem] border-[4px] sm:border-[6px] border-white shadow-[0_25px_60px_-15px_rgba(212,175,55,0.18)] hover:shadow-[0_35px_70px_-15px_rgba(146,0,117,0.24)] transition-all duration-700 ease-[0.16,1,0.3,1] z-20">
-                <img
-                  src={womenImage}
-                  alt="Healthy & Mindful Living"
-                  className="w-full h-[380px] sm:h-[520px] object-cover scale-[1.01] group-hover:scale-[1.06] transition-transform duration-1000 ease-[0.16,1,0.3,1]"
-                  loading="lazy"
-                  decoding="async"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
-
-                {/* In-Image Feature Badges */}
-                <div className="absolute bottom-4 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 flex items-center justify-between gap-2 z-20 flex-wrap">
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full glass-sm text-[8.5px] sm:text-[9.5px] font-bold text-[#221B1F] uppercase tracking-wider border border-white/20 shadow-sm">
-                    <Leaf className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-green-600" /> 100% Native Base
-                  </span>
-                  <span className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-full glass-sm text-[8.5px] sm:text-[9.5px] font-bold text-berry uppercase tracking-wider border border-white/20 shadow-sm">
-                    Honest Baking
-                  </span>
-                </div>
-              </div>
-
-              {/* Selected Grains Card — Positioned inside image frame on mobile to prevent chat icon overlap */}
-              <div className="relative mt-3 sm:mt-0 sm:absolute sm:-bottom-8 sm:-left-8 bg-white/95 backdrop-blur-xl border border-hairline/80 sm:border-white/80 rounded-2xl sm:rounded-2xl p-3.5 sm:p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.08)] hover:border-berry/20 transition-all duration-300 z-30 flex items-center gap-3 sm:gap-4 max-w-full sm:max-w-[250px] group/card">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-berry/10 flex items-center justify-center text-berry shrink-0 font-bold group-hover/card:scale-110 transition-all duration-500">
-                  <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-berry" />
-                </div>
-                <div>
-                  <p className="text-[8.5px] sm:text-[9px] font-bold text-berry uppercase tracking-widest">Selected Grains</p>
-                  <p className="text-xs sm:text-sm font-bold text-[#221B1F] mt-0.5">Ragi, Thinai & Kambu</p>
-                </div>
-              </div>
+            <div className="lg:col-span-6 relative px-4 sm:px-10 lg:px-6 pt-4">
+              <LineupArtwork images={lineupImages} />
             </div>
 
             <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left z-10 pt-4 lg:pt-0">
@@ -1364,13 +1384,13 @@ export default function Home() {
               </span>
 
               <h3 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#221B1F] leading-[1.1] tracking-tight text-center lg:text-left">
-                <span className="accent-text">Alchemist</span>
+                <span className="accent-text">Alchemi's</span>
               </h3>
 
               <div className="h-1 w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto lg:mx-0" />
 
               <div className="space-y-6 text-[#5A4F55] text-base md:text-lg leading-relaxed">
-                <p className="font-bold text-[#221B1F] text-justify">
+                <p className="font-bold text-[#221B1F] md:text-justify">
                   A line of healthy, clean-label cookies prepared without maida, refined sugar, or synthetic preservatives.
                 </p>
               </div>
@@ -1424,9 +1444,9 @@ export default function Home() {
               <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center text-berry shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:rotate-6 transition-all duration-500">
                 <Heart className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
-              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-berry transition-colors tracking-tight leading-snug text-center">Why Alchemist Matters</h4>
-              <p className="text-[#5A4F55] leading-relaxed text-justify text-xs sm:text-base font-medium">
-                Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Alchemist was created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
+              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-berry transition-colors tracking-tight leading-snug text-center">Why Alchemi's Matters</h4>
+              <p className="text-[#5A4F55] leading-relaxed md:text-justify text-sm sm:text-base font-medium">
+                Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Alchemi's was created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
               </p>
             </div>
 
@@ -1435,8 +1455,8 @@ export default function Home() {
                 <Zap className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
               <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-[#D7A94E] transition-colors tracking-tight leading-snug text-center">Healthy Snacking for Modern Living</h4>
-              <p className="text-[#5A4F55] leading-relaxed text-justify text-xs sm:text-base font-medium">
-                Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemist is designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
+              <p className="text-[#5A4F55] leading-relaxed md:text-justify text-sm sm:text-base font-medium">
+                Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemi's is designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
               </p>
             </div>
           </div>
@@ -1444,7 +1464,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 5. POWERED BY ANCIENT SUPER GRAINS ⸻ */}
-      <section id="sustainability" ref={registerSectionRef} className="py-28 sm:py-32 border-t border-hairline/60 relative z-10 overflow-hidden font-sans">
+      <section id="sustainability" ref={registerSectionRef} className="py-16 sm:py-28 border-t border-hairline/60 relative z-10 overflow-hidden font-sans">
         {/* heritage-grain photo backdrop with a warm cream wash */}
         <div className="absolute inset-0 -z-10">
           <img
@@ -1522,7 +1542,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 6. OUR PURPOSE ⸻ */}
-      <section id="about" ref={registerSectionRef} className="py-24 px-6 bg-white relative font-sans">
+      <section id="about" ref={registerSectionRef} className="py-14 sm:py-24 px-4 sm:px-6 bg-white relative font-sans">
         <div className="max-w-7xl mx-auto space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-[10px] font-semibold uppercase tracking-widest text-berry bg-berry/10 px-4 py-1.5 rounded-full inline-block border border-berry/20">
@@ -1558,11 +1578,11 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="lg:col-span-7 space-y-6 text-justify">
-              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium text-justify">
+            <div className="lg:col-span-7 space-y-6 md:text-justify">
+              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium md:text-justify">
                 Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition.
               </p>
-              <p className="text-xs sm:text-base text-[#221B1F]/80 leading-relaxed font-medium text-justify">
+              <p className="text-sm sm:text-base text-[#221B1F]/80 leading-relaxed font-medium md:text-justify">
                 More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives.
               </p>
             </div>
@@ -1571,13 +1591,13 @@ export default function Home() {
       </section>
 
       {/* ⸻ 7. WHO WE ARE ⸻ */}
-      <section id="story" className="py-32 relative z-10 bg-[#FBF7EF] overflow-hidden font-sans">
+      <section id="story" className="py-16 sm:py-28 relative z-10 bg-[#FBF7EF] overflow-hidden font-sans">
         <div className="absolute right-0 top-10 w-96 h-96 bg-[#D7A94E]/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute left-0 bottom-10 w-96 h-96 bg-berry/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div className="space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
+            <div className="space-y-6 sm:space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
               <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-berry border border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-sm">
                 Our Story
               </span>
@@ -1586,31 +1606,36 @@ export default function Home() {
               </h2>
               <div className="h-1 w-28 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full" />
 
-              <div className="space-y-6 pt-2 text-justify w-full">
-                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium text-justify">
+              <div className="space-y-6 pt-2 md:text-justify w-full">
+                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium md:text-justify">
                   Alimenture Industries Private Limited was incorporated in Chennai in December 2023 by visionary entrepreneurs Pavin Saminathan and Magesh Mohan.
                 </p>
-                <p className="text-[#5A4F55] leading-relaxed text-xs sm:text-base font-medium text-justify">
+                <p className={`text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium md:text-justify ${storyOpen ? '' : 'line-clamp-4 sm:line-clamp-none'}`}>
                   Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition. More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives. Every product we create reflects our commitment to purity, sustainability, and the well-being of future generations.
                 </p>
+                {!storyOpen && (
+                  <button type="button" onClick={() => setStoryOpen(true)} className="sm:hidden text-[12px] font-extrabold uppercase tracking-[0.14em] text-berry">
+                    Read more
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-8">
               {trustPillars.map((pillar, idx) => (
                 <div key={idx}
-                  className="group relative bg-gradient-to-br from-white to-gray-50/50 border border-hairline/60 rounded-2xl p-8 space-y-6 shadow-sm hover:shadow-xl hover:shadow-rose-900/8 hover:border-berry/20 transition-all duration-400 hover:-translate-y-2 overflow-hidden">
+                  className="group relative bg-gradient-to-br from-white to-gray-50/50 border border-hairline/60 rounded-2xl p-4 sm:p-8 space-y-3 sm:space-y-6 shadow-sm hover:shadow-xl hover:shadow-rose-900/8 hover:border-berry/20 transition-all duration-400 hover:-translate-y-2 overflow-hidden">
                   {/* Liquid sheen top */}
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry-bright/30 to-transparent" />
                   <div className="absolute -top-12 -right-12 w-28 h-28 bg-gradient-to-br from-berry-tint/10 to-gold/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
 
-                  <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-hairline/60 flex items-center justify-center text-berry group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/30 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] group-hover:rotate-6 transition-all duration-500 shadow-sm shrink-0 relative z-10">
+                  <div className="h-11 w-11 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-md border border-hairline/60 flex items-center justify-center text-berry group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/30 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] group-hover:rotate-6 transition-all duration-500 shadow-sm shrink-0 relative z-10">
                     {pillar.icon}
                   </div>
 
                   <div className="space-y-2 relative z-10">
-                    <h3 className="font-display font-bold text-[#221B1F] text-xl leading-tight tracking-wide group-hover:text-berry transition-colors">{pillar.title}</h3>
-                    <p className="text-sm text-ink-soft leading-relaxed font-medium">{pillar.desc}</p>
+                    <h3 className="font-display font-bold text-[#221B1F] text-[14px] sm:text-xl leading-tight tracking-wide group-hover:text-berry transition-colors">{pillar.title}</h3>
+                    <p className="text-[11.5px] sm:text-sm text-ink-soft leading-relaxed font-medium">{pillar.desc}</p>
                   </div>
                 </div>
               ))}
@@ -1620,7 +1645,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 8. THE 3S PHILOSOPHY OF ALIMENTURE ⸻ */}
-      <section id="philosophy-3s" className="pt-10 pb-28 px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative font-sans border-t border-hairline/60 overflow-hidden">
+      <section id="philosophy-3s" className="pt-8 pb-16 sm:pb-28 px-4 sm:px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative font-sans border-t border-hairline/60 overflow-hidden">
         {/* ── Floating particles removed for performance ── */}
         <div className="max-w-7xl mx-auto space-y-20 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -1632,7 +1657,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="-mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 md:scroll-px-0 flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-none pb-2">
             {[
               {
                 icon: <Sprout className="h-7 w-7 text-berry" />,
@@ -1652,7 +1677,7 @@ export default function Home() {
             ].map(card => (
               <div
                 key={card.title}
-                className="relative p-6 sm:p-10 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2.5rem] shadow-[0_10px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_rgba(146,0,117,0.12)] hover:border-berry/30 hover:-translate-y-2 transition-all duration-500 space-y-5 group overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left"
+                className="w-[82%] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-start relative p-6 sm:p-10 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_rgba(146,0,117,0.12)] hover:border-berry/30 hover:-translate-y-2 transition-all duration-500 space-y-5 group overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left"
               >
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry/40 via-[#D7A94E]/50 to-transparent" />
                 <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] transition-all duration-500 mx-auto sm:mx-0">
@@ -1662,7 +1687,7 @@ export default function Home() {
                   <h4 className="font-display font-bold text-xl sm:text-2xl text-[#221B1F] group-hover:text-berry transition-colors leading-tight text-center sm:text-left tracking-tight">
                     {card.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-ink-soft leading-relaxed font-medium text-justify">
+                  <p className="text-[13px] sm:text-sm text-ink-soft leading-relaxed font-medium md:text-justify">
                     {card.desc}
                   </p>
                 </div>
@@ -1673,7 +1698,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 9. CRAFTING GRAINS INTO GOLD ⸻ */}
-      <section id="philosophy" ref={registerSectionRef} className="relative z-10 overflow-hidden font-sans py-24 sm:py-32">
+      <section id="philosophy" ref={registerSectionRef} className="relative z-10 overflow-hidden font-sans py-16 sm:py-28">
         {/* photo backdrop with warm cream wash */}
         <div className="absolute inset-0 -z-10">
           <img
@@ -1758,7 +1783,7 @@ export default function Home() {
       </section>
 
       {/* ⸻ 10. OUR COMMITMENT ⸻ */}
-      <section id="commitment" className="py-20 sm:py-28 px-6 bg-[#FBF7EF] relative font-sans">
+      <section id="commitment" className="py-14 sm:py-28 px-4 sm:px-6 bg-[#FBF7EF] relative font-sans">
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden shadow-[0_45px_110px_-35px_rgba(121,8,63,0.55)] bg-[#1E0518]">
             {/* layered background */}

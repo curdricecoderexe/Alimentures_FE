@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/dialog';
-import { MessageSquare, Send, UserCircle2, Mail, Phone, CalendarDays, ShoppingBag, MapPin, CreditCard, Banknote, CheckCheck, Undo2, Lock } from 'lucide-react';
+import { MessageSquare, Send, UserCircle2, Mail, Phone, CalendarDays, ShoppingBag, MapPin, CreditCard, Banknote, CheckCheck, Undo2, Lock, Trash2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
 
@@ -154,7 +155,7 @@ export default function AdminChats() {
   // pending/active status — unlike staff, admin isn't gated by the accept flow.
   useEffect(() => {
     if (!selectedChat) return;
-    const newSocket = io(SOCKET_URL, { auth: { token: localStorage.getItem('token') } });
+    const newSocket = io(SOCKET_URL, { auth: { token: localStorage.getItem('token') }, withCredentials: true });
     setSocket(newSocket);
     newSocket.on('connect_error', (err) => console.error('Chat connection failed:', err.message));
     newSocket.emit('join_chat', selectedChat.id);
@@ -202,6 +203,30 @@ export default function AdminChats() {
         fetchChats();
       }
     } catch (err) { console.error('Failed to reopen ticket', err); }
+  };
+
+  // Two-step delete: first click arms the button, second click deletes.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  useEffect(() => { setConfirmDelete(false); }, [selectedChat?.id]);
+
+  const deleteChat = async () => {
+    if (!selectedChat) return;
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    try {
+      const res = await authenticatedFetch(`/chat/admin/${selectedChat.id}`, { method: 'DELETE' });
+      if (res?.ok) {
+        setChats((prev) => prev.filter((c) => c.id !== selectedChat.id));
+        setSelectedChat(null);
+        toast.success('Chat deleted');
+      } else {
+        toast.error('Failed to delete chat');
+      }
+    } catch (err) {
+      console.error('Failed to delete chat', err);
+      toast.error('Failed to delete chat');
+    } finally {
+      setConfirmDelete(false);
+    }
   };
 
   const fetchChats = async () => {
@@ -381,6 +406,16 @@ export default function AdminChats() {
                       <CheckCheck className="h-4 w-4" /> Close
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={deleteChat}
+                    onBlur={() => setConfirmDelete(false)}
+                    className={`h-9 rounded-xl font-bold text-xs gap-1.5 ${confirmDelete ? 'bg-red-500 text-white border-red-500 hover:bg-red-600 hover:text-white' : 'text-red-500 border-red-100 hover:bg-red-50'}`}
+                    title="Delete this chat and all its messages"
+                  >
+                    <Trash2 className="h-4 w-4" /> {confirmDelete ? 'Confirm delete' : 'Delete'}
+                  </Button>
                 </div>
               </div>
 

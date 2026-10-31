@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../components/ui/select';
-import { Eye, Search, Filter, Calendar, Package, ChevronRight, Download, FileSpreadsheet, FileText, MapPin, Check } from 'lucide-react';
+import { Eye, Search, Filter, Calendar, Package, ChevronRight, Download, FileSpreadsheet, FileText, MapPin, Check, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
 import ShiprocketPanel from '../../components/ShiprocketPanel';
@@ -190,6 +190,34 @@ export default function AdminOrders() {
       toast.error('Network Error');
     }
     setSelectedOrder(null);
+  };
+
+  // Only closed orders can be deleted (the API enforces the same rule): active
+  // paid orders must be cancelled or refunded first so stock and money are settled.
+  const DELETABLE = ['cancelled', 'refunded', 'payment_failed', 'failed', 'payment_pending'];
+  const canDelete = (o) => DELETABLE.includes(String(o?.status || '').toLowerCase());
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  useEffect(() => { setConfirmDelete(false); }, [selectedOrder?.id]);
+
+  const handleDeleteOrder = async () => {
+    if (!selectedOrder) return;
+    if (!confirmDelete) { setConfirmDelete(true); return; }
+    setDeleting(true);
+    try {
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders/${selectedOrder.id}`, { method: 'DELETE' });
+      if (!res) return;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to delete order');
+      setOrders(prev => prev.filter(o => o.id !== selectedOrder.id));
+      toast.success(`Order ${selectedOrder.id} deleted`);
+      setSelectedOrder(null);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   const filteredOrders = orders.filter(o => 
@@ -587,6 +615,17 @@ export default function AdminOrders() {
               </div>
 
               <DialogFooter className="gap-3">
+                {canDelete(selectedOrder) && (
+                  <Button
+                    variant="ghost"
+                    disabled={deleting}
+                    onClick={handleDeleteOrder}
+                    className={`h-14 rounded-2xl font-bold flex-1 gap-2 ${confirmDelete ? 'bg-red-500 !text-white hover:bg-red-600' : 'text-red-500 hover:bg-red-50'}`}
+                    title="Permanently delete this closed order"
+                  >
+                    <Trash2 className="h-4 w-4" /> {deleting ? 'Deleting…' : confirmDelete ? 'Confirm delete' : 'Delete order'}
+                  </Button>
+                )}
                 <Button 
                   variant="ghost" 
                   className="h-14 rounded-2xl font-bold text-gray-500 flex-1"

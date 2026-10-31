@@ -5,6 +5,7 @@ import { ShoppingCart, Heart, Trash2, ArrowLeft, Sparkles, ArrowRight, Star, Shi
 import { Link, useNavigate } from 'react-router-dom';
 import FallbackImg from '../../assets/lan.webp';
 import { toast } from 'sonner';
+import SEO from '../../components/SEO';
 
 const fadeIn = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
 
@@ -34,6 +35,7 @@ export default function Wishlist() {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden font-sans">
+      <SEO title="Your wishlist" noindex />
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1400px] py-24 relative z-10">
 
         {/* Back button */}

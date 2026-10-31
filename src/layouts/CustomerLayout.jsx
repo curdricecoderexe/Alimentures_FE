@@ -20,8 +20,11 @@ const ChatWidget = lazy(() => import('../components/ChatWidget'));
 import CookieConsent from '../components/CookieConsent';
 import { PageBackdrop } from '../components/ui/motion';
 import { pageview, initAutoTracking, initPerformance } from '../lib/analytics';
-import { cachedFetch, logout } from '../lib/api';
+import { cachedFetch, logout, API_BASE } from '../lib/api';
 import { POLICIES } from '../data/policies';
+import { productPath, categoryPath } from '../lib/seo';
+import { useCategories } from '../lib/categories';
+import { CHENNAI_PAGE } from '../data/localSeo';
 // Removed Loader import
 // Removed unused import: womenImage
 // Removed unused import: coverImage
@@ -31,6 +34,8 @@ gsap.registerPlugin(ScrollTrigger);
 export default function CustomerLayout() {
   const { cart, wishlist } = useCart();
   const navigate = useNavigate();
+  // Crawlable links to every category that has products (SEO + navigation).
+  const footerCategories = useCategories().filter((c) => c.visible !== false && c.productCount > 0);
   const location = useLocation();
 
   const [scrolled, setScrolled] = useState(false);
@@ -45,16 +50,33 @@ export default function CustomerLayout() {
   const [animateWishlist, setAnimateWishlist] = useState(false);
 
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
   const [email, setEmail] = useState('');
 
-  const handleSubscribe = (e) => {
+  // Saves the email (Admin → Subscribers) and triggers the welcome email.
+  const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) {
+    const value = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
       toast.error('Please enter a valid email address.');
       return;
     }
-    setSubscribed(true);
-    toast.success('Welcome to the clean food movement!');
+    setSubscribing(true);
+    try {
+      const res = await fetch(`${API_BASE}/newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: value, source: 'footer' }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.error || 'Something went wrong. Please try again.');
+      setSubscribed(true);
+      toast.success('Welcome to the Nourishment Circle!');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSubscribing(false);
+    }
   };
 
 
@@ -305,7 +327,7 @@ export default function CustomerLayout() {
             </Link>
 
             {/* Desktop Nav */}
-            <div className="flex-1 max-w-2xl mx-4 lg:mx-6 relative hidden md:block">
+            <div className="flex-1 max-w-2xl mx-4 xl:mx-6 relative hidden lg:block">
               <AnimatePresence mode="wait">
                 {!isSearching ? (
                   <motion.div key="nav" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -324,7 +346,7 @@ export default function CustomerLayout() {
                           onClick={() => handleNavClick(link)}
                           onMouseEnter={() => setHoveredTab(link.name)}
                           onMouseLeave={() => setHoveredTab(null)}
-                          className={`relative px-2.5 lg:px-3 py-2 text-[10.5px] font-bold tracking-[0.13em] uppercase transition-colors duration-200 group whitespace-nowrap ${isTargeted ? 'text-berry' : navTextColor
+                          className={`relative px-2 xl:px-3 py-2 text-[10.5px] font-bold tracking-[0.13em] uppercase transition-colors duration-200 group whitespace-nowrap ${isTargeted ? 'text-berry' : navTextColor
                             }`}
                         >
                           <span className="relative z-10">{link.name}</span>
@@ -376,7 +398,7 @@ export default function CustomerLayout() {
                     {searchLoading && <div className="flex justify-center py-3"><Loader2 className="animate-spin text-berry" /></div>}
                     {!searchLoading && searchResults.length === 0 && <p className="text-ink-muted text-xs text-center py-4">No products found…</p>}
                     {searchResults.map(p => (
-                      <Link key={p.id || p._id} to={`/product/${p.id || p._id}`}
+                      <Link key={p.id || p._id} to={productPath(p)}
                         onClick={() => { setIsSearching(false); setSearchQuery(''); }}
                         className="flex items-center gap-3 p-2 rounded-xl hover:bg-berry/5 transition-colors group">
                         <img src={p.image || ImageWithFallback} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-berry/10" />
@@ -393,7 +415,7 @@ export default function CustomerLayout() {
             </div>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center gap-1.5">
+            <div className="hidden lg:flex items-center gap-1.5">
               <motion.div animate={{ scale: 1 }}>
                 <button onClick={() => setIsSearching(!isSearching)}
                   className={`relative rounded-full h-9 w-9 flex items-center justify-center transition-all ${navIconColor} ${isSearching ? 'text-berry' : ''}`}>
@@ -549,7 +571,7 @@ export default function CustomerLayout() {
             </div>
 
             {/* Mobile Actions Header Bar */}
-            <div className="flex md:hidden items-center gap-1.5">
+            <div className="flex lg:hidden items-center gap-1.5">
               {/* Wishlist */}
               <button
                 onClick={() => navigate('/wishlist')}
@@ -775,14 +797,17 @@ export default function CustomerLayout() {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="alimentureindustries@gmail.com"
+                            placeholder="you@example.com"
+                            autoComplete="email"
+                            aria-label="Email address"
                             className="w-full h-12 sm:h-14 pl-10 sm:pl-14 pr-24 sm:pr-36 bg-black/25 border border-white/20 rounded-full text-xs sm:text-sm font-medium text-white placeholder-white/40 focus:outline-none focus:border-gold-light/70 focus:ring-2 focus:ring-gold-light/25 transition-all duration-300 font-sans"
                           />
                           <button
                             type="submit"
-                            className="btn-berry absolute right-1 sm:right-1.5 h-10 sm:h-11 px-3.5 sm:px-6 rounded-full text-white font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider shrink-0 flex items-center justify-center gap-1 sm:gap-2 group/btn font-sans"
+                            disabled={subscribing}
+                            className="btn-berry absolute right-1 sm:right-1.5 h-10 sm:h-11 px-3.5 sm:px-6 rounded-full text-white font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider shrink-0 flex items-center justify-center gap-1 sm:gap-2 group/btn font-sans disabled:opacity-70"
                           >
-                            Join <Send className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                            {subscribing ? 'Joining…' : 'Join'} <Send className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform duration-300" />
                           </button>
                         </motion.form>
                       ) : (
@@ -797,9 +822,9 @@ export default function CustomerLayout() {
                             <Check className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-white text-sm font-sans">Welcome to the Revolution! 🌱</h4>
+                            <h4 className="font-extrabold text-white text-sm font-sans">You're in the circle! 🌱</h4>
                             <p className="text-xs text-white/90 mt-1 leading-relaxed font-sans font-medium">
-                              You've joined our movement. Check your inbox shortly for an exclusive **15% discount code** for your next order!
+                              Check your inbox for a welcome email from Alimenture — with recipes, meal-prep ideas and early word on new batches to follow.
                             </p>
                           </div>
                         </motion.div>
@@ -853,8 +878,31 @@ export default function CustomerLayout() {
               </ul>
             </div>
 
-            {/* Account Column */}
+            {/* Shop + Account Column */}
             <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
+              {footerCategories.length > 0 && (
+                <>
+                  <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Shop</h4>
+                  <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+                    {footerCategories.map((c) => (
+                      <li key={c.id}>
+                        <Link to={categoryPath(c.name)} className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
+                          {c.name}
+                        </Link>
+                      </li>
+                    ))}
+                    {CHENNAI_PAGE.published && (
+                      <li>
+                        <Link to="/locations/chennai" className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
+                          Delivery in Chennai
+                        </Link>
+                      </li>
+                    )}
+                  </ul>
+                </>
+              )}
               <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Account</h4>
               <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
                 <li>
@@ -919,26 +967,27 @@ export default function CustomerLayout() {
 
                 {/* Phone lines */}
                 <div className="space-y-2 flex flex-col items-center sm:items-start">
-                  <a href="tel:+919884733453" className="flex items-center gap-3 group">
-                    <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 shadow-sm flex items-center justify-center text-[#D7A94E] group-hover:bg-white/20 group-hover:border-[#D7A94E]/40 group-hover:scale-110 transition-all duration-300 shrink-0">
-                      <Phone className="h-4 w-4" />
-                    </div>
-                    <span className="hover:text-white transition-colors font-sans">+91 98847 33453</span>
-                  </a>
                   <a href="tel:+917358196132" className="flex items-center gap-3 group">
                     <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 shadow-sm flex items-center justify-center text-[#D7A94E] group-hover:bg-white/20 group-hover:border-[#D7A94E]/40 group-hover:scale-110 transition-all duration-300 shrink-0">
                       <Phone className="h-4 w-4" />
                     </div>
                     <span className="hover:text-white transition-colors font-sans">+91 73581 96132</span>
                   </a>
+                  <a href="tel:+919884733453" className="flex items-center gap-3 group">
+                    <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 shadow-sm flex items-center justify-center text-[#D7A94E] group-hover:bg-white/20 group-hover:border-[#D7A94E]/40 group-hover:scale-110 transition-all duration-300 shrink-0">
+                      <Phone className="h-4 w-4" />
+                    </div>
+                    <span className="hover:text-white transition-colors font-sans">+91 98847 33453</span>
+                  </a>
+                  
                 </div>
 
                 {/* Website link */}
-                <a href="http://www.alimenture.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+                <a href="https://alimenture.in" className="flex items-center gap-3 group">
                   <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 shadow-sm flex items-center justify-center text-[#D7A94E] group-hover:bg-white/20 group-hover:border-[#D7A94E]/40 group-hover:scale-110 transition-all duration-300 shrink-0">
                     <Globe className="h-4 w-4" />
                   </div>
-                  <span className="hover:text-white transition-colors font-sans">www.alimenture.com</span>
+                  <span className="hover:text-white transition-colors font-sans">alimenture.in</span>
                 </a>
 
               </div>

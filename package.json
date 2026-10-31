@@ -8,9 +8,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "sitemap": "node scripts/generate-sitemap.js",
     "build": "vite build",
-    "build:with-sitemap": "npm run sitemap && vite build",
+    "build:prod": "vite build && node scripts/prerender.js && node scripts/check-seo.js",
+    "check:seo": "node scripts/check-seo.js",
+    "test": "node --test test/",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -28,7 +29,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
-    "exceljs": "^4.4.0",
+    "fflate": "^0.8.3",
     "framer-motion": "^12.38.0",
     "gsap": "^3.15.0",
     "html2canvas": "^1.4.1",

@@ -5,6 +5,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff, Loader2, Check, KeyRound } from 'lucide-react';
 import { API_BASE } from '../lib/api';
 import AuthScaffold, { AuthField, AuthTabs } from '../components/AuthScaffold';
+import SEO from '../components/SEO';
+import { SESSION_MARKER } from '../lib/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -26,7 +28,9 @@ export default function Login() {
     toast.success('Welcome back!', { id: 'login-toast', icon: <ShieldCheck className="text-berry" /> });
     if (remember) localStorage.setItem('rememberEmail', email);
     else localStorage.removeItem('rememberEmail');
-    localStorage.setItem('token', data.token);
+    // The session itself is an httpOnly cookie set by the server; scripts never
+    // see the tokens. 'token' is only a non-secret "signed in" marker the UI reads.
+    localStorage.setItem('token', SESSION_MARKER);
     localStorage.setItem('uid', data.uid);
     localStorage.setItem('role', data.role);
     localStorage.setItem('userEmail', data.email);
@@ -104,6 +108,7 @@ export default function Login() {
 
   return (
     <AuthScaffold>
+      <SEO title="Sign in" noindex />
       <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
         <AuthTabs active="signin" />
 

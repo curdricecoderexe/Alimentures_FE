@@ -67,6 +67,7 @@ const ProductDetails = Loadable(lazy(() => import('./pages/customer/ProductDetai
 const Wishlist = Loadable(lazy(() => import('./pages/customer/Wishlist')));
 const MyAddresses = Loadable(lazy(() => import('./pages/customer/MyAddresses')));
 const Policy = Loadable(lazy(() => import('./pages/customer/Policy')));
+const LocationChennai = Loadable(lazy(() => import('./pages/customer/LocationChennai')));
 
 // Staff Pages
 const StaffDashboard = Loadable(lazy(() => import('./pages/staff/Dashboard')));
@@ -88,6 +89,10 @@ const AdminCookiesAnalytics = Loadable(lazy(() => import('./pages/admin/CookiesA
 const AdminCouponCodes = Loadable(lazy(() => import('./pages/admin/CouponCodes')));
 const AdminPincodeDelivery = Loadable(lazy(() => import('./pages/admin/PincodeDelivery')));
 const AdminAppearance = Loadable(lazy(() => import('./pages/admin/Appearance')));
+const AdminCategories = Loadable(lazy(() => import('./pages/admin/Categories')));
+const AdminCatalogue = Loadable(lazy(() => import('./pages/admin/Catalogue')));
+const AdminLeads = Loadable(lazy(() => import('./pages/admin/Leads')));
+const AdminSubscribers = Loadable(lazy(() => import('./pages/admin/Subscribers')));
 
 export const router = createBrowserRouter([
   { path: '*', element: <NotFound />, errorElement: <RouteError /> },
@@ -122,7 +127,12 @@ export const router = createBrowserRouter([
       { path: "cart", element: <Cart /> },
       { path: "checkout", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><Checkout /></ProtectedRoute> },
       { path: "orders", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><OrderTracking /></ProtectedRoute> },
+      // Canonical product URL is /products/<slug>; /product/<id> is the legacy
+      // form — ProductDetails replaces either with the canonical URL once loaded.
+      { path: "products/:id", element: <ProductDetails /> },
       { path: "product/:id", element: <ProductDetails /> },
+      { path: "categories/:categorySlug", element: <Shop /> },
+      { path: "locations/chennai", element: <LocationChennai /> },
       { path: "wishlist", element: <Wishlist /> },
       { path: "addresses", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><MyAddresses /></ProtectedRoute> },
       { path: "policies", element: <Policy /> },
@@ -149,6 +159,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "products", element: <AdminProducts /> },
+      { path: "categories", element: <AdminCategories /> },
+      { path: "catalogue", element: <AdminCatalogue /> },
+      { path: "leads", element: <AdminLeads /> },
+      { path: "subscribers", element: <AdminSubscribers /> },
       { path: "super-grains", element: <AdminSuperGrains /> },
       { path: "orders", element: <AdminOrders /> },
       { path: "users", element: <AdminUsers /> },

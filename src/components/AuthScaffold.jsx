@@ -165,10 +165,10 @@ export function AuthField({ label, labelAction, icon: Icon, trailing, hint, clas
       <div className="flex items-center gap-3 h-[52px] px-4 rounded-2xl bg-paper border border-hairline transition-all focus-within:border-berry/50 focus-within:ring-4 focus-within:ring-berry/10">
         {Icon && <Icon className="h-[17px] w-[17px] text-berry shrink-0" />}
         <input
-          className={`flex-1 bg-transparent outline-none text-[14.5px] font-medium placeholder:text-ink-muted ${className}`}
+          className={`flex-1 min-w-0 w-full bg-transparent outline-none text-[14.5px] font-medium placeholder:text-ink-muted ${className}`}
           {...props}
         />
-        {trailing}
+        {trailing && <span className="shrink-0 flex items-center">{trailing}</span>}
       </div>
       {hint && <p className="text-[10.5px] text-ink-muted font-medium mt-1.5 ml-1">{hint}</p>}
     </label>
@@ -177,7 +177,7 @@ export function AuthField({ label, labelAction, icon: Icon, trailing, hint, clas
 
 /* ─── Segmented Sign in / Create account toggle ───────────────────────── */
 export function AuthTabs({ active }) {
-  const base = 'flex-1 h-9 rounded-full flex items-center justify-center text-[10.5px] font-extrabold uppercase tracking-[0.14em] transition-colors';
+  const base = 'flex-1 min-w-0 h-9 px-2 rounded-full flex items-center justify-center whitespace-nowrap text-[10px] min-[360px]:text-[10.5px] font-extrabold uppercase tracking-[0.08em] min-[360px]:tracking-[0.14em] transition-colors';
   return (
     <div className="glass-sm flex p-1 rounded-full mb-8">
       {active === 'signin' ? (

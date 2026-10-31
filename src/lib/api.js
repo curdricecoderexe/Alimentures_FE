@@ -40,8 +40,37 @@ export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/a
 
 const AUTH_KEYS = ['token', 'uid', 'role', 'userEmail', 'userName'];
 
-/** Read the current auth token from one place (future migration point). */
+/**
+ * Sessions are httpOnly cookies set by the API (see the backend's lib/session.js);
+ * page scripts never hold the tokens. localStorage 'token' is only this marker,
+ * which the UI uses as a "signed in" flag. Sent as a Bearer value it is ignored
+ * by the server, which then reads the cookie.
+ */
+export const SESSION_MARKER = 'cookie-session';
+
+/** The "signed in" marker (no secret). */
 export const getToken = () => localStorage.getItem('token');
+
+const API_ORIGIN = (() => { try { return new URL(API_BASE, window.location.href).origin; } catch { return ''; } })();
+
+/**
+ * Send the session cookie with every request to our API, including from the
+ * dev server (a different port). Installed once from main.jsx.
+ */
+export function installCredentialedFetch() {
+  if (typeof window === 'undefined' || window.__alimFetchPatched) return;
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    try {
+      const url = typeof input === 'string' ? input : input?.url;
+      if (url && new URL(url, window.location.href).origin === API_ORIGIN) {
+        return nativeFetch(input, { credentials: 'include', ...init });
+      }
+    } catch { /* fall through */ }
+    return nativeFetch(input, init);
+  };
+  window.__alimFetchPatched = true;
+}
 
 /**
  * Sign out: tell the server to invalidate every existing token for this user,
@@ -54,6 +83,7 @@ export const logout = async ({ redirect = true } = {}) => {
       await fetch(`${API_BASE}/users/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
     } catch { /* best effort — clear local state regardless */ }
   }

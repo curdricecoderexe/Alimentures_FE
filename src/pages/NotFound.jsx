@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Field, ORB_BERRY, ORB_GOLD } from '../components/ui/motion';
+import SEO from '../components/SEO';
 
 export default function NotFound() {
   const still = useReducedMotion();
 
   return (
     <div className="relative min-h-screen bg-cream flex flex-col items-center justify-center p-6 text-center overflow-hidden font-sans">
+      <SEO title="Page not found" noindex />
       <Field
         orbs={[
           { size: 480, color: ORB_BERRY, top: -140, left: -120 },

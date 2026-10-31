@@ -21,7 +21,11 @@ import {
   Cookie,
   Tag,
   MapPin,
-  Palette
+  Palette,
+  Layers,
+  BookOpen,
+  Contact,
+  Mail,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import logo from '../assets/logo.png';
@@ -70,6 +74,8 @@ export default function AdminLayout() {
       items: [
         { path: '/admin/orders', label: 'Orders', icon: ShoppingBag },
         { path: '/admin/products', label: 'Products', icon: Package },
+        { path: '/admin/categories', label: 'Categories', icon: Layers },
+        { path: '/admin/catalogue', label: 'Catalogue', icon: BookOpen },
         { path: '/admin/super-grains', label: 'Super Grains', icon: Leaf },
         { path: '/admin/coupon-codes', label: 'Coupons', icon: Tag },
         { path: '/admin/pincode-delivery', label: 'PIN Code Delivery', icon: MapPin },
@@ -79,6 +85,8 @@ export default function AdminLayout() {
       title: 'Community & Content',
       items: [
         { path: '/admin/users', label: 'Users', icon: Users },
+        { path: '/admin/leads', label: 'Leads', icon: Contact },
+        { path: '/admin/subscribers', label: 'Subscribers', icon: Mail },
         { path: '/admin/reviews', label: 'Reviews', icon: Star },
         { path: '/admin/chats', label: 'Chats', icon: MessageSquare },
         { path: '/admin/hero-slides', label: 'Hero Banners', icon: ImageIcon },

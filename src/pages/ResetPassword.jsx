@@ -6,6 +6,7 @@ import { Lock, Mail, ArrowRight, ArrowLeft, ShieldCheck, KeyRound, Eye, EyeOff, 
 import { API_BASE } from '../lib/api';
 import useOtpTimer from '../hooks/useOtpTimer';
 import AuthScaffold, { AuthField } from '../components/AuthScaffold';
+import SEO from '../components/SEO';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ export default function ResetPassword() {
 
   return (
     <AuthScaffold>
+      <SEO title="Choose a new password" noindex />
       <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
         {!done ? (
           <>

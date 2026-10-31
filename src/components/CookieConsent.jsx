@@ -92,7 +92,7 @@ export default function CookieConsent() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9999] flex items-end sm:items-end justify-center sm:justify-end p-4 sm:p-6 pointer-events-none"
+        className="fixed inset-0 z-[10000] flex items-end sm:items-end justify-center sm:justify-end p-3 sm:p-6 pointer-events-none"
       >
         <motion.div
           initial={{ y: 80, opacity: 0, scale: 0.96 }}
@@ -106,7 +106,7 @@ export default function CookieConsent() {
 
           {mode === 'banner' ? (
             /* ── BANNER MODE ─────────────────────────────────── */
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-3.5 sm:space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -117,13 +117,13 @@ export default function CookieConsent() {
                   </div>
                   <p className="text-xs text-ink-muted leading-relaxed font-medium">
                     We use cookies to enhance your experience, analyse site traffic, and personalise content.
-                    Your consent choices are stored for 12 months and can be changed at any time.
+                    <span className="hidden sm:inline"> Your consent choices are stored for 12 months and can be changed at any time.</span>
                   </p>
                 </div>
               </div>
 
-              {/* Quick Cookie Summary */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Quick Cookie Summary (desktop — phones get it under Customize) */}
+              <div className="hidden sm:grid grid-cols-2 gap-2">
                 {COOKIE_TYPES.map(c => {
                   const Icon = c.icon;
                   return (
@@ -142,14 +142,14 @@ export default function CookieConsent() {
                   onClick={() => save('all')}
                   className="w-full h-11 rounded-xl bg-[#A50D5A] text-white text-xs font-bold uppercase tracking-widest hover:bg-[#7a0062] transition-all shadow-sm"
                 >
-                  Accept All Cookies
+                  Accept all
                 </button>
                 <div className="flex gap-2">
                   <button
                     onClick={() => save('essential', { analytics: false, marketing: false, preferences: false })}
                     className="flex-1 h-10 rounded-xl border border-hairline text-xs font-bold text-ink-soft hover:bg-cream transition-all"
                   >
-                    Reject Non-Essential
+                    Essential only
                   </button>
                   <button
                     onClick={() => setMode('customize')}
@@ -163,9 +163,7 @@ export default function CookieConsent() {
 
               <p className="text-[9px] text-ink-muted text-center font-medium">
                 By using this site you agree to our{' '}
-                <a href="/privacy" className="text-[#A50D5A] hover:underline">Privacy Policy</a>
-                {' '}and{' '}
-                <a href="/cookies" className="text-[#A50D5A] hover:underline">Cookie Policy</a>.
+                <a href="/policies/privacy-policy" className="text-[#A50D5A] hover:underline">Privacy Policy</a>, which covers cookies.
               </p>
             </div>
           ) : (

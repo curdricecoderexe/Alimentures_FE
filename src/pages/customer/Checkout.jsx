@@ -13,6 +13,7 @@ import CheckoutSteps from '../../components/ui/CheckoutSteps';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
 import { getCities, getDeliveryOptions, isValidPincode } from '../../lib/deliveryApi';
+import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -235,7 +236,7 @@ export default function Checkout() {
     setCheckoutStep('creating');
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
     try {
-      const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() + Math.random().toString();
+      const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
       const response = await authenticatedFetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
@@ -366,6 +367,7 @@ export default function Checkout() {
   if (cart.length === 0) {
     return (
       <div className="relative min-h-screen font-sans text-ink flex items-center justify-center px-4">
+        <SEO title="Checkout" noindex />
         <div className="glass rounded-panel foil-top max-w-md w-full text-center px-8 py-16 relative z-10">
           <span className="ico-chip h-16 w-16 rounded-2xl mx-auto mb-6"><Truck className="h-7 w-7" /></span>
           <h1 className="display-md text-2xl mb-2">Your cart is empty</h1>
@@ -386,6 +388,7 @@ export default function Checkout() {
 
   return (
     <div className="relative min-h-screen font-sans text-ink overflow-x-hidden">
+      <SEO title="Checkout" noindex />
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1264px] py-24 relative z-10">
 
         {/* Header + steps */}

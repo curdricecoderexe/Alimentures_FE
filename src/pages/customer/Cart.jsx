@@ -10,11 +10,14 @@ import { toast } from 'sonner';
 import FallbackImg from '../../assets/lan.webp';
 import { cachedFetch } from '../../lib/api';
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
+import { useDeliverySummary } from '../../lib/delivery';
+import { productPath } from '../../lib/seo';
+import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
 
+// The shipping answer is built from Admin → PIN Code Delivery (see shippingFaq).
 const CART_FAQS = [
-  { q: 'Is free shipping available on all orders?', a: 'Yes! All orders above ₹500 qualify for free shipping anywhere in India. Orders below ₹500 incur a flat ₹50 shipping fee.' },
   { q: 'How many days does delivery take?', a: 'We ship through Shiprocket and its courier partners. Orders are dispatched within 1–2 working days and usually arrive 2–7 working days after that — the estimate for your PIN code is shown at checkout.' },
   { q: 'Can I modify my order after placing it?', a: 'The delivery address can be changed only before a courier is assigned. Contact our support team immediately via chat or email with your order number.' },
   { q: 'Are all Alimenture products 100% natural with no preservatives?', a: 'Absolutely. Every product we bake is free from maida, white sugar, refined oils, preservatives, and artificial additives. We use only ancient grains, palm jaggery, and pure cow butter.' },
@@ -39,15 +42,24 @@ export default function Cart() {
   });
   const [couponMsg, setCouponMsg] = useState('');
 
-  const freeShippingThreshold = 500;
+  const delivery = useDeliverySummary();
+  const freeEnabled = delivery.freeDeliveryEnabled;
+  const freeShippingThreshold = delivery.freeDeliveryThreshold;
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 50;
+  const shipping = subtotal === 0 || (freeEnabled && subtotal >= freeShippingThreshold) ? 0 : delivery.defaultDeliveryFee;
   const discount = couponData?.discountAmount || 0;
   // Shipping is a checkout-time, PIN-code-resolved fee (see Cart's "Shipping charges
   // applied!" note) — never baked into the cart's displayed total.
   const total = Math.max(0, subtotal - discount);
   const remainingForFree = Math.max(0, freeShippingThreshold - subtotal);
-  const progress = Math.min((subtotal / freeShippingThreshold) * 100, 100);
+  const progress = freeShippingThreshold > 0 ? Math.min((subtotal / freeShippingThreshold) * 100, 100) : 100;
+  const shippingFaq = {
+    q: 'Is free shipping available on all orders?',
+    a: freeEnabled
+      ? `Yes! Orders of ₹${freeShippingThreshold} or more ship free. Below that, a standard delivery fee (usually ₹${delivery.defaultDeliveryFee}) applies — the exact charge for your PIN code is shown at checkout.`
+      : `A standard delivery fee (usually ₹${delivery.defaultDeliveryFee}) applies to every order — the exact charge for your PIN code is shown at checkout.`,
+  };
+  const faqs = [shippingFaq, ...CART_FAQS];
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
 
   useEffect(() => {
@@ -130,6 +142,7 @@ export default function Cart() {
   if (cart.length === 0) {
     return (
       <div className="relative min-h-screen font-sans text-ink flex items-center justify-center px-4">
+        <SEO title="Your cart" noindex />
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}
           className="glass rounded-panel foil-top max-w-md w-full text-center px-8 py-16 relative z-10"
@@ -153,6 +166,7 @@ export default function Cart() {
   /* ─────────────────────────── CART ─────────────────────────── */
   return (
     <div className="relative min-h-screen font-sans text-ink overflow-x-hidden">
+      <SEO title="Your cart" noindex />
       <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1264px] py-24 relative z-10">
 
         {/* Header + steps */}
@@ -173,7 +187,7 @@ export default function Cart() {
         </motion.div>
 
         {/* Free shipping progress */}
-        {shipping > 0 && (
+        {freeEnabled && shipping > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}
             className="glass rounded-card p-5 sm:px-6 flex items-center gap-4 sm:gap-6 mb-6"
@@ -228,7 +242,7 @@ export default function Cart() {
                         {item.category && <span className="kicker text-berry text-[9.5px]">{item.category}</span>}
                         <span className="pill-leaf inline-flex items-center h-[22px] px-2 rounded-full text-[9px] font-bold">In stock</span>
                       </div>
-                      <Link to={`/product/${item.id || item._id}`}>
+                      <Link to={productPath(item)}>
                         <p className="display-md text-lg leading-tight hover:text-berry transition-colors line-clamp-1">
                           {item.name || item.title}
                         </p>
@@ -449,7 +463,7 @@ export default function Cart() {
             <h2 className="display-lg text-[2rem]">Cart &amp; checkout FAQs</h2>
           </div>
           <div className="max-w-3xl mx-auto grid grid-cols-1 gap-3">
-            {CART_FAQS.map((faq, i) => (
+            {faqs.map((faq, i) => (
               <div key={i} className={`glass rounded-card overflow-hidden transition-all ${openFaq === i ? 'border-berry/25' : ''}`}>
                 <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-5 sm:p-6 text-left gap-4">
                   <span className={`display-md text-[15px] leading-snug transition-colors ${openFaq === i ? 'text-berry' : ''}`}>{faq.q}</span>

@@ -6,7 +6,9 @@ import App from './App.jsx'
 import { HelmetProvider } from 'react-helmet-async'
 import ErrorBoundary from './components/ErrorBoundary'
 import { installGlobalErrorReporting } from './lib/reportError'
+import { installCredentialedFetch } from './lib/api'
 
+installCredentialedFetch()
 installGlobalErrorReporting()
 
 const root = createRoot(document.getElementById('root'))
