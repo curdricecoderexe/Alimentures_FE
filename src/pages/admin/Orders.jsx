@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ShipmentIssueBadge from '../../components/ShipmentIssueBadge';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
@@ -287,7 +288,10 @@ export default function AdminOrders() {
                     <p className="text-[9.5px] font-bold text-[#E83D6E] uppercase tracking-wider mt-0.5 truncate max-w-[160px]">{order.id}</p>
                   </div>
                   <div className="shrink-0 pt-0.5">
-                    <StatusBadge status={order.status} />
+                    <div className="flex flex-col items-end gap-1">
+                      <StatusBadge status={order.status} />
+                      <ShipmentIssueBadge order={order} />
+                    </div>
                   </div>
                 </div>
 
@@ -352,7 +356,7 @@ export default function AdminOrders() {
                           }`}>{paymentTag(order)}</span>
                         </div>
                       </TableCell>
-                      <TableCell><StatusBadge status={order.status} /></TableCell>
+                      <TableCell><div className="flex flex-wrap items-center gap-1.5"><StatusBadge status={order.status} /><ShipmentIssueBadge order={order} /></div></TableCell>
                       <TableCell className="text-right pr-8">
                         <Button
                           variant="ghost"

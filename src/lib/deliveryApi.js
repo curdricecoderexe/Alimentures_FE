@@ -36,20 +36,31 @@ const PINCODE_RE = /^[1-9][0-9]{5}$/;
 export const isValidPincode = (p) => PINCODE_RE.test(String(p || '').trim());
 
 /**
+ * @param {string} pincode
+ * @param {number} subtotal
+ * @param {Array<{ productId?, id?, selectedWeight?, quantity? }>} [cart]
+ *   optional cart lines — lets the server size the parcel for the courier check.
  * @returns {Promise<{ ok: boolean, data?: object, error?: string }>}
  * `data` shape mirrors the server `resolveDeliveryOptions` payload.
  */
-export async function getDeliveryOptions(pincode, subtotal = 0) {
+export async function getDeliveryOptions(pincode, subtotal = 0, cart = []) {
   const pin = String(pincode || '').trim();
   if (!isValidPincode(pin)) return { ok: false, error: 'Enter a valid 6-digit PIN code' };
 
   const bucket = Math.round(Number(subtotal) || 0);
-  const key = `${pin}:${bucket >= 10000 ? '10000+' : Math.floor(bucket / 100)}`;
+  const lines = (Array.isArray(cart) ? cart : [])
+    .map((i) => [String(i.productId || i.id || i._id || i.uid || ''), i.selectedWeight || '', Number(i.quantity) || 1])
+    .filter((l) => l[0])
+    .slice(0, 50);
+  const cartParam = lines.length ? JSON.stringify(lines) : '';
+  const key = `${pin}:${bucket >= 10000 ? '10000+' : Math.floor(bucket / 100)}:${cartParam}`;
   const cached = _options.get(key);
   if (cached && Date.now() - cached.at < OPTIONS_TTL) return { ok: true, data: cached.data };
 
   try {
-    const res = await fetch(`${API}/delivery/options/${pin}?subtotal=${bucket}`);
+    const qs = new URLSearchParams({ subtotal: String(bucket) });
+    if (cartParam) qs.set('cart', cartParam);
+    const res = await fetch(`${API}/delivery/options/${pin}?${qs}`);
     const json = await res.json();
     if (!res.ok || !json.success) return { ok: false, error: json.error || 'Could not check delivery for this PIN code' };
     _options.set(key, { at: Date.now(), data: json.data });

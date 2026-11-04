@@ -23,7 +23,7 @@ const labelCls = 'block text-[10px] font-bold uppercase tracking-wider text-gray
 const EMPTY_FORM = {
   pincode: '', state: '', city: '', deliveryAvailable: true,
   standardFeeType: 'default', deliveryFee: '', fastestDeliveryAvailable: false, fastestDeliveryFee: '',
-  standardEta: '', fastestEta: '', note: '',
+  standardEta: '', fastestEta: '', note: '', deliveryPartner: 'shiprocket',
 };
 
 async function api(path, opts = {}) {
@@ -54,6 +54,7 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
         fastestDeliveryFee: editing.fastestDeliveryFee ?? '',
         standardEta: editing.standardDeliveryEta || '', fastestEta: editing.fastestDeliveryEta || '',
         note: editing.note || '',
+        deliveryPartner: editing.deliveryPartner || 'shiprocket',
       }
       : EMPTY_FORM);
   }, [open, editing]);
@@ -81,6 +82,7 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
         fastestDeliveryAvailable: form.fastestDeliveryAvailable,
         fastestDeliveryFee: Number(form.fastestDeliveryFee) || 0,
         standardEta: form.standardEta, fastestEta: form.fastestEta, note: form.note,
+        deliveryPartner: form.deliveryPartner,
       };
       if (editing) await api(`/pincodes/${form.pincode}`, { method: 'PUT', body: JSON.stringify(payload) });
       else await api('/pincodes', { method: 'POST', body: JSON.stringify(payload) });
@@ -138,6 +140,24 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
                   placeholder={form.state ? 'Select City' : 'Pick a state'} searchPlaceholder="Search cities…"
                   emptyText={form.state ? 'No cities found' : 'Select a state first'}
                   triggerClassName={adminSelectCls} ariaLabel="City" />
+              </div>
+
+              <div className="col-span-2 border-t border-gray-100 pt-4">
+                <label className={labelCls}>Delivered by</label>
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-gray-50 border border-gray-100">
+                  {[['shiprocket', 'Shiprocket couriers'], ['local', 'Our local partner']].map(([v, l]) => (
+                    <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, deliveryPartner: v }))}
+                      className={`h-9 rounded-lg text-xs font-bold transition-all ${
+                        form.deliveryPartner === v ? 'bg-white text-[#C41E6B] shadow-sm border border-[#C41E6B]/20' : 'text-gray-400 hover:text-gray-600'}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1.5">
+                  {form.deliveryPartner === 'local'
+                    ? 'Orders to this PIN are NOT pushed to Shiprocket. Staff hand them to your partner and update the status in Orders.'
+                    : 'A Shiprocket courier must serve this PIN — it is checked live at checkout and blocked if none does.'}
+                </p>
               </div>
 
               <div className="col-span-2 border-t border-gray-100 pt-4">
@@ -256,6 +276,10 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
         freeDeliveryEnabled: !!form.freeDeliveryEnabled,
         freeDeliveryThreshold: num(form.freeDeliveryThreshold),
         serviceByDefault: !!form.serviceByDefault,
+        courierLinkedFee: !!form.courierLinkedFee,
+        courierFeeBands: (form.courierFeeBands || [])
+          .filter((b) => b.fee !== '' && b.fee != null)
+          .map((b) => ({ maxRate: num(b.maxRate), fee: num(b.fee) })),
       }
       : {
         fastestDeliveryEnabled: !!form.fastestDeliveryEnabled,
@@ -277,6 +301,30 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
           <Row label="Free delivery over a threshold"><Toggle k="freeDeliveryEnabled" /></Row>
           {form.freeDeliveryEnabled && <Row label="Free-delivery threshold" hint="Standard delivery is free at or above this subtotal"><NumInput k="freeDeliveryThreshold" ph="500" /></Row>}
           <Row label="Deliver to unlisted PIN codes" hint="When ON, any 6-digit PIN not in the table is deliverable at the default fee"><Toggle k="serviceByDefault" /></Row>
+          <Row label="Link default fee to courier cost" hint="Charge by Shiprocket's freight quote for the cart (bands below) instead of one flat fee. Custom PIN fees and free delivery still apply."><Toggle k="courierLinkedFee" /></Row>
+          {form.courierLinkedFee && (
+            <div className="py-4 space-y-2">
+              <p className="text-xs text-gray-400">If Shiprocket quotes up to <b>₹ freight</b>, charge the customer <b>₹ fee</b>. Leave the last band's freight empty or 0 for "anything above". Falls back to the default fee when Shiprocket can't quote.</p>
+              {(form.courierFeeBands || []).map((b, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <span className="text-xs font-bold text-gray-400 w-20">Freight ≤ ₹</span>
+                  <input type="number" min="0" value={b.maxRate || ''} placeholder="above"
+                    onChange={(e) => set('courierFeeBands', form.courierFeeBands.map((x, j) => (j === i ? { ...x, maxRate: e.target.value } : x)))}
+                    className={`${inputCls} w-24`} />
+                  <span className="text-xs font-bold text-gray-400">→ charge ₹</span>
+                  <input type="number" min="0" value={b.fee}
+                    onChange={(e) => set('courierFeeBands', form.courierFeeBands.map((x, j) => (j === i ? { ...x, fee: e.target.value } : x)))}
+                    className={`${inputCls} w-24`} />
+                  <button type="button" onClick={() => set('courierFeeBands', form.courierFeeBands.filter((_, j) => j !== i))}
+                    className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
+                </div>
+              ))}
+              {(form.courierFeeBands || []).length < 10 && (
+                <button type="button" onClick={() => set('courierFeeBands', [...(form.courierFeeBands || []), { maxRate: '', fee: '' }])}
+                  className="text-xs font-bold text-[#C41E6B] flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add band</button>
+              )}
+            </div>
+          )}
         </>
       ) : (
         <>
@@ -583,7 +631,12 @@ export default function PincodeDelivery() {
                       return (
                         <tr key={r.pincode} className={`border-t border-gray-50 hover:bg-gray-50/40 ${inactive ? 'opacity-50' : ''}`}>
                           <td className="p-4"><input type="checkbox" checked={selected.has(r.pincode)} onChange={() => toggleRow(r.pincode)} className="accent-[#C41E6B]" /></td>
-                          <td className="p-4 font-mono font-bold text-gray-900 tracking-wider">{r.pincode}</td>
+                          <td className="p-4 font-mono font-bold text-gray-900 tracking-wider">
+                            {r.pincode}
+                            {r.deliveryPartner === 'local' && (
+                              <span className="ml-2 font-sans text-[9px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded-full">Local partner</span>
+                            )}
+                          </td>
                           <td className="p-4 text-gray-600">{r.city || '—'}</td>
                           <td className="p-4 text-gray-500">{r.state || '—'}</td>
                           <td className="p-4 text-right">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Truck, RefreshCw, FileDown, ExternalLink, AlertTriangle, Loader2, Send } from 'lucide-react';
+import { Truck, RefreshCw, FileDown, ExternalLink, AlertTriangle, Loader2, Send, Box, Bike, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
@@ -15,6 +15,17 @@ const STATE_LABEL = {
   pickup_scheduled: 'Pickup scheduled',
   in_transit: 'In transit',
   delivered: 'Delivered',
+  rto_in_transit: 'Returning to you (RTO)',
+  rto_delivered: 'Returned to you (RTO delivered)',
+  lost: 'Lost / damaged in transit',
+  cancelled: 'Cancelled in Shiprocket',
+};
+
+const ALERT_HELP = {
+  rto_in_transit: 'The parcel is coming back. Once it arrives and is checked, refund the order — refunding restocks the items.',
+  rto_delivered: 'The parcel is back at your pickup address. Inspect it, then refund the order to restock and repay the customer.',
+  lost: 'Raise a lost/damaged claim in Shiprocket, then refund the customer.',
+  cancelled: 'This shipment was cancelled in Shiprocket.',
 };
 
 let statusPromise = null;
@@ -28,6 +39,31 @@ const loadShiprocketStatus = () => {
   return statusPromise;
 };
 
+let boxesPromise = null;
+const loadBoxes = () => {
+  if (!boxesPromise) {
+    boxesPromise = authenticatedFetch(`${API_BASE}/shipping/packaging`)
+      .then((r) => (r ? r.json() : null))
+      .then((d) => (d?.success ? (d.data.boxes || []).filter((b) => b.isActive) : []))
+      .catch(() => { boxesPromise = null; return []; });
+  }
+  return boxesPromise;
+};
+
+const EMPTY_CUSTOM = { length: '', breadth: '', height: '', weightKg: '' };
+
+/** Override sent to the API for the current box choice ('' = automatic). */
+function packageOverride(choice, custom) {
+  if (choice === 'custom') {
+    const o = { length: custom.length, breadth: custom.breadth, height: custom.height };
+    if (custom.weightKg !== '') o.weightKg = custom.weightKg;
+    return o;
+  }
+  return choice ? { boxId: choice } : null;
+}
+
+const fmtPkg = (p) => `${p.boxName}${p.boxId && p.boxName !== p.boxId ? ` (${p.boxId})` : ''} · ${p.length}×${p.breadth}×${p.height} cm · ${p.weightKg} kg`;
+
 /**
  * Shiprocket fulfilment controls for one order (admin + staff order modals).
  * `onOrderUpdated(patch)` receives `{ shipment, status? }` after every change.
@@ -37,7 +73,17 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   const [busy, setBusy] = useState(null);
   const [couriers, setCouriers] = useState(null);
   const [courierId, setCourierId] = useState('');
+  const [boxes, setBoxes] = useState([]);
+  const [boxChoice, setBoxChoice] = useState('');
+  const [custom, setCustom] = useState(EMPTY_CUSTOM);
+  const [pkg, setPkg] = useState(null);
+  const [forceLocal, setForceLocal] = useState(false);
   const sh = order?.shipment || {};
+  const isLocal = order?.deliveryPartner === 'local';
+  const isFastest = order?.deliveryMethod === 'fastest';
+  const canPush = enabled && !sh.shipmentId && SHIPPABLE.includes(order?.status) && (!isLocal || forceLocal);
+  const freight = sh.freightEstimate ?? order?.estimatedShippingCost ?? null;
+  const feeCharged = Number(order?.deliveryFee ?? order?.shipping ?? 0);
 
   useEffect(() => {
     let alive = true;
@@ -45,7 +91,39 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
     return () => { alive = false; };
   }, []);
 
-  useEffect(() => { setCouriers(null); setCourierId(''); }, [order?.id]);
+  useEffect(() => {
+    setCouriers(null); setCourierId('');
+    setBoxChoice(''); setCustom(EMPTY_CUSTOM); setPkg(null); setForceLocal(false);
+  }, [order?.id]);
+
+  useEffect(() => {
+    if (!canPush) return undefined;
+    let alive = true;
+    loadBoxes().then((b) => { if (alive) setBoxes(b); });
+    return () => { alive = false; };
+  }, [canPush]);
+
+  // Live parcel preview for the chosen box (debounced for custom typing).
+  useEffect(() => {
+    if (!canPush) return undefined;
+    const override = packageOverride(boxChoice, custom);
+    if (boxChoice === 'custom' && !(custom.length > 0 && custom.breadth > 0 && custom.height > 0)) {
+      setPkg(null);
+      return undefined;
+    }
+    let alive = true;
+    const t = setTimeout(async () => {
+      const qs = override ? `?${new URLSearchParams(override)}` : '';
+      try {
+        const res = await authenticatedFetch(`${API_BASE}/shipping/orders/${order.id}/package${qs}`);
+        const data = res ? await res.json().catch(() => ({})) : {};
+        if (alive) setPkg(data.success ? data.data : { error: data.error || 'Could not size the parcel' });
+      } catch {
+        if (alive) setPkg({ error: 'Network error' });
+      }
+    }, boxChoice === 'custom' ? 400 : 0);
+    return () => { alive = false; clearTimeout(t); };
+  }, [canPush, order?.id, boxChoice, custom]);
 
   const call = async (key, path, { method = 'POST', body } = {}) => {
     setBusy(key);
@@ -71,7 +149,10 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   };
 
   const createShipment = async () => {
-    const shipment = await call('create', 'create');
+    const override = packageOverride(boxChoice, custom);
+    const body = override ? { package: override } : {};
+    if (isLocal) body.force = true;
+    const shipment = await call('create', 'create', { body });
     if (shipment) {
       onOrderUpdated?.({ shipment });
       toast.success('Order pushed to Shiprocket');
@@ -82,7 +163,8 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
     const data = await call('couriers', 'couriers', { method: 'GET' });
     if (data) {
       setCouriers(data.couriers || []);
-      setCourierId(data.recommendedId ? String(data.recommendedId) : '');
+      // Fastest orders default to the express courier; otherwise Shiprocket's recommendation.
+      setCourierId(isFastest && data.expressId ? String(data.expressId) : '');
       if (!data.serviceable) toast.error('No courier services this PIN code');
     }
   };
@@ -128,6 +210,11 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
                     Shipment {sh.shipmentId}{sh.srOrderId ? ` · SR order ${sh.srOrderId}` : ''}{sh.weightKg ? ` · ${sh.weightKg} kg` : ''}
                   </p>
                 )}
+                {sh.package && (
+                  <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                    Parcel: {fmtPkg(sh.package)}{sh.package.source === 'manual' ? ' · set by staff' : ''}
+                  </p>
+                )}
                 {sh.awb && (
                   <p className="text-[11px] font-bold text-[#E83D6E]">
                     {sh.courierName || 'Courier'} · AWB {sh.awb}
@@ -141,6 +228,58 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
               </div>
             </div>
 
+            {isLocal && !sh.shipmentId && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 text-[11px] font-semibold">
+                <Bike className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <div className="space-y-1.5">
+                  <p>This PIN code is delivered by your <b>local delivery partner</b>. Hand the parcel to them and update the status with the progress steps above.</p>
+                  {!forceLocal && SHIPPABLE.includes(order.status) && (
+                    <button type="button" onClick={() => setForceLocal(true)} className="underline font-bold">
+                      Ship via Shiprocket anyway
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {(freight != null || sh.awb) && (
+              <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                Delivery fee charged ₹{feeCharged}
+                {freight != null && (
+                  <> · courier cost {sh.freightEstimate != null ? '' : '≈ '}₹{freight}
+                    {' · '}<span className={feeCharged - freight < 0 ? 'text-red-600 font-bold' : 'text-emerald-600 font-bold'}>
+                      {feeCharged - freight < 0 ? 'loss' : 'margin'} ₹{Math.abs(Math.round(feeCharged - freight))}
+                    </span>
+                  </>
+                )}
+                {isFastest && <> · <b>Fastest</b>{sh.courierPick === 'express' ? ' (express courier)' : ''}</>}
+              </p>
+            )}
+
+            {ALERT_HELP[sh.state] && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 text-[11px] font-semibold">
+                <Undo2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>{ALERT_HELP[sh.state]}</span>
+              </div>
+            )}
+
+            {sh.ndr && !['delivered', ...Object.keys(ALERT_HELP)].includes(sh.state) && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[11px] font-semibold">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>
+                  Delivery attempt failed{sh.ndr.count > 1 ? ` (${sh.ndr.count}×)` : ''}: {sh.ndr.status}. Call the customer, then choose re-attempt or update the
+                  address in Shiprocket → NDR before the courier returns the parcel.
+                </span>
+              </div>
+            )}
+
+            {sh.needsAttention && !sh.shipmentId && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 text-[11px] font-semibold">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>Automatic push failed {sh.retryCount || 3} times. Fix the problem below (often the address or phone), then push manually.</span>
+              </div>
+            )}
+
             {(sh.error || sh.exception) && (
               <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[11px] font-semibold">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
@@ -148,15 +287,62 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
               </div>
             )}
 
+            {canPush && (
+              <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A1021] space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Box className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                  <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Parcel box</span>
+                  <select
+                    value={boxChoice}
+                    onChange={(e) => setBoxChoice(e.target.value)}
+                    className="h-8 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#24162E] px-2 text-[11px] font-bold"
+                  >
+                    <option value="">Automatic (best fit)</option>
+                    {boxes.map((b) => (
+                      <option key={b.id} value={b.id}>{b.name} · {b.length}×{b.breadth}×{b.height} cm</option>
+                    ))}
+                    <option value="custom">Custom size…</option>
+                  </select>
+                </div>
+                {boxChoice === 'custom' && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {[['length', 'L cm'], ['breadth', 'B cm'], ['height', 'H cm'], ['weightKg', 'Weight kg (opt.)']].map(([k, ph]) => (
+                      <input
+                        key={k}
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        placeholder={ph}
+                        value={custom[k]}
+                        onChange={(e) => setCustom((c) => ({ ...c, [k]: e.target.value }))}
+                        className={`h-8 ${k === 'weightKg' ? 'w-32' : 'w-20'} rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#24162E] px-2 text-[11px] font-bold`}
+                      />
+                    ))}
+                  </div>
+                )}
+                {pkg?.error && <p className="text-[11px] font-semibold text-red-600">{pkg.error}</p>}
+                {pkg && !pkg.error && (
+                  <>
+                    <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                      {fmtPkg(pkg)} · volumetric {pkg.volumetricKg} kg · <b>billed as {pkg.chargeableKg} kg</b>
+                    </p>
+                    {pkg.warnings?.map((w) => (
+                      <p key={w} className={`text-[11px] font-semibold ${pkg.fits ? 'text-gray-500 dark:text-gray-400' : 'text-amber-700 dark:text-amber-300'}`}>• {w}</p>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
-              {!sh.shipmentId && SHIPPABLE.includes(order.status) && (
+              {canPush && (
                 <Button onClick={createShipment} disabled={!!busy} className="h-9 px-3.5 rounded-xl bg-black !text-white font-bold text-xs">
                   {busy === 'create' ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
                   Push to Shiprocket
                 </Button>
               )}
 
-              {sh.shipmentId && !sh.awb && (
+              {sh.shipmentId && !sh.awb && sh.state !== 'cancelled' && (
                 <>
                   {couriers === null ? (
                     <Button variant="outline" onClick={loadCouriers} disabled={!!busy} className="h-9 px-3.5 rounded-xl font-bold text-xs">
@@ -169,10 +355,10 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
                       onChange={(e) => setCourierId(e.target.value)}
                       className="h-9 max-w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1A1021] px-2.5 text-xs font-bold"
                     >
-                      <option value="">Shiprocket recommended</option>
+                      <option value="">{isFastest ? 'Auto (express courier for fastest)' : 'Shiprocket recommended'}</option>
                       {couriers.map((c) => (
                         <option key={c.courierId} value={c.courierId}>
-                          {c.name} · ₹{c.rate}{c.estimatedDays ? ` · ${c.estimatedDays}d` : ''}
+                          {c.name} · ₹{c.rate}{c.estimatedDays ? ` · ${c.estimatedDays}d` : ''}{c.isSurface ? '' : ' · express'}
                         </option>
                       ))}
                     </select>

@@ -91,6 +91,8 @@ export default function Checkout() {
   };
 
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // Re-quote delivery when the cart's contents (not just its value) change — parcel weight matters.
+  const cartKey = cart.map((i) => `${i.id || i._id || i.uid}:${i.selectedWeight}:${i.quantity}`).join('|');
   const discount = appliedCoupon?.discountAmount || 0;
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
 
@@ -183,7 +185,7 @@ export default function Checkout() {
     let alive = true;
     setDeliveryChecking(true);
     const t = setTimeout(async () => {
-      const r = await getDeliveryOptions(pin, subtotal);
+      const r = await getDeliveryOptions(pin, subtotal, cart);
       if (!alive) return;
       setDeliveryChecking(false);
       if (r.ok) {
@@ -197,7 +199,7 @@ export default function Checkout() {
     }, 350);
     return () => { alive = false; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.pincode, subtotal]);
+  }, [formData.pincode, subtotal, cartKey]);
 
   // Resolved (or estimated) delivery fee for the chosen method.
   let resolvedFee;
