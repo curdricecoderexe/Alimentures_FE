@@ -21,6 +21,7 @@ import {
   Cookie,
   Tag,
   MapPin,
+  Boxes,
   Palette,
   Layers,
   BookOpen,
@@ -79,6 +80,7 @@ export default function AdminLayout() {
         { path: '/admin/super-grains', label: 'Super Grains', icon: Leaf },
         { path: '/admin/coupon-codes', label: 'Coupons', icon: Tag },
         { path: '/admin/pincode-delivery', label: 'PIN Code Delivery', icon: MapPin },
+        { path: '/admin/shipping-boxes', label: 'Shipping & Boxes', icon: Boxes },
       ]
     },
     {

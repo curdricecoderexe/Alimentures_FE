@@ -579,6 +579,11 @@ export default function StaffInventory() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Primary Description</Label>
                   <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl bg-gray-50 h-20 text-xs" placeholder="Main product summary..." />
+                  {/^[^a-z]*[A-Z][^a-z]*$/.test(formData.description || '') && (formData.description || '').replace(/[^A-Za-z]/g, '').length >= 4 && (
+                    <p className="text-[11px] font-semibold text-amber-600 ml-1">
+                      This is all in CAPITALS — write it in sentence case (e.g. &ldquo;Fresh hand-scraped coconut &amp; red millets&rdquo;) so the catalogue looks consistent.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Product Highlights (Left Panel Paragraph)</Label>

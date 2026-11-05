@@ -114,7 +114,7 @@ export default function AdminProducts() {
 
   const emptyForm = { 
     title: '', category: 'Cookies', price: '', stock: '', description: '', secondaryDescription: '', image: null, secondaryImage: null, tertiaryImage: null, isFeatured: false,
-    badges: '', cleanPromises: '', cleanBadges: '', nutritionFacts: [],
+    badges: '', cleanPromises: '', cleanBadges: '', nutritionFacts: [], hsn: '', gstRate: '',
     variants: [
       { weight: '250g', price: '', mrp: '', stock: '' },
       { weight: '500g', price: '', mrp: '', stock: '' },
@@ -182,6 +182,14 @@ export default function AdminProducts() {
           .join(', ');
       }
       if (!Array.isArray(p.nutritionFacts)) p.nutritionFacts = [];
+      p.hsn = p.hsn || '';
+      p.gstRate = p.gstRate ?? '';
+      // Packed weight (kg → g) and L×B×H for the Shiprocket parcel.
+      p.variants = (Array.isArray(p.variants) && p.variants.length ? p.variants : emptyForm.variants).map(v => ({
+        ...v,
+        shipWeightG: v.shipWeightKg ? String(Math.round(v.shipWeightKg * 1000)) : '',
+        dimL: v.dims?.l ?? '', dimB: v.dims?.b ?? '', dimH: v.dims?.h ?? '',
+      }));
       setFormData(p);
     } else {
       setFormData(emptyForm);
@@ -198,8 +206,7 @@ export default function AdminProducts() {
   const removeNutritionRow = (index) => setFormData(prev => ({ ...prev, nutritionFacts: (prev.nutritionFacts || []).filter((_, i) => i !== index) }));
 
   const handleVariantChange = (index, field, value) => {
-    const newVariants = [...formData.variants];
-    newVariants[index][field] = value;
+    const newVariants = formData.variants.map((v, i) => (i === index ? { ...v, [field]: value } : v));
     setFormData({ ...formData, variants: newVariants });
   };
 
@@ -230,6 +237,23 @@ export default function AdminProducts() {
       toast.error(`MRP for ${badMrp.weight || 'a variant'} must be higher than its selling price`);
       return;
     }
+    const partialDims = validVariants.find(v => {
+      const filled = [v.dimL, v.dimB, v.dimH].filter(x => x !== '' && x != null).length;
+      return filled > 0 && filled < 3;
+    });
+    if (formData.hsn && !/^\d{4,8}$/.test(String(formData.hsn).trim())) {
+      toast.error('HSN code must be 4–8 digits');
+      return;
+    }
+    const skus = validVariants.map(v => String(v.sku || '').trim().toUpperCase()).filter(Boolean);
+    if (new Set(skus).size !== skus.length) {
+      toast.error('Two variants have the same SKU');
+      return;
+    }
+    if (partialDims) {
+      toast.error(`Enter all three packed dimensions (L × B × H) for ${partialDims.weight || 'a variant'}, or leave them empty`);
+      return;
+    }
 
     const finalData = {
       ...formData,
@@ -252,13 +276,21 @@ export default function AdminProducts() {
       nutritionFacts: (formData.nutritionFacts || [])
         .map(r => ({ label: (r.label || '').trim(), value: (r.value || '').trim() }))
         .filter(r => r.label || r.value),
+      hsn: String(formData.hsn || '').trim(),
+      gstRate: formData.gstRate === '' || formData.gstRate == null ? '' : Number(formData.gstRate),
       price: Number(validVariants[0]?.price || 0),
       stock: validVariants.reduce((acc, v) => acc + Number(v.stock || 0), 0),
       variants: validVariants.map(v => ({ 
         weight: v.weight?.trim() || 'Standard', 
         price: Number(v.price || 0), 
         mrp: v.mrp !== '' && v.mrp != null ? Number(v.mrp) : null,
-        stock: Number(v.stock || 0) 
+        stock: Number(v.stock || 0),
+        ...(String(v.sku || '').trim() ? { sku: String(v.sku).trim() } : {}),
+        // Shiprocket parcel data (optional) — packed weight in kg, size in cm.
+        ...(Number(v.shipWeightG) > 0 ? { shipWeightKg: Number(v.shipWeightG) / 1000 } : {}),
+        ...([v.dimL, v.dimB, v.dimH].every(x => Number(x) > 0)
+          ? { dims: { l: Number(v.dimL), b: Number(v.dimB), h: Number(v.dimH) } }
+          : {}),
       }))
     };
 
@@ -628,6 +660,11 @@ export default function AdminProducts() {
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Primary Description</Label>
                   <Textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="rounded-xl bg-gray-50 h-20 text-xs" placeholder="Main product summary..." />
+                  {/^[^a-z]*[A-Z][^a-z]*$/.test(formData.description || '') && (formData.description || '').replace(/[^A-Za-z]/g, '').length >= 4 && (
+                    <p className="text-[11px] font-semibold text-amber-600 ml-1">
+                      This is all in CAPITALS — write it in sentence case (e.g. &ldquo;Fresh hand-scraped coconut &amp; red millets&rdquo;) so the catalogue looks consistent.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider ml-1">Product Highlights (Left Panel Paragraph)</Label>
@@ -687,7 +724,7 @@ export default function AdminProducts() {
             <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
-                    <Scale className="h-3.5 w-3.5 text-[#920075]" /> Variant Management (Custom Weight, Price, MRP & Stock)
+                    <Scale className="h-3.5 w-3.5 text-[#920075]" /> Variant Management (Weight, Price, MRP, Stock & Packed Size)
                   </Label>
                   <Button
                     type="button"
@@ -698,9 +735,34 @@ export default function AdminProducts() {
                   </Button>
                 </div>
 
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="space-y-1">
+                        <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">HSN code <span className="normal-case font-semibold text-gray-400">for invoices</span></Label>
+                        <Input
+                            inputMode="numeric"
+                            maxLength={8}
+                            placeholder="e.g. 1008"
+                            value={formData.hsn ?? ''}
+                            onChange={(e) => setFormData({ ...formData, hsn: e.target.value.replace(/\D/g, '').slice(0, 8) })}
+                            className="rounded-xl h-10 bg-white border-gray-100 font-bold text-xs"
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">GST rate</Label>
+                        <select
+                            value={formData.gstRate ?? ''}
+                            onChange={(e) => setFormData({ ...formData, gstRate: e.target.value })}
+                            className="w-full rounded-xl h-10 bg-white border border-gray-100 font-bold text-xs px-3"
+                        >
+                            <option value="">Not set</option>
+                            {[0, 5, 12, 18, 28].map(r => <option key={r} value={r}>{r}%</option>)}
+                        </select>
+                    </div>
+                </div>
+
                 <div className="space-y-3">
                     {formData.variants.map((v, i) => (
-                        <div key={i} className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-xs relative group">
+                        <div key={i} className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-xs relative group">
                             <div className="flex-1 space-y-1">
                                 <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Weight / Unit</Label>
                                 <Input 
@@ -743,6 +805,44 @@ export default function AdminProducts() {
                                     onChange={(e) => handleVariantChange(i, 'stock', e.target.value)}
                                     className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
                                 />
+                            </div>
+                            <div className="w-full sm:w-36 space-y-1">
+                                <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">SKU <span className="normal-case font-semibold text-gray-400">optional</span></Label>
+                                <Input
+                                    type="text"
+                                    maxLength={50}
+                                    placeholder="ALM-RAGI-500G"
+                                    value={v.sku ?? ''}
+                                    onChange={(e) => handleVariantChange(i, 'sku', e.target.value.replace(/[^A-Za-z0-9._/-]/g, ''))}
+                                    className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
+                                />
+                            </div>
+                            <div className="w-full sm:w-auto flex items-end gap-1.5" title="Packed weight and size of ONE unit — used to pick the shipping box and declare the parcel to Shiprocket">
+                                <div className="w-20 space-y-1">
+                                    <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Packed (g)</Label>
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        placeholder={v.weight?.match(/^\s*(\d+(?:\.\d+)?)\s*g/i)?.[1] || 'g'}
+                                        value={v.shipWeightG ?? ''}
+                                        onChange={(e) => handleVariantChange(i, 'shipWeightG', e.target.value)}
+                                        className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs"
+                                    />
+                                </div>
+                                {[['dimL', 'L'], ['dimB', 'B'], ['dimH', 'H']].map(([k, lbl]) => (
+                                    <div key={k} className="w-14 space-y-1">
+                                        <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">{lbl} cm</Label>
+                                        <Input
+                                            type="number"
+                                            min="0.5"
+                                            step="0.5"
+                                            placeholder={lbl}
+                                            value={v[k] ?? ''}
+                                            onChange={(e) => handleVariantChange(i, k, e.target.value)}
+                                            className="rounded-xl h-10 bg-gray-50 border-gray-100 font-bold text-xs px-2"
+                                        />
+                                    </div>
+                                ))}
                             </div>
                             {formData.variants.length > 1 && (
                               <Button

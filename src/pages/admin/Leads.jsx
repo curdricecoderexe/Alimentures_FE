@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Contact, Search, Download, Phone, MessageCircle, Trash2, Check, RefreshCw, Users, CalendarDays, CalendarClock, Fingerprint, BookOpen, FileText,
+  Contact, Search, Download, Phone, MessageCircle, Trash2, Check, RefreshCw, Users, CalendarDays, CalendarClock, Fingerprint, BookOpen, FileText, BadgeCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
@@ -17,6 +17,13 @@ const RANGES = [
   { key: '30d', label: 'Last 30 days' },
 ];
 
+const DOCUMENTS = [
+  { key: 'all', label: 'All documents' },
+  { key: 'catalogue', label: 'Catalogue' },
+  { key: 'fssai', label: 'FSSAI certificate' },
+];
+const docLabel = (d) => (d === 'fssai' ? 'FSSAI certificate' : 'Catalogue');
+
 const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const inRange = (iso, key) => {
   if (key === 'all') return true;
@@ -29,8 +36,8 @@ const formatMobile = (m) => `+91 ${m.slice(0, 5)} ${m.slice(5)}`;
 
 function toCsv(rows) {
   const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  return ['Name,Mobile,Catalogue,Requested at',
-    ...rows.map((r) => [r.name, `+91 ${r.mobile}`, r.catalogueFile || 'Requested (no PDF yet)', formatDate(r.createdAt)].map(esc).join(','))].join('\n');
+  return ['Name,Mobile,Document,File,Requested at',
+    ...rows.map((r) => [r.name, `+91 ${r.mobile}`, docLabel(r.document), r.catalogueFile || 'Requested (no PDF yet)', formatDate(r.createdAt)].map(esc).join(','))].join('\n');
 }
 
 function Stat({ icon: Icon, label, value, tint }) {
@@ -51,6 +58,7 @@ export default function AdminLeads() {
   const [leads, setLeads] = useState([]);
   const [query, setQuery] = useState('');
   const [range, setRange] = useState('all');
+  const [docFilter, setDocFilter] = useState('all');
   const [confirmId, setConfirmId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,8 +93,15 @@ export default function AdminLeads() {
     const q = query.trim().toLowerCase();
     const digits = q.replace(/\D/g, '');
     return leads.filter((l) => inRange(l.createdAt, range)
+      && (docFilter === 'all' || (l.document || 'catalogue') === docFilter)
       && (!q || l.name.toLowerCase().includes(q) || (digits && l.mobile.includes(digits))));
-  }, [leads, query, range]);
+  }, [leads, query, range, docFilter]);
+
+  const docCounts = useMemo(() => leads.reduce((acc, l) => {
+    const d = l.document || 'catalogue';
+    acc[d] = (acc[d] || 0) + 1;
+    return acc;
+  }, { all: leads.length }), [leads]);
 
   const exportCsv = () => {
     const blob = new Blob([toCsv(filtered)], { type: 'text/csv;charset=utf-8' });
@@ -133,7 +148,7 @@ export default function AdminLeads() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Leads</h1>
             <p className="text-xs sm:text-sm text-gray-400 font-medium mt-0.5">
-              Visitors who downloaded the catalogue from the homepage.
+              Visitors who downloaded the catalogue or the FSSAI certificate from the homepage.
             </p>
           </div>
         </div>
@@ -165,6 +180,21 @@ export default function AdminLeads() {
       {/* list */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-gray-100">
+          <div className="flex flex-col gap-2 min-w-0">
+          <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 lg:pb-0">
+            {DOCUMENTS.map((d) => (
+              <button
+                key={d.key}
+                onClick={() => setDocFilter(d.key)}
+                className={`h-9 px-3.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors inline-flex items-center gap-1.5 ${
+                  docFilter === d.key ? 'bg-[#221B1F] text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                {d.label}
+                <span className={`text-[10px] ${docFilter === d.key ? 'text-white/70' : 'text-gray-400'}`}>{docCounts[d.key] || 0}</span>
+              </button>
+            ))}
+          </div>
           <div className="flex gap-1.5 overflow-x-auto -mx-1 px-1 pb-1 lg:pb-0">
             {RANGES.map((r) => (
               <button
@@ -178,6 +208,7 @@ export default function AdminLeads() {
               </button>
             ))}
           </div>
+          </div>
           <span className="flex items-center gap-2 h-10 px-3 rounded-xl border border-gray-200 focus-within:border-[#C41E6B] lg:w-72">
             <Search className="w-4 h-4 text-gray-400 shrink-0" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name or mobile" className="flex-1 min-w-0 bg-transparent outline-none text-sm" />
@@ -188,7 +219,7 @@ export default function AdminLeads() {
           <>
             {/* table header (desktop) */}
             <div className="hidden md:grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 px-5 py-2.5 bg-gray-50/70 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-              <span>Name</span><span>Mobile</span><span>Catalogue</span><span>Requested</span><span className="w-[124px] text-right">Actions</span>
+              <span>Name</span><span>Mobile</span><span>Document</span><span>Requested</span><span className="w-[124px] text-right">Actions</span>
             </div>
             <ul className="divide-y divide-gray-50">
               {filtered.map((l) => (
@@ -200,9 +231,15 @@ export default function AdminLeads() {
                     <p className="font-bold text-sm text-gray-900 truncate">{l.name}</p>
                   </div>
                   <a href={`tel:+91${l.mobile}`} className="text-sm font-semibold text-gray-700 hover:text-[#C41E6B] md:pl-0 pl-12">{formatMobile(l.mobile)}</a>
-                  <p className="text-[12px] text-gray-500 truncate md:pl-0 pl-12 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-gray-300 shrink-0" />
-                    {l.catalogueFile
+                  <p className="text-[12px] text-gray-500 truncate md:pl-0 pl-12 flex items-center gap-1.5" title={l.catalogueFile || ''}>
+                    {l.document === 'fssai' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
+                        <BadgeCheck className="w-3 h-3" /> FSSAI
+                      </span>
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                    )}
+                    {l.document === 'fssai' ? <span className="truncate">Certificate</span> : l.catalogueFile
                       ? <span className="truncate">{l.catalogueFile}</span>
                       : <span className="truncate text-amber-600 font-semibold">Requested — send manually</span>}
                   </p>
@@ -240,7 +277,7 @@ export default function AdminLeads() {
             </span>
             <p className="mt-4 font-bold text-gray-900">No leads yet</p>
             <p className="mt-1 text-sm text-gray-400 max-w-sm mx-auto">
-              Leads appear here when visitors fill in the catalogue form on the homepage. Upload a PDF so they can download it instantly.
+              Leads appear here when visitors fill in the catalogue or FSSAI certificate form on the homepage.
             </p>
             <Link to="/admin/catalogue" className="mt-5 inline-flex items-center gap-1.5 h-10 px-4 rounded-xl bg-[#C41E6B] text-white text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition">
               <BookOpen className="w-3.5 h-3.5" /> Go to Catalogue

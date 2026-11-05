@@ -88,6 +88,7 @@ const AdminHeroSlides = Loadable(lazy(() => import('./pages/admin/HeroSlides')))
 const AdminCookiesAnalytics = Loadable(lazy(() => import('./pages/admin/CookiesAnalytics')));
 const AdminCouponCodes = Loadable(lazy(() => import('./pages/admin/CouponCodes')));
 const AdminPincodeDelivery = Loadable(lazy(() => import('./pages/admin/PincodeDelivery')));
+const AdminShippingBoxes = Loadable(lazy(() => import('./pages/admin/ShippingBoxes')));
 const AdminAppearance = Loadable(lazy(() => import('./pages/admin/Appearance')));
 const AdminCategories = Loadable(lazy(() => import('./pages/admin/Categories')));
 const AdminCatalogue = Loadable(lazy(() => import('./pages/admin/Catalogue')));
@@ -174,6 +175,7 @@ export const router = createBrowserRouter([
       { path: 'cookies-analytics', element: <AdminCookiesAnalytics /> },
       { path: 'coupon-codes', element: <AdminCouponCodes /> },
       { path: 'pincode-delivery', element: <AdminPincodeDelivery /> },
+      { path: 'shipping-boxes', element: <AdminShippingBoxes /> },
     ],
   },
 ]);

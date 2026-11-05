@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ShipmentIssueBadge from '../../components/ShipmentIssueBadge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -32,6 +33,8 @@ import { Search, Filter, Package, ChevronRight, MapPin, Check } from 'lucide-rea
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
 import ShiprocketPanel from '../../components/ShiprocketPanel';
+import CustomerContact from '../../components/admin/CustomerContact';
+import { cityLine, fullAddress } from '../../lib/customerInfo';
 
 const StatusBadge = ({ status }) => {
   const normalizedStatus = (status || '').toLowerCase();
@@ -155,7 +158,8 @@ export default function StaffOrders() {
 
   const filteredOrders = orders.filter(o => {
     const matchesQuery =
-      ((o.customerInfo?.name || o.customer || '').toLowerCase().includes(searchQuery.toLowerCase())) ||
+      ([o.customerInfo?.name, o.customer, o.customerInfo?.phone, o.customerInfo?.email, o.customerInfo?.city, o.customerInfo?.pincode]
+        .filter(Boolean).join(' ').toLowerCase().includes(searchQuery.toLowerCase())) ||
       (o.id.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || (o.status || '').toLowerCase() === statusFilter;
     return matchesQuery && matchesStatus;
@@ -216,10 +220,18 @@ export default function StaffOrders() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-gray-900 leading-tight truncate">{order.customerInfo?.name || order.customer || 'Unknown'}</p>
+                    {(order.customerInfo?.phone || order.customerInfo?.city) && (
+                      <p className="text-[11px] font-medium text-gray-500 mt-0.5 truncate">
+                        {[order.customerInfo?.phone, cityLine(order.customerInfo)].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
                     <p className="text-[9.5px] font-bold text-[#E83D6E] uppercase tracking-wider mt-0.5 truncate max-w-[160px]">{order.id}</p>
                   </div>
                   <div className="shrink-0 pt-0.5">
-                    <StatusBadge status={order.status} />
+                    <div className="flex flex-col items-end gap-1">
+                      <StatusBadge status={order.status} />
+                      <ShipmentIssueBadge order={order} />
+                    </div>
                   </div>
                 </div>
 
@@ -270,6 +282,12 @@ export default function StaffOrders() {
                       <TableCell className="py-6 pl-8">
                         <div>
                           <p className="text-base font-bold text-gray-900 leading-tight">{order.customerInfo?.name || order.customer || 'Unknown'}</p>
+                          {order.customerInfo?.phone && <p className="text-xs font-semibold text-gray-600 mt-1">{order.customerInfo.phone}</p>}
+                          {order.customerInfo?.address && (
+                            <p className="text-[11px] font-medium text-gray-500 mt-0.5 max-w-[260px] truncate" title={fullAddress(order.customerInfo)}>
+                              {fullAddress(order.customerInfo)}
+                            </p>
+                          )}
                           <p className="text-[10px] font-bold text-[#E83D6E] uppercase tracking-wider mt-1">{order.id}</p>
                         </div>
                       </TableCell>
@@ -284,7 +302,7 @@ export default function StaffOrders() {
                           }`}>{paymentTag(order)}</span>
                         </div>
                       </TableCell>
-                      <TableCell><StatusBadge status={order.status} /></TableCell>
+                      <TableCell><div className="flex flex-wrap items-center gap-1.5"><StatusBadge status={order.status} /><ShipmentIssueBadge order={order} /></div></TableCell>
                       <TableCell className="text-right pr-8">
                         <Button
                           variant="ghost"
@@ -366,6 +384,12 @@ export default function StaffOrders() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* CUSTOMER */}
+              <div className="space-y-3 sm:space-y-4">
+                <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider ml-1">Customer</Label>
+                <CustomerContact order={selectedOrder} />
               </div>
 
               {/* STATUS UPDATE SECTION — the only mutating action on this page */}

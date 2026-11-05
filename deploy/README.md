@@ -31,7 +31,8 @@ git clone <backend repo>  /var/www/alimenture/backend
 cd /var/www/alimenture/backend
 cp .env.example .env      # fill in every value — see the comments in the file
 npm ci --omit=dev
-npm test                  # 42 tests, no network or database needed
+npm test                  # 70 tests, no network or database needed
+npm run check:env         # NODE_ENV=production: flags missing / cut-off / test-mode settings (never prints secrets)
 ```
 
 Production `.env` must include at least:
@@ -127,10 +128,49 @@ curl -s https://alimenture.in/robots.txt | grep Sitemap                         
 Then in Google Search Console: add `alimenture.in`, submit `/sitemap.xml`, and
 run a product URL through the Rich Results Test.
 
+## 7. Shiprocket + Razorpay go-live
+
+Shiprocket locks the API user for **2 hours** after repeated failed logins, and
+the lock is per API user — every machine using that email counts. Use a
+**separate API user for production** (Shiprocket → Settings → API → Add API user;
+email different from the panel login; letters-and-digits password).
+
+1. **Verify credentials before deploying** — one attempt, prints only the result:
+   ```bash
+   npm run sr:test-login        # → "LOGIN OK" — anything else: fix, don't loop
+   ```
+2. **Backend `.env` on the VPS** (quote any value containing `#` or `$`):
+   ```
+   SHIPROCKET_EMAIL=<production API user>
+   SHIPROCKET_PASSWORD='<its password>'
+   SHIPROCKET_PICKUP_LOCATION=<nickname exactly as in Shiprocket → Pickup Addresses>
+   SHIPROCKET_PICKUP_PINCODE=<pickup PIN>
+   SHIPROCKET_WEBHOOK_TOKEN=<long random string>
+   RAZORPAY_KEY_ID=rzp_live_…   # live keys only here; use rzp_test_ keys on dev machines
+   ```
+   `NODE_ENV=production npm run check:env` must report no blocking problems.
+   Then `pm2 restart alimenture-api --update-env`.
+3. **Shiprocket panel**
+   - Settings → API → Webhooks: URL `https://alimenture.in/api/shipping/webhook`,
+     token = `SHIPROCKET_WEBHOOK_TOKEN`.
+   - API user → *Allowed IPs for PII Access*: the VPS IP (`curl -4 ifconfig.me`).
+   - Wallet recharged; KYC complete; pickup address nickname matches `SHIPROCKET_PICKUP_LOCATION`.
+4. **Razorpay dashboard** → Webhooks: `https://alimenture.in/api/orders/razorpay/webhook`,
+   secret = `RAZORPAY_WEBHOOK_SECRET`, events `payment.captured`, `refund.*`.
+5. **Admin**: Shipping & Boxes → *Test login* shows "Shiprocket connected"; review the box
+   sizes; PIN Code Delivery → mark PINs your local partner serves as *Our local partner*;
+   Products → packed weight/size, SKU and HSN for best sellers.
+6. **First real order** (small amount): pay → order auto-pushed (Orders shows the parcel box)
+   → *Assign courier & schedule pickup* → label prints → webhook moves it to shipped/delivered.
+   Refund it before pickup to confirm the Shiprocket shipment is cancelled.
+
+If Shiprocket logins fail, the API pauses further attempts (5 → 60 min; 30 min if
+"blocked") — the admin card shows the reason. Fix the credentials, restart, test once.
+
 ## Updating
 
 ```bash
-cd /var/www/alimenture/backend && git pull && npm ci --omit=dev && npm test && pm2 reload alimenture-api
+cd /var/www/alimenture/backend && git pull && npm ci --omit=dev && npm test && NODE_ENV=production npm run check:env && pm2 reload alimenture-api --update-env
 cd /var/www/alimenture/frontend/repo && git pull && npm ci && bash deploy/rebuild-frontend.sh
 ```
 

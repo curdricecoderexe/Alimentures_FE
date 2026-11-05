@@ -91,6 +91,8 @@ export default function Checkout() {
   };
 
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  // Re-quote delivery when the cart's contents (not just its value) change — parcel weight matters.
+  const cartKey = cart.map((i) => `${i.id || i._id || i.uid}:${i.selectedWeight}:${i.quantity}`).join('|');
   const discount = appliedCoupon?.discountAmount || 0;
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
 
@@ -183,7 +185,7 @@ export default function Checkout() {
     let alive = true;
     setDeliveryChecking(true);
     const t = setTimeout(async () => {
-      const r = await getDeliveryOptions(pin, subtotal);
+      const r = await getDeliveryOptions(pin, subtotal, cart);
       if (!alive) return;
       setDeliveryChecking(false);
       if (r.ok) {
@@ -197,20 +199,19 @@ export default function Checkout() {
     }, 350);
     return () => { alive = false; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.pincode, subtotal]);
+  }, [formData.pincode, subtotal, cartKey]);
 
-  // Resolved (or estimated) delivery fee for the chosen method.
-  let resolvedFee;
-  let feeIsEstimate = false;
-  if (deliveryOpts && deliveryOpts.deliveryAvailable) {
-    if (deliveryMethod === 'fastest' && deliveryOpts.fastest?.available) resolvedFee = deliveryOpts.fastest.fee;
-    else resolvedFee = deliveryOpts.standard.fee;
-  } else {
-    resolvedFee = subtotal > 500 || subtotal === 0 ? 0 : 50; // pre-check estimate
-    feeIsEstimate = true;
+  // Delivery fee for the chosen method — only once the live courier quote for
+  // this PIN + cart is back. No guessed number in between (it used to flash ₹50
+  // and then jump to the real price).
+  const feeReady = !!(deliveryOpts && deliveryOpts.deliveryAvailable && !deliveryChecking);
+  let shipping = null;
+  if (feeReady) {
+    shipping = deliveryMethod === 'fastest' && deliveryOpts.fastest?.available
+      ? deliveryOpts.fastest.fee
+      : deliveryOpts.standard.fee;
   }
-  const shipping = resolvedFee;
-  const total = Math.max(0, subtotal + shipping - discount);
+  const total = Math.max(0, subtotal + (shipping || 0) - discount);
 
   const handlePlaceOrder = async () => {
     if (!formData.firstName || !formData.address || !formData.city || !formData.state) {
@@ -225,8 +226,8 @@ export default function Checkout() {
       toast.error(deliveryOpts.reason || 'Delivery is unavailable for this PIN code');
       return;
     }
-    if (deliveryChecking) {
-      toast.error('Please wait — checking delivery for your PIN code');
+    if (deliveryChecking || !feeReady) {
+      toast.error('Please wait — calculating delivery for your PIN code');
       return;
     }
     const rzpLoaded = await loadRazorpay();
@@ -384,6 +385,7 @@ export default function Checkout() {
     checkoutStep === 'creating' ? 'Creating secure order…'
     : checkoutStep === 'opening' ? 'Opening payment gateway…'
     : checkoutStep === 'processing' ? 'Verifying payment…'
+    : !feeReady ? (deliveryChecking ? 'Calculating delivery…' : 'Enter PIN code to continue')
     : `Pay ₹${total}`;
 
   return (
@@ -689,9 +691,12 @@ export default function Checkout() {
                 <div className="flex justify-between items-center py-2.5 text-sm">
                   <span className="text-ink-soft">
                     Delivery{deliveryMethod === 'fastest' ? ' · fastest' : ' · standard'}
-                    {feeIsEstimate && <span className="text-ink-muted text-[11px]"> (estimated)</span>}
                   </span>
-                  {shipping === 0
+                  {shipping == null
+                    ? (deliveryChecking
+                      ? <span className="inline-flex items-center gap-1.5 text-[12px] text-ink-muted"><Loader2 className="h-3.5 w-3.5 animate-spin text-berry" /> Calculating…</span>
+                      : <span className="text-[12px] text-ink-muted">Enter PIN code</span>)
+                    : shipping === 0
                     ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest">Free</span>
                     : <span className="display-md text-[14px]">₹{shipping}</span>}
                 </div>
@@ -700,14 +705,14 @@ export default function Checkout() {
                 <div className="flex items-end justify-between pt-2 pb-5">
                   <div>
                     <p className="kicker text-[9.5px] text-ink-soft">Total payable</p>
-                    <p className="text-[11px] text-ink-muted mt-0.5">Inclusive of all taxes</p>
+                    <p className="text-[11px] text-ink-muted mt-0.5">{feeReady ? 'Inclusive of all taxes' : 'Delivery added after PIN check'}</p>
                   </div>
                   <p className="display-lg text-[1.9rem]">₹{total}</p>
                 </div>
 
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={loading || deliveryChecking || (deliveryOpts && !deliveryOpts.deliveryAvailable)}
+                  disabled={loading || !feeReady}
                   className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em] flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading && <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />}
