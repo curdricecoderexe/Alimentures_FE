@@ -8,7 +8,6 @@ import {
 import { toast } from 'sonner';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
-import { getCities } from '../../lib/deliveryApi';
 
 const API = `${import.meta.env.VITE_API_URL}/admin/delivery`;
 const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -38,8 +37,6 @@ async function api(path, opts = {}) {
 
 function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
   const [form, setForm] = useState(EMPTY_FORM);
-  const [cities, setCities] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -58,14 +55,6 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
       }
       : EMPTY_FORM);
   }, [open, editing]);
-
-  useEffect(() => {
-    if (!form.state) { setCities([]); return; }
-    let alive = true;
-    setCitiesLoading(true);
-    getCities(form.state).then((list) => { if (alive) { setCities(list); setCitiesLoading(false); } });
-    return () => { alive = false; };
-  }, [form.state]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -129,17 +118,14 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
 
               <div>
                 <label className={labelCls}>State *</label>
-                <SearchableSelect value={form.state} onChange={(v) => setForm((f) => ({ ...f, state: v, city: '' }))}
+                <SearchableSelect value={form.state} onChange={(v) => setForm((f) => ({ ...f, state: v }))}
                   options={INDIA_STATES} placeholder="Select State" searchPlaceholder="Search states…"
                   triggerClassName={adminSelectCls} ariaLabel="State" />
               </div>
               <div>
                 <label className={labelCls}>City</label>
-                <SearchableSelect value={form.city} onChange={(v) => setForm((f) => ({ ...f, city: v }))}
-                  options={cities} loading={citiesLoading} disabled={!form.state}
-                  placeholder={form.state ? 'Select City' : 'Pick a state'} searchPlaceholder="Search cities…"
-                  emptyText={form.state ? 'No cities found' : 'Select a state first'}
-                  triggerClassName={adminSelectCls} ariaLabel="City" />
+                <input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                  placeholder="Chennai" className={inputCls} />
               </div>
 
               <div className="col-span-2 border-t border-gray-100 pt-4">

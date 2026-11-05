@@ -7,14 +7,13 @@ import AddressSkeleton from '../../components/skeletons/AddressSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
-import { getCities } from '../../lib/deliveryApi';
 import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const EMPTY = { fullName: '', phone: '', street: '', city: '', state: '', pincode: '', isDefault: false };
 
-// text inputs only — state/city/pincode are rendered separately below
+// simple text inputs — state/city/pincode are rendered separately below
 const FIELDS = [
   { name: 'fullName', label: 'Full name', span: 1, placeholder: 'Sriram' },
   { name: 'phone', label: 'Phone', span: 1, placeholder: '+91 98847 33453' },
@@ -31,24 +30,6 @@ export default function MyAddresses() {
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [formData, setFormData] = useState(EMPTY);
-  const [cities, setCities] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
-
-  useEffect(() => {
-    if (!formData.state) { setCities([]); return; }
-    let alive = true;
-    setCitiesLoading(true);
-    getCities(formData.state).then((list) => {
-      if (!alive) return;
-      setCities(list);
-      setCitiesLoading(false);
-      if (formData.city && !list.some((c) => c.toLowerCase() === formData.city.toLowerCase())) {
-        setFormData((p) => ({ ...p, city: '' }));
-      }
-    });
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.state]);
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -220,7 +201,7 @@ export default function MyAddresses() {
                   <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">State</span>
                   <SearchableSelect
                     value={formData.state}
-                    onChange={(v) => setFormData((p) => ({ ...p, state: v, city: '' }))}
+                    onChange={(v) => setFormData((p) => ({ ...p, state: v }))}
                     options={INDIA_STATES}
                     placeholder="Select State" searchPlaceholder="Search states…"
                     triggerClassName="!h-[50px]" ariaLabel="State"
@@ -228,14 +209,12 @@ export default function MyAddresses() {
                 </label>
                 <label className="block">
                   <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">City</span>
-                  <SearchableSelect
+                  <input
+                    required
                     value={formData.city}
-                    onChange={(v) => setFormData((p) => ({ ...p, city: v }))}
-                    options={cities} loading={citiesLoading} disabled={!formData.state}
-                    placeholder={formData.state ? 'Select City' : 'Pick a state first'}
-                    searchPlaceholder="Search cities…"
-                    emptyText={formData.state ? 'No cities found' : 'Select a state first'}
-                    triggerClassName="!h-[50px]" ariaLabel="City"
+                    onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
+                    placeholder="Chennai"
+                    className="w-full h-[50px] px-4 rounded-2xl bg-paper border border-hairline outline-none text-[14.5px] font-medium placeholder:text-ink-muted transition-all focus:border-berry/50 focus:ring-4 focus:ring-berry/10"
                   />
                 </label>
                 <label className="block">
