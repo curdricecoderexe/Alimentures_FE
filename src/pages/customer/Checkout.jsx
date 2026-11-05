@@ -12,7 +12,7 @@ import FallbackImg from '../../assets/lan.webp';
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
 import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
-import { getCities, getDeliveryOptions, isValidPincode } from '../../lib/deliveryApi';
+import { getDeliveryOptions, isValidPincode } from '../../lib/deliveryApi';
 import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -150,28 +150,6 @@ export default function Checkout() {
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ── India state → city dependency ──
-  const [cities, setCities] = useState([]);
-  const [citiesLoading, setCitiesLoading] = useState(false);
-
-  useEffect(() => {
-    const st = formData.state;
-    if (!st) { setCities([]); return; }
-    let alive = true;
-    setCitiesLoading(true);
-    getCities(st).then((list) => {
-      if (!alive) return;
-      setCities(list);
-      setCitiesLoading(false);
-      // drop a city that doesn't belong to the (newly) selected state
-      if (formData.city && !list.some((c) => c.toLowerCase() === formData.city.toLowerCase())) {
-        setFormData((p) => ({ ...p, city: '' }));
-      }
-    });
-    return () => { alive = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.state]);
 
   // ── PIN-code → delivery options (debounced; frontend value is only an estimate) ──
   const [deliveryOpts, setDeliveryOpts] = useState(null);
@@ -524,7 +502,7 @@ export default function Checkout() {
                   <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">State *</span>
                   <SearchableSelect
                     value={formData.state}
-                    onChange={(v) => { persist({ ...formData, state: v, city: '' }); setSelectedAddrId(null); }}
+                    onChange={(v) => { persist({ ...formData, state: v }); setSelectedAddrId(null); }}
                     options={INDIA_STATES}
                     placeholder="Select State"
                     searchPlaceholder="Search states…"
@@ -533,20 +511,7 @@ export default function Checkout() {
                   />
                 </label>
 
-                <label className="block">
-                  <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">City *</span>
-                  <SearchableSelect
-                    value={formData.city}
-                    onChange={(v) => { persist({ ...formData, city: v }); setSelectedAddrId(null); }}
-                    options={cities}
-                    loading={citiesLoading}
-                    disabled={!formData.state}
-                    placeholder={formData.state ? 'Select City' : 'Pick a state first'}
-                    searchPlaceholder="Search cities…"
-                    ariaLabel="Delivery city"
-                    emptyText={formData.state ? 'No cities found for this state' : 'Select a state first'}
-                  />
-                </label>
+                <Field label="City *" name="city" value={formData.city} onChange={handleInputChange} placeholder="Chennai" />
 
                 <label className="block">
                   <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">PIN code *</span>
