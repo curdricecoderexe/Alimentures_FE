@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
 import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
+import FssaiAdminCard from '../../components/admin/FssaiAdminCard';
+import { uploadPdf } from '../../lib/uploadPdf';
 
 const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
 const PDF_MAX_BYTES = 25 * 1024 * 1024; // matches the API's CATALOGUE_MAX_BYTES
@@ -24,27 +26,6 @@ async function call(path, options = {}) {
   if (!res.ok || !json.success) throw new Error(json.error || 'Request failed');
   return json;
 }
-
-/** PUT the raw PDF with upload progress. */
-function uploadPdf(file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', `${API_BASE}/catalogue/admin/file?filename=${encodeURIComponent(file.name)}`);
-    const token = localStorage.getItem('token');
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    xhr.setRequestHeader('Content-Type', 'application/pdf');
-    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
-    xhr.onerror = () => reject(new Error('Network error while uploading'));
-    xhr.onload = () => {
-      let json = {};
-      try { json = JSON.parse(xhr.responseText); } catch { /* non-JSON error */ }
-      if (xhr.status >= 200 && xhr.status < 300 && json.success) resolve(json.data);
-      else reject(new Error(json.error || (xhr.status === 413 ? 'PDF is too large' : 'Upload failed')));
-    };
-    xhr.send(file);
-  });
-}
-
 
 export default function AdminCatalogue() {
   const [info, setInfo] = useState(null);
@@ -247,6 +228,9 @@ export default function AdminCatalogue() {
           </button>
         </motion.div>
       </div>
+
+      {/* FSSAI certificate — lead-gated download on the homepage */}
+      <FssaiAdminCard />
 
       {/* recent requests → full list on the Leads page */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

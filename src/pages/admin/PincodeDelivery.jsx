@@ -277,6 +277,8 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
         freeDeliveryThreshold: num(form.freeDeliveryThreshold),
         serviceByDefault: !!form.serviceByDefault,
         courierLinkedFee: !!form.courierLinkedFee,
+        courierFeeMode: form.courierFeeMode === 'actual' ? 'actual' : 'bands',
+        courierFeeMarkupPct: Math.min(100, num(form.courierFeeMarkupPct)),
         courierFeeBands: (form.courierFeeBands || [])
           .filter((b) => b.fee !== '' && b.fee != null)
           .map((b) => ({ maxRate: num(b.maxRate), fee: num(b.fee) })),
@@ -303,6 +305,24 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
           <Row label="Deliver to unlisted PIN codes" hint="When ON, any 6-digit PIN not in the table is deliverable at the default fee"><Toggle k="serviceByDefault" /></Row>
           <Row label="Link default fee to courier cost" hint="Charge by Shiprocket's freight quote for the cart (bands below) instead of one flat fee. Custom PIN fees and free delivery still apply."><Toggle k="courierLinkedFee" /></Row>
           {form.courierLinkedFee && (
+            <Row label="How to charge" hint="Exact cost: the customer pays the cheapest courier's real freight for their cart (+ buffer), and that courier is assigned at dispatch. Fastest orders use the cheapest express courier.">
+              <select value={form.courierFeeMode === 'actual' ? 'actual' : 'bands'} onChange={(e) => set('courierFeeMode', e.target.value)}
+                className={`${inputCls} w-52`}>
+                <option value="actual">Exact cheapest courier cost</option>
+                <option value="bands">Fee bands</option>
+              </select>
+            </Row>
+          )}
+          {form.courierLinkedFee && form.courierFeeMode === 'actual' && (
+            <Row label="Buffer on courier cost" hint="Added on top of the freight quote, to cover weight re-checks by the courier. 0–100%.">
+              <div className="relative w-32">
+                <input type="number" min="0" max="100" value={form.courierFeeMarkupPct ?? 0}
+                  onChange={(e) => set('courierFeeMarkupPct', e.target.value)} className={`${inputCls} pr-7`} />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">%</span>
+              </div>
+            </Row>
+          )}
+          {form.courierLinkedFee && form.courierFeeMode !== 'actual' && (
             <div className="py-4 space-y-2">
               <p className="text-xs text-gray-400">If Shiprocket quotes up to <b>₹ freight</b>, charge the customer <b>₹ fee</b>. Leave the last band's freight empty or 0 for "anything above". Falls back to the default fee when Shiprocket can't quote.</p>
               {(form.courierFeeBands || []).map((b, i) => (

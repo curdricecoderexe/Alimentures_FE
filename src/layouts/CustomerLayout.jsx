@@ -251,7 +251,8 @@ export default function CustomerLayout() {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Products', path: '/#products', isScroll: true, scrollId: 'products' },
+    // Hidden in the mobile drawer: "Shop" (the full catalogue) covers it there.
+    { name: 'Products', path: '/#products', isScroll: true, scrollId: 'products', hideOnMobile: true },
     { name: 'Shop', path: '/shop' },
     { name: 'Sustainability', path: '/#sustainability', isScroll: true, scrollId: 'sustainability' },
     { name: 'About', path: '/#about', isScroll: true, scrollId: 'about' },
@@ -690,7 +691,7 @@ export default function CustomerLayout() {
               {/* Nav Links */}
               <div className="flex-grow flex flex-col gap-1.5 mt-6">
                 <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-ink-muted px-4 mb-1">Navigation</p>
-                {navLinks.map((link, idx) => (
+                {navLinks.filter((link) => !link.hideOnMobile).map((link, idx) => (
                   <motion.button
                     key={link.name}
                     initial={{ opacity: 0, x: 20 }}

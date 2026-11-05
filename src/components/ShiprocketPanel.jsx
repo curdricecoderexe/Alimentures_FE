@@ -72,6 +72,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   const [enabled, setEnabled] = useState(null);
   const [busy, setBusy] = useState(null);
   const [couriers, setCouriers] = useState(null);
+  const [defaultCourierId, setDefaultCourierId] = useState(null);
   const [courierId, setCourierId] = useState('');
   const [boxes, setBoxes] = useState([]);
   const [boxChoice, setBoxChoice] = useState('');
@@ -84,6 +85,9 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   const canPush = enabled && !sh.shipmentId && SHIPPABLE.includes(order?.status) && (!isLocal || forceLocal);
   const freight = sh.freightEstimate ?? order?.estimatedShippingCost ?? null;
   const feeCharged = Number(order?.deliveryFee ?? order?.shipping ?? 0);
+  const quoted = order?.quotedCourier || null;
+  const planned = order?.plannedPackage || null;
+  const autoCourier = couriers?.find((c) => String(c.courierId) === String(defaultCourierId)) || null;
 
   useEffect(() => {
     let alive = true;
@@ -92,7 +96,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   }, []);
 
   useEffect(() => {
-    setCouriers(null); setCourierId('');
+    setCouriers(null); setCourierId(''); setDefaultCourierId(null);
     setBoxChoice(''); setCustom(EMPTY_CUSTOM); setPkg(null); setForceLocal(false);
   }, [order?.id]);
 
@@ -163,8 +167,9 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
     const data = await call('couriers', 'couriers', { method: 'GET' });
     if (data) {
       setCouriers(data.couriers || []);
-      // Fastest orders default to the express courier; otherwise Shiprocket's recommendation.
-      setCourierId(isFastest && data.expressId ? String(data.expressId) : '');
+      // "Auto" = express for fastest orders, otherwise the cheapest courier (server decides).
+      setDefaultCourierId(data.defaultId ?? null);
+      setCourierId('');
       if (!data.serviceable) toast.error('No courier services this PIN code');
     }
   };
@@ -242,6 +247,14 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
               </div>
             )}
 
+            {quoted && !sh.awb && (
+              <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                Quoted at checkout: <b>{quoted.name || `Courier ${quoted.courierId}`}</b> ₹{quoted.rate}
+                {planned ? ` for ${planned.boxName || planned.boxId || 'parcel'} · ${planned.chargeableKg} kg` : ''}
+                {' '}— assigned automatically unless you change the box or courier.
+              </p>
+            )}
+
             {(freight != null || sh.awb) && (
               <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
                 Delivery fee charged ₹{feeCharged}
@@ -297,7 +310,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
                     onChange={(e) => setBoxChoice(e.target.value)}
                     className="h-8 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#24162E] px-2 text-[11px] font-bold"
                   >
-                    <option value="">Automatic (best fit)</option>
+                    <option value="">{planned?.boxId ? `Checkout box (${planned.boxName || planned.boxId})` : 'Automatic (best fit)'}</option>
                     {boxes.map((b) => (
                       <option key={b.id} value={b.id}>{b.name} · {b.length}×{b.breadth}×{b.height} cm</option>
                     ))}
@@ -355,10 +368,13 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
                       onChange={(e) => setCourierId(e.target.value)}
                       className="h-9 max-w-full rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1A1021] px-2.5 text-xs font-bold"
                     >
-                      <option value="">{isFastest ? 'Auto (express courier for fastest)' : 'Shiprocket recommended'}</option>
+                      <option value="">
+                        {isFastest ? 'Auto · fastest express' : 'Auto · cheapest'}{autoCourier ? ` (${autoCourier.name} ₹${autoCourier.rate})` : ''}
+                      </option>
                       {couriers.map((c) => (
                         <option key={c.courierId} value={c.courierId}>
                           {c.name} · ₹{c.rate}{c.estimatedDays ? ` · ${c.estimatedDays}d` : ''}{c.isSurface ? '' : ' · express'}
+                          {c.rate > feeCharged ? ` · ₹${Math.round(c.rate - feeCharged)} over fee` : ''}
                         </option>
                       ))}
                     </select>

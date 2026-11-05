@@ -12,6 +12,7 @@ import { useAppearance } from '../../lib/appearance';
 import { cachedFetch } from '../../lib/api';
 import BrandFilm from '../../components/home/BrandFilm';
 import CatalogueDownload from '../../components/home/CatalogueDownload';
+import FssaiCertificate from '../../components/home/FssaiCertificate';
 import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
 import womenImage from '../../assets/cas/women.webp';
 import nammalvarImage from '../../assets/nammalvar.jpg';
@@ -49,10 +50,9 @@ const TEXT_GRADIENT = 'bg-gradient-to-r from-berry-deep to-orange-600 bg-clip-te
 const GLASS_CARD = 'glass border border-white/40 shadow-xl shadow-rose-900/5 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500';
 const GLASS_DRAWER = 'bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl shadow-rose-900/10';
 
+// "No Maida • No White Sugar • No Refined Oil" is stated ONCE, in the
+// "Why Families Choose Alimenture" pillars — don't repeat it elsewhere.
 const forbiddenIngredients = [
-  'No Maida',
-  'No White Sugar',
-  'No Refined Oil',
   'No Preservatives',
   'No Harmful Additives',
   'No Artificial Colors'
@@ -78,56 +78,6 @@ const trustPillars = [
   { icon: <Award className="h-6 w-6 stroke-[2.2px]" />, title: 'Authentic Nourishment', desc: 'Reviving traditional nutritional wisdom for modern, fast-paced generations.' },
 ];
 
-const refuseList = [
-  {
-    title: '0% Maida',
-    desc: 'We avoid refined flour and use nutrient-dense grains that naturally support healthier digestion and balanced nutrition.',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2v20M9 6c0 1.5 1.5 2 3 2.5M15 6c0 1.5-1.5 2-3 2.5M9 11c0 1.5 1.5 2 3 2.5M15 11c0 1.5-1.5 2-3 2.5M9 16c0 1.5 1.5 2 3 2.5M15 16c0 1.5-1.5 2-3 2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-        <line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-      </svg>
-    )
-  },
-  {
-    title: '0% White Sugar',
-    desc: 'Our products eliminate processed white sugar to encourage cleaner and healthier lifestyles.',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="4" y="11" width="7" height="7" rx="1.5" />
-        <rect x="13" y="6" width="7" height="7" rx="1.5" />
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-        <line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-      </svg>
-    )
-  },
-  {
-    title: '0% Refined Oil',
-    desc: 'We prioritize healthier ingredient choices and traditional preparation methods instead of heavily processed oils.',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2l3 3v2h-6V5l3-3z" />
-        <rect x="7" y="7" width="10" height="14" rx="2" />
-        <circle cx="12" cy="14" r="2" />
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-        <line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-      </svg>
-    )
-  },
-  {
-    title: '0% Preservatives & Additives',
-    desc: 'Freshness should come from quality ingredients — not chemicals. No unnecessary artificial colors or flavors.',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2v20M17 5H7M17 19H7M7 5l5 7 5-7M7 19l5-7 5 7" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-        <line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" strokeWidth="1.5" strokeOpacity="0.6" />
-      </svg>
-    )
-  }
-];
-
 /* Ornamental divider that sits between the catalog category bands. */
 /** Clean Snack Lineup photo — admin slots lineupImage1-3, crossfading with a slow zoom when more than one is set. */
 function LineupSlides({ images, active }) {
@@ -151,7 +101,7 @@ function LineupSlides({ images, active }) {
 }
 
 const LINEUP_SLIDE_MS = 5500;
-const LINEUP_WITHOUT = ['Maida', 'Refined sugar', 'Preservatives'];
+const LINEUP_WITHOUT = ['Preservatives', 'Artificial colours', 'Artificial flavours'];
 
 /** Arch-framed, layered artwork for the Alchemi's / Clean Snack Lineup block. */
 function LineupArtwork({ images }) {
@@ -953,7 +903,8 @@ export default function Home() {
       <section ref={registerSectionRef} className="py-3.5 sm:py-5 border-y border-hairline/50 bg-[#FBF7EF] relative z-10 overflow-hidden">
         <div className="overflow-hidden whitespace-nowrap w-full">
           <div className="inline-flex gap-5 sm:gap-8 animate-marquee">
-            {[...forbiddenIngredients, ...forbiddenIngredients, ...forbiddenIngredients].map((item, idx) => (
+            {/* even number of copies → the -50% loop is seamless and fills wide screens */}
+            {Array.from({ length: 8 }).flatMap(() => forbiddenIngredients).map((item, idx) => (
               <span key={idx} className="inline-flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-ink-muted shrink-0">
                 <span className="w-1 h-1 rounded-full bg-berry/50 inline-block" />{item}<span className="w-1 h-1 rounded-full bg-gold/50 inline-block" />
               </span>
@@ -1330,7 +1281,7 @@ export default function Home() {
               {
                 Icon: ShieldCheck,
                 title: 'No Maida • No White Sugar • No Refined Oil',
-                desc: 'Pure, clean-label recipes free from maida, white sugar, and refined oils — only wholesome ingredients.'
+                desc: 'Pure, clean-label recipes made only with wholesome ingredients.'
               },
               {
                 Icon: Globe,
@@ -1364,6 +1315,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ⸻ FSSAI CERTIFICATE — lead-gated download (Admin → Catalogue / Leads) ⸻ */}
+      <FssaiCertificate />
+
       {/* ⸻ BRAND FILM — admin-managed video (Admin → Templates) ⸻ */}
       <BrandFilm />
 
@@ -1391,7 +1345,7 @@ export default function Home() {
 
               <div className="space-y-6 text-[#5A4F55] text-base md:text-lg leading-relaxed">
                 <p className="font-bold text-[#221B1F] md:text-justify">
-                  A line of healthy, clean-label cookies prepared without maida, refined sugar, or synthetic preservatives.
+                  A line of healthy, clean-label cookies made from wholesome grains.
                 </p>
               </div>
 
@@ -1726,43 +1680,12 @@ export default function Home() {
               Crafting grains <span className="accent-text">into gold</span>
             </h2>
             <p className="text-[15px] sm:text-lg text-ink-soft font-medium leading-relaxed max-w-xl">
-              We don&rsquo;t bake compromises. Every recipe breaks the scam of maida, white sugar and refined oil.
+              We don&rsquo;t bake compromises. Every recipe is thoughtfully crafted with superior ingredients, exceptional taste, and honest goodness.
             </p>
           </div>
 
-          {/* the 0% pledge */}
-          <div className="mt-14 sm:mt-20">
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <span className="h-px w-10 bg-gradient-to-r from-transparent to-berry/40" />
-              <span className="kicker text-[10px] text-gold">What we refuse to bake in</span>
-              <span className="h-px w-10 bg-gradient-to-l from-transparent to-berry/40" />
-            </div>
-
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {refuseList.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="group relative glass foil-top rounded-panel p-5 sm:p-7 flex flex-col gap-4 hover:-translate-y-1.5 transition-transform duration-300"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="ico-chip h-11 w-11 rounded-2xl">{item.icon}</span>
-                    <span className="display-lg accent-text text-[2.3rem] sm:text-[2.7rem] leading-none">0%</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-display font-bold text-[14.5px] sm:text-base text-[#221B1F] tracking-tight leading-snug">
-                      {item.title.replace(/^0%\s*/, '')}
-                    </h3>
-                    <p className="text-[12px] sm:text-[12.5px] text-ink-soft leading-relaxed font-medium">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* two pillars */}
-          <div className="mt-6 grid md:grid-cols-2 gap-5">
+          <div className="mt-14 sm:mt-20 grid md:grid-cols-2 gap-5">
             <div className="relative glass foil-top rounded-panel p-7 sm:p-9 flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
               <span className="ico-chip h-12 w-12 rounded-2xl"><Leaf className="h-5 w-5" /></span>
               <h3 className="display-md text-xl sm:text-2xl text-[#221B1F]">Building a sustainable food future</h3>
@@ -1827,7 +1750,7 @@ export default function Home() {
                 {/* pillars */}
                 <div className="space-y-3.5 w-full">
                   {[
-                    { icon: Sprout,      title: 'Nutrient-rich by design', desc: 'Whole grains and clean recipes — never maida, white sugar or refined oil.' },
+                    { icon: Sprout,      title: 'Nutrient-rich by design', desc: 'Whole grains and clean recipes, built around real nutrition.' },
                     { icon: ShieldCheck, title: 'Toxin-free, always',       desc: 'Honest ingredients and transparent sourcing you can actually verify.' },
                     { icon: Users,       title: 'Farmer-first ecosystems',  desc: 'Traditional agriculture and fair partnerships that strengthen local communities.' },
                   ].map((p, i) => (
