@@ -117,7 +117,7 @@ export default function ProductCard({ product, onAdd, onWishlist, addLabel }) {
         aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
         aria-pressed={isInWishlist}
         whileTap={still ? undefined : { scale: 0.85 }}
-        className={`absolute top-3 right-3 sm:top-4 sm:right-4 h-7 w-7 sm:h-9 sm:w-9 rounded-full flex items-center justify-center transition-all duration-300 z-30 shadow-[0_6px_16px_-6px_rgba(0,0,0,0.3)] ${
+        className={`absolute top-2.5 right-2.5 sm:top-4 sm:right-4 h-8 w-8 sm:h-9 sm:w-9 rounded-full before:absolute before:-inset-1.5 before:content-[''] before:rounded-full flex items-center justify-center transition-all duration-300 z-30 shadow-[0_6px_16px_-6px_rgba(0,0,0,0.3)] ${
           isInWishlist
             ? 'btn-berry border-transparent'
             : 'bg-white/90 backdrop-blur-md border border-white hover:scale-110'

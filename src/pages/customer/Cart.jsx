@@ -46,7 +46,8 @@ export default function Cart() {
   const freeEnabled = delivery.freeDeliveryEnabled;
   const freeShippingThreshold = delivery.freeDeliveryThreshold;
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal === 0 || (freeEnabled && subtotal >= freeShippingThreshold) ? 0 : delivery.defaultDeliveryFee;
+  const fromFee = delivery.minDeliveryFee ?? delivery.defaultDeliveryFee;
+  const shipping = subtotal === 0 || (freeEnabled && subtotal >= freeShippingThreshold) ? 0 : fromFee;
   const discount = couponData?.discountAmount || 0;
   // Shipping is a checkout-time, PIN-code-resolved fee (see Cart's "Shipping charges
   // applied!" note) — never baked into the cart's displayed total.
@@ -54,10 +55,10 @@ export default function Cart() {
   const remainingForFree = Math.max(0, freeShippingThreshold - subtotal);
   const progress = freeShippingThreshold > 0 ? Math.min((subtotal / freeShippingThreshold) * 100, 100) : 100;
   const shippingFaq = {
-    q: 'Is free shipping available on all orders?',
+    q: freeEnabled ? 'Is free shipping available on all orders?' : 'How much is delivery?',
     a: freeEnabled
-      ? `Yes! Orders of ₹${freeShippingThreshold} or more ship free. Below that, a standard delivery fee (usually ₹${delivery.defaultDeliveryFee}) applies — the exact charge for your PIN code is shown at checkout.`
-      : `A standard delivery fee (usually ₹${delivery.defaultDeliveryFee}) applies to every order — the exact charge for your PIN code is shown at checkout.`,
+      ? `Yes! Orders of ₹${freeShippingThreshold} or more ship free. Below that, a standard delivery fee applies — the exact charge for your PIN code is shown at checkout.`
+      : `Delivery is charged at our courier partner's rate for your parcel's weight and PIN code, starting from ₹${fromFee}. The exact charge is shown at checkout before you pay.`,
   };
   const faqs = [shippingFaq, ...CART_FAQS];
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
@@ -239,8 +240,8 @@ export default function Cart() {
 
                     <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        {item.category && <span className="kicker text-berry text-[9.5px]">{item.category}</span>}
-                        <span className="pill-leaf inline-flex items-center h-[22px] px-2 rounded-full text-[9px] font-bold">In stock</span>
+                        {item.category && <span className="kicker text-berry text-[10.5px]">{item.category}</span>}
+                        <span className="pill-leaf inline-flex items-center h-[22px] px-2 rounded-full text-[10.5px] font-bold">In stock</span>
                       </div>
                       <Link to={productPath(item)}>
                         <p className="display-md text-lg leading-tight hover:text-berry transition-colors line-clamp-1">
@@ -321,8 +322,8 @@ export default function Cart() {
                 <div className="flex justify-between items-center py-3 text-sm">
                   <span className="text-ink-soft">Shipping</span>
                   {shipping === 0
-                    ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest">Free</span>
-                    : <span className="pill-berry-soft inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest">Shipping charges applied!</span>}
+                    ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-widest">Free</span>
+                    : <span className="pill-berry-soft inline-flex items-center h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-widest">Shipping charges applied!</span>}
                 </div>
                 <div className="flex justify-between items-center py-3 text-sm">
                   <span className="text-ink-soft">Taxes</span>
@@ -333,7 +334,7 @@ export default function Cart() {
               <div className="h-px bg-white/50 my-2.5" />
               <div className="flex items-end justify-between pt-2 pb-5">
                 <div>
-                  <p className="kicker text-[9.5px] text-ink-soft">Total payable</p>
+                  <p className="kicker text-[10.5px] text-ink-soft">Total payable</p>
                   <p className="text-[11px] text-ink-muted mt-0.5">Inclusive of all taxes · shipping applied at checkout</p>
                 </div>
                 <p className="display-lg text-[2rem]">₹{total}</p>
@@ -459,7 +460,7 @@ export default function Cart() {
         {/* ── FAQ ── */}
         <div className="mt-20">
           <div className="text-center max-w-2xl mx-auto mb-10 flex flex-col items-center gap-3">
-            <span className="pill-berry-soft inline-flex items-center h-7 px-4 rounded-full text-[9.5px] font-extrabold uppercase tracking-[0.18em]">Have questions?</span>
+            <span className="pill-berry-soft inline-flex items-center h-7 px-4 rounded-full text-[10.5px] font-extrabold uppercase tracking-[0.18em]">Have questions?</span>
             <h2 className="display-lg text-[2rem]">Cart &amp; checkout FAQs</h2>
           </div>
           <div className="max-w-3xl mx-auto grid grid-cols-1 gap-3">

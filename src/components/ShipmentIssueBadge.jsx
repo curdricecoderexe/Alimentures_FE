@@ -32,7 +32,7 @@ export default function ShipmentIssueBadge({ order }) {
   if (!issue) return null;
   const { Icon } = issue;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[9px] font-bold uppercase tracking-wider shrink-0 ${TONES[issue.tone]}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[10.5px] font-bold uppercase tracking-wider shrink-0 ${TONES[issue.tone]}`}>
       <Icon className="h-2.5 w-2.5" />{issue.label}
     </span>
   );

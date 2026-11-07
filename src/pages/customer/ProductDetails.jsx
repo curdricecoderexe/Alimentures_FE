@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import {
   ShoppingCart, Heart, Star, Truck, Shield, ArrowLeft, Package,
-  Minus, Plus, Check, Leaf, Sparkles,
+  Minus, Plus, Check, Leaf, BadgePercent, Loader2, HandHeart, UtensilsCrossed,
   Tag, X, TicketPercent, IndianRupee, Maximize2, ExternalLink, ZoomIn, Award,
 } from 'lucide-react';
 import FallbackImg from '../../assets/lan.webp';
@@ -370,11 +370,11 @@ export default function ProductDetails() {
                 </button>
 
                 <div className="absolute bottom-5 left-5 sm:bottom-6 sm:left-6 flex items-center gap-2 pointer-events-none">
-                  <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white/85 backdrop-blur-md border border-white text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-gold shadow-sm">
+                  <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white/85 backdrop-blur-md border border-white text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-gold shadow-sm">
                     <Award className="h-3.5 w-3.5" /> Original
                   </span>
                   {isLowStock && (
-                    <span className="inline-flex items-center h-7 px-3 rounded-full bg-red-500 text-white font-extrabold text-[9.5px] uppercase tracking-wider shadow-md animate-pulse">
+                    <span className="inline-flex items-center h-7 px-3 rounded-full bg-red-500 text-white font-extrabold text-[10.5px] uppercase tracking-wider shadow-md animate-pulse">
                       Only {selectedStock} left
                     </span>
                   )}
@@ -476,7 +476,7 @@ export default function ProductDetails() {
                         <>
                           <s className="text-lg font-semibold text-ink-muted leading-none mb-1" aria-label={`MRP ₹${mrp}`}>₹{mrp}</s>
                           <span className="mb-1 inline-flex items-center gap-1 h-7 px-3 rounded-full bg-gradient-to-r from-berry to-gold-light text-white text-[10px] font-extrabold uppercase tracking-[0.12em] shadow-[0_8px_18px_-6px_rgba(165,13,90,0.6)]">
-                            <Sparkles className="h-3 w-3" /> {Math.round(((mrp - displayPrice) / mrp) * 100)}% off
+                            <BadgePercent className="h-3 w-3" /> {Math.round(((mrp - displayPrice) / mrp) * 100)}% off
                           </span>
                         </>
                       )}
@@ -491,17 +491,17 @@ export default function ProductDetails() {
                       <AnimatePresence mode="wait">
                         {isOutOfStock ? (
                           <motion.div key="out" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                            className="inline-flex items-center gap-2 bg-cream-deep text-ink-muted px-3.5 h-8 rounded-full font-extrabold uppercase text-[9.5px] tracking-widest border border-hairline">
+                            className="inline-flex items-center gap-2 bg-cream-deep text-ink-muted px-3.5 h-8 rounded-full font-extrabold uppercase text-[10.5px] tracking-widest border border-hairline">
                             <span className="h-2 w-2 rounded-full bg-gray-400" /> Out of stock — choose another size
                           </motion.div>
                         ) : isLowStock ? (
                           <motion.div key="low" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                            className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3.5 h-8 rounded-full font-extrabold uppercase text-[9.5px] tracking-widest border border-red-100">
+                            className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3.5 h-8 rounded-full font-extrabold uppercase text-[10.5px] tracking-widest border border-red-100">
                             <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" /> Hurry! Only {selectedStock} left
                           </motion.div>
                         ) : (
                           <motion.div key="avail" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                            className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 h-8 rounded-full font-extrabold uppercase text-[9.5px] tracking-widest border border-emerald-100">
+                            className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 h-8 rounded-full font-extrabold uppercase text-[10.5px] tracking-widest border border-emerald-100">
                             <span className="h-2 w-2 rounded-full bg-emerald-500" /> In stock · ready to ship
                           </motion.div>
                         )}
@@ -624,7 +624,7 @@ export default function ProductDetails() {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className="font-mono font-extrabold text-sm text-emerald-700 tracking-widest">{couponData.code}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-200 text-[9px] font-extrabold uppercase text-emerald-600 tracking-wider">Applied</span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-200 text-[10.5px] font-extrabold uppercase text-emerald-600 tracking-wider">Applied</span>
                           </div>
                           <p className="text-xs text-emerald-600 font-semibold mb-2">{couponMsg}</p>
                           <div className="flex items-center gap-3 flex-wrap">
@@ -637,7 +637,7 @@ export default function ProductDetails() {
                               <IndianRupee className="h-3 w-3" />
                               <span>{couponData.finalAmount}</span>
                             </div>
-                            <span className="px-2 py-0.5 rounded-full bg-berry/5 border border-berry/15 text-[9px] font-extrabold text-berry uppercase">
+                            <span className="px-2 py-0.5 rounded-full bg-berry/5 border border-berry/15 text-[10.5px] font-extrabold text-berry uppercase">
                               Save ₹{couponData.discountAmount}
                             </span>
                           </div>
@@ -676,7 +676,7 @@ export default function ProductDetails() {
                         className="px-5 h-10 rounded-xl btn-berry text-white font-extrabold text-[11px] uppercase tracking-[0.12em] transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none shrink-0"
                       >
                         {couponStatus === 'loading' ? (
-                          <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 animate-spin" /> Checking…</span>
+                          <span className="flex items-center gap-1.5"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking…</span>
                         ) : 'Apply'}
                       </button>
                     </div>
@@ -711,8 +711,8 @@ export default function ProductDetails() {
                     <Icon className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="font-extrabold text-[9.5px] sm:text-[10px] text-ink uppercase tracking-wider leading-tight">{label}</p>
-                    <p className="text-[9px] text-ink-muted font-semibold mt-0.5 hidden sm:block">{sub}</p>
+                    <p className="font-extrabold text-[10.5px] sm:text-[10px] text-ink uppercase tracking-wider leading-tight">{label}</p>
+                    <p className="text-[10.5px] text-ink-muted font-semibold mt-0.5 hidden sm:block">{sub}</p>
                   </div>
                 </div>
                 );
@@ -722,7 +722,7 @@ export default function ProductDetails() {
             {/* Clean promises */}
             {Array.isArray(product.cleanPromises) && product.cleanPromises.length > 0 && (
               <motion.div variants={fadeUp} className="rounded-[1.6rem] bg-white/85 border border-white shadow-[0_18px_40px_-26px_rgba(121,8,63,0.3)] p-5 sm:p-6 mb-5">
-                <p className="text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-gold mb-1">Our promise</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-gold mb-1">Our promise</p>
                 <h2 className="font-display font-extrabold text-lg text-ink mb-4">Clean promises</h2>
                 {/* One promise per row, revealed one after another */}
                 <ul className="divide-y divide-hairline/70">
@@ -756,11 +756,11 @@ export default function ProductDetails() {
                       <div className="flex items-center gap-3">
                         <span className="font-display font-extrabold text-berry-deep">₹{v.price}</span>
                         {v.stock === 0 ? (
-                          <span className="text-[9px] font-extrabold text-ink-muted uppercase tracking-wider px-2.5 py-1 bg-cream rounded-full border border-hairline">Out of stock</span>
+                          <span className="text-[10.5px] font-extrabold text-ink-muted uppercase tracking-wider px-2.5 py-1 bg-cream rounded-full border border-hairline">Out of stock</span>
                         ) : v.stock < 10 ? (
-                          <span className="text-[9px] font-extrabold text-red-500 uppercase tracking-wider px-2.5 py-1 bg-red-50 rounded-full border border-red-100">{v.stock} left</span>
+                          <span className="text-[10.5px] font-extrabold text-red-500 uppercase tracking-wider px-2.5 py-1 bg-red-50 rounded-full border border-red-100">{v.stock} left</span>
                         ) : (
-                          <span className="text-[9px] font-extrabold text-emerald-700 uppercase tracking-wider px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">Available</span>
+                          <span className="text-[10.5px] font-extrabold text-emerald-700 uppercase tracking-wider px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">Available</span>
                         )}
                       </div>
                     </div>
@@ -778,10 +778,10 @@ export default function ProductDetails() {
                 <div aria-hidden="true" className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gold-light/15 blur-3xl pointer-events-none" />
                 <div className="relative flex items-center gap-3 mb-5">
                   <span className="h-11 w-11 rounded-2xl bg-gradient-to-br from-berry to-berry-bright text-white flex items-center justify-center shadow-berry shrink-0">
-                    <Sparkles className="h-5 w-5" />
+                    <HandHeart className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-gold">Crafted with care</p>
+                    <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-gold">Crafted with care</p>
                     <h2 className="font-display font-extrabold text-lg text-ink leading-tight">About this product</h2>
                   </div>
                 </div>
@@ -800,7 +800,7 @@ export default function ProductDetails() {
                       <Leaf className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-berry">Know what's inside</p>
+                      <p className="text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-berry">Know what's inside</p>
                       <h2 className="font-display font-extrabold text-base sm:text-lg text-ink leading-tight">Vitamin & Nutrition Table</h2>
                     </div>
                   </div>
@@ -846,7 +846,7 @@ export default function ProductDetails() {
           <section className="mt-20 sm:mt-24 pt-14 sm:pt-16 border-t border-hairline">
             <div className="flex flex-col items-center text-center gap-3 mb-10">
               <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
-                <Sparkles className="h-3.5 w-3.5" /> Pairs well with
+                <UtensilsCrossed className="h-3.5 w-3.5" /> Pairs well with
               </span>
               <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-ink">
                 You may also <span className="accent-text">like</span>

@@ -130,7 +130,7 @@ export default function CookieConsent() {
                     <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-cream border border-hairline">
                       <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: c.color }} />
                       <span className="text-[10px] font-bold text-ink-soft truncate">{c.label.replace(' Cookies', '')}</span>
-                      {c.required && <span className="ml-auto text-[8px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-full">Always</span>}
+                      {c.required && <span className="ml-auto text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-full">Always</span>}
                     </div>
                   );
                 })}
@@ -161,7 +161,7 @@ export default function CookieConsent() {
                 </div>
               </div>
 
-              <p className="text-[9px] text-ink-muted text-center font-medium">
+              <p className="text-[10.5px] text-ink-muted text-center font-medium">
                 By using this site you agree to our{' '}
                 <a href="/policies/privacy-policy" className="text-[#A50D5A] hover:underline">Privacy Policy</a>, which covers cookies.
               </p>

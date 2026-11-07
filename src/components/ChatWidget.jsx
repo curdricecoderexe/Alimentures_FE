@@ -4,8 +4,9 @@ import { io } from 'socket.io-client';
 import {
   MessageCircle, X, Send, User, Package,
   HelpCircle, ShieldCheck, ArrowRight, Bot, CheckCircle2,
-  MessageSquare, Heart, RefreshCw, Headphones, History, Plus, ArrowLeft, Sparkles,
+  MessageSquare, Heart, RefreshCw, Headphones, History, Plus, ArrowLeft,
 } from 'lucide-react';
+import BotAvatar from './BotAvatar';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -247,7 +248,7 @@ export default function ChatWidget() {
   const headerStatus = inLive && chatSession ? STATUS_META[chatSession.status] : null;
 
   return (
-    <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[9999] font-sans flex items-end justify-end">
+    <div className="fixed bottom-[calc(6.5rem+env(safe-area-inset-bottom))] right-4 sm:right-6 lg:bottom-6 z-[9999] font-sans flex items-end justify-end">
 
       {/* ——— LAUNCHER ——— */}
       <div className="flex items-center gap-3 relative z-10">
@@ -285,7 +286,7 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[calc(100vh-110px)] bg-white rounded-[1.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-hairline flex flex-col overflow-hidden fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-[9999]"
+            className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[calc(100vh-190px)] lg:max-h-[calc(100vh-110px)] bg-white rounded-[1.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-hairline flex flex-col overflow-hidden fixed bottom-[calc(11rem+env(safe-area-inset-bottom))] right-4 sm:right-6 lg:bottom-24 z-[9999]"
           >
             {/* — HEADER — */}
             <div className="bg-[#221B1F] text-white px-4 py-3.5 flex items-center justify-between relative overflow-hidden shrink-0">
@@ -301,8 +302,8 @@ export default function ChatWidget() {
                     <ArrowLeft className="w-4 h-4" />
                   </button>
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-berry to-gold-light flex items-center justify-center shrink-0">
-                    <Sparkles className="w-4 h-4 text-white" />
+                  <div className="w-10 h-10 rounded-full ring-2 ring-white/15 shrink-0 overflow-hidden">
+                    <BotAvatar className="w-10 h-10" />
                   </div>
                 )}
                 <div className="flex flex-col min-w-0">
@@ -352,12 +353,15 @@ export default function ChatWidget() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                      className={`flex flex-col max-w-[88%] ${m.from === 'user' ? 'self-end items-end' : 'self-start items-start'}`}
+                      className={`flex flex-col max-w-[88%] ${m.from === 'user' ? 'self-end items-end' : 'self-start items-start [&>*:not(:first-child)]:ml-9'}`}
                     >
-                      <div className={`px-3.5 py-2.5 rounded-[1.1rem] text-[13px] leading-relaxed font-medium whitespace-pre-line ${
-                        m.from === 'user' ? 'bg-berry text-white rounded-br-sm' : 'bg-cream border border-hairline text-ink rounded-bl-sm'
-                      }`}>
-                        {m.text}
+                      <div className="flex items-end gap-2">
+                        {m.from === 'bot' && <BotAvatar className="w-7 h-7 shrink-0" title="" />}
+                        <div className={`px-3.5 py-2.5 rounded-[1.1rem] text-[13px] leading-relaxed font-medium whitespace-pre-line ${
+                          m.from === 'user' ? 'bg-berry text-white rounded-br-sm' : 'bg-cream border border-hairline text-ink rounded-bl-sm'
+                        }`}>
+                          {m.text}
+                        </div>
                       </div>
 
                       {m.products?.length > 0 && (
@@ -421,10 +425,13 @@ export default function ChatWidget() {
                     </motion.div>
                   ))}
                   {botTyping && (
-                    <div className="self-start px-3.5 py-3 rounded-[1.1rem] rounded-bl-sm bg-cream border border-hairline flex gap-1" aria-label="Assistant is typing">
-                      {[0, 1, 2].map((d) => (
-                        <motion.span key={d} className="w-1.5 h-1.5 rounded-full bg-ink-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.15 }} />
-                      ))}
+                    <div className="self-start flex items-end gap-2" aria-label="Assistant is typing">
+                      <BotAvatar className="w-7 h-7 shrink-0" title="" />
+                      <div className="px-3.5 py-3 rounded-[1.1rem] rounded-bl-sm bg-cream border border-hairline flex gap-1">
+                        {[0, 1, 2].map((d) => (
+                          <motion.span key={d} className="w-1.5 h-1.5 rounded-full bg-ink-muted" animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: d * 0.15 }} />
+                        ))}
+                      </div>
                     </div>
                   )}
                   <div ref={messagesEndRef} />
@@ -444,7 +451,7 @@ export default function ChatWidget() {
                       <button key={c.id} onClick={() => resumeChat(c.id)} className="text-left p-3 rounded-2xl border border-hairline hover:border-rose-200 hover:bg-cream transition-all">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-ink truncate">{TYPE_LABEL[c.type] || 'General Query'}</span>
-                          <span className="text-[9px] font-bold text-ink-muted shrink-0">{fmtDate(c.updatedAt || c.createdAt)}</span>
+                          <span className="text-[10.5px] font-bold text-ink-muted shrink-0">{fmtDate(c.updatedAt || c.createdAt)}</span>
                         </div>
                         <span className="flex items-center gap-1.5 mt-1.5">
                           <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
@@ -479,7 +486,7 @@ export default function ChatWidget() {
                     </div>
                   ) : (
                     <form onSubmit={startChat} className="space-y-3 pt-1">
-                      <label className="text-[9px] font-bold uppercase text-ink-muted tracking-wider ml-1 flex items-center gap-1">
+                      <label className="text-[10.5px] font-bold uppercase text-ink-muted tracking-wider ml-1 flex items-center gap-1">
                         <HelpCircle className="w-2.5 h-2.5" /> Inquiry Type
                       </label>
                       <div className="grid grid-cols-2 gap-2">
@@ -529,7 +536,7 @@ export default function ChatWidget() {
                         key={idx}
                         className={`flex flex-col max-w-[85%] ${isUser ? 'self-end items-end' : 'self-start items-start'}`}
                       >
-                        <span className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-1 px-1">
+                        <span className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-1 px-1">
                           {msg.senderName || (isUser ? 'You' : 'Support')}
                         </span>
                         <div className={`px-4 py-3 rounded-[1.25rem] font-medium text-[13px] leading-relaxed shadow-sm ${isUser ? 'bg-berry text-white rounded-br-sm' : 'bg-cream-deep text-ink rounded-bl-sm'}`}>

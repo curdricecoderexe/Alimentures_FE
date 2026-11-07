@@ -42,7 +42,7 @@ export default function CheckoutSteps({ current = 1, className = '' }) {
                 {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : step}
               </span>
               <span
-                className={`kicker text-[9.5px] hidden sm:inline ${
+                className={`kicker text-[10.5px] hidden sm:inline ${
                   done ? 'text-leaf' : active ? 'text-berry' : 'text-ink-muted'
                 }`}
               >

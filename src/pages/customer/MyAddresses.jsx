@@ -186,7 +186,7 @@ export default function MyAddresses() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 {FIELDS.map((f) => (
                   <label key={f.name} className={f.span === 2 ? 'sm:col-span-2 block' : 'block'}>
-                    <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">{f.label}</span>
+                    <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">{f.label}</span>
                     <input
                       required
                       value={formData[f.name]}
@@ -198,7 +198,7 @@ export default function MyAddresses() {
                 ))}
 
                 <label className="sm:col-span-2 block">
-                  <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">State</span>
+                  <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">State</span>
                   <SearchableSelect
                     value={formData.state}
                     onChange={(v) => setFormData((p) => ({ ...p, state: v }))}
@@ -208,7 +208,7 @@ export default function MyAddresses() {
                   />
                 </label>
                 <label className="block">
-                  <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">City</span>
+                  <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">City</span>
                   <input
                     required
                     value={formData.city}
@@ -218,7 +218,7 @@ export default function MyAddresses() {
                   />
                 </label>
                 <label className="block">
-                  <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">PIN code</span>
+                  <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">PIN code</span>
                   <input
                     required inputMode="numeric" maxLength={6}
                     value={formData.pincode}
@@ -301,7 +301,7 @@ export default function MyAddresses() {
                   }`}
                 >
                   {addr.isDefault && (
-                    <span className="pill-berry-soft absolute top-5 right-5 inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-[0.12em]">
+                    <span className="pill-berry-soft absolute top-5 right-5 inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-[0.12em]">
                       <Star className="h-3 w-3" style={{ fill: 'currentColor' }} /> Default
                     </span>
                   )}

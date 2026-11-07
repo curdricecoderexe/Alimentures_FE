@@ -211,6 +211,28 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ── Device robustness ───────────────────────────────────── */
+/* Stop iOS/Android from inflating text in landscape. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* iOS Safari zooms the page when a focused field's text is under 16px.
+   On touch screens, keep form fields at 16px so tapping one never zooms. */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Long words / emails / URLs wrap instead of pushing the layout sideways. */
+p, li, h1, h2, h3, h4, a, span {
+  overflow-wrap: break-word;
+}
+
 /* Text Balance for Headlines */
 .text-balance {
   text-wrap: balance;

@@ -94,6 +94,7 @@ const AdminCategories = Loadable(lazy(() => import('./pages/admin/Categories')))
 const AdminCatalogue = Loadable(lazy(() => import('./pages/admin/Catalogue')));
 const AdminLeads = Loadable(lazy(() => import('./pages/admin/Leads')));
 const AdminSubscribers = Loadable(lazy(() => import('./pages/admin/Subscribers')));
+const AdminSocialLinks = Loadable(lazy(() => import('./pages/admin/SocialLinks')));
 
 export const router = createBrowserRouter([
   { path: '*', element: <NotFound />, errorElement: <RouteError /> },
@@ -172,6 +173,7 @@ export const router = createBrowserRouter([
       { path: "chats", element: <AdminChats /> },
       { path: "hero-slides", element: <AdminHeroSlides /> },
       { path: "appearance", element: <AdminAppearance /> },
+      { path: "social-links", element: <AdminSocialLinks /> },
       { path: 'cookies-analytics', element: <AdminCookiesAnalytics /> },
       { path: 'coupon-codes', element: <AdminCouponCodes /> },
       { path: 'pincode-delivery', element: <AdminPincodeDelivery /> },

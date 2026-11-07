@@ -80,7 +80,7 @@ export function VariantSelectorModal({
                     <div className="flex justify-between items-start">
                       <span className="text-xs uppercase tracking-widest opacity-60">{variant.weight}</span>
                       {isOutOfStock && mode === 'cart' && (
-                        <span className="text-[8px] font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md uppercase">Sold Out</span>
+                        <span className="text-[10px] font-bold bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-md uppercase">Sold Out</span>
                       )}
                     </div>
                     <span className="text-lg">₹{variant.price}</span>

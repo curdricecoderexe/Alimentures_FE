@@ -156,11 +156,11 @@ export function AuthField({ label, labelAction, icon: Icon, trailing, hint, clas
     <label className="block">
       {labelAction ? (
         <span className="flex items-center justify-between mb-1.5">
-          <span className="kicker text-ink-soft text-[9.5px]">{label}</span>
+          <span className="kicker text-ink-soft text-[10.5px]">{label}</span>
           {labelAction}
         </span>
       ) : (
-        label && <span className="kicker text-ink-soft text-[9.5px] mb-1.5 block">{label}</span>
+        label && <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">{label}</span>
       )}
       <div className="flex items-center gap-3 h-[52px] px-4 rounded-2xl bg-paper border border-hairline transition-all focus-within:border-berry/50 focus-within:ring-4 focus-within:ring-berry/10">
         {Icon && <Icon className="h-[17px] w-[17px] text-berry shrink-0" />}

@@ -21,6 +21,7 @@ import { Button } from '../../components/ui/button';
 import { toast } from 'sonner';
 import { exportToPDF } from '../../lib/exportUtils';
 import { authenticatedFetch } from '../../lib/api';
+import { isRevenueOrder, revenueOf } from '../../lib/orderStats';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,11 +63,12 @@ export default function AdminAnalytics() {
       const products = await productsRes.json();
 
       if (orders.success && users.success && products.success) {
-        const orderList = orders.data;
+        // Only paid, live orders are sales — cancelled / refunded / unpaid are excluded.
+        const orderList = (orders.data || []).filter(isRevenueOrder);
         const userList = users.data;
         
         // 1. Calculate Avg Order Value
-        const totalRev = orderList.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        const totalRev = revenueOf(orderList);
         const avgValue = orderList.length ? (totalRev / orderList.length).toFixed(0) : 0;
 
         // 2. Revenue Growth & Orders by Month
@@ -76,7 +78,7 @@ export default function AdminAnalytics() {
           if (o.createdAt) {
             const date = new Date(o.createdAt._seconds * 1000);
             const mIdx = date.getMonth();
-            monthlyData[mIdx].revenue += o.totalAmount;
+            monthlyData[mIdx].revenue += Number(o.totalAmount) || 0;
             monthlyData[mIdx].orders += 1;
           }
         });

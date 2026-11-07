@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../components/ui/dialog';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Sparkles, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Scale, Download, Star, FileText, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch } from '../../lib/api';
 
@@ -311,7 +311,7 @@ export default function StaffInventory() {
                     )}
                     {product.isFeatured && (
                       <div className="absolute top-1 left-1 bg-amber-500 text-white flex items-center justify-center h-4 w-4 rounded-full shadow-sm">
-                        <Sparkles className="h-2.5 w-2.5" />
+                        <Star className="h-2.5 w-2.5 fill-white" />
                       </div>
                     )}
                   </div>
@@ -374,7 +374,7 @@ export default function StaffInventory() {
                           <p className="font-bold text-gray-900">{product.title}</p>
                           {product.isFeatured && (
                             <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-full w-max">
-                              <Sparkles className="h-3 w-3 text-amber-500 fill-amber-500" /> Featured
+                              <Star className="h-3 w-3 text-amber-500 fill-amber-500" /> Featured
                             </span>
                           )}
                         </div>
@@ -563,7 +563,7 @@ export default function StaffInventory() {
                     className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
                   />
                   <label htmlFor="isFeatured" className="text-xs font-bold text-gray-800 cursor-pointer flex items-center gap-1.5 select-none">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Featured Product (Show on Homepage)
+                    <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> Featured Product (Show on Homepage)
                   </label>
                 </div>
                 <div className="space-y-2">
@@ -594,7 +594,7 @@ export default function StaffInventory() {
 
             <div className="p-4 sm:p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
               <Label className="text-[10px] font-bold uppercase text-gray-500 tracking-wider flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5 text-[#920075]" /> Product Page Content (leave any field blank to hide that section)
+                <FileText className="h-3.5 w-3.5 text-[#920075]" /> Product Page Content (leave any field blank to hide that section)
               </Label>
               <div className="space-y-2">
                 <Label className="text-[9px] font-bold uppercase text-gray-500 ml-1">Clean Promises (one per line)</Label>

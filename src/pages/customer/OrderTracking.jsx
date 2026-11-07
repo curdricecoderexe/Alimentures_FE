@@ -72,7 +72,7 @@ const StatusPill = ({ status }) => {
     : 'bg-berry/10 text-berry-deep border-berry/20';
   const label = { out_for_delivery: 'On the way', payment_pending: 'Payment pending' };
   return (
-    <span className={`inline-flex items-center h-[26px] px-3 rounded-full border text-[9px] font-bold uppercase tracking-widest ${cls}`}>
+    <span className={`inline-flex items-center h-[26px] px-3 rounded-full border text-[10.5px] font-bold uppercase tracking-widest ${cls}`}>
       {label[s] || s.replace(/_/g, ' ')}
     </span>
   );
@@ -249,7 +249,7 @@ export default function MyOrders() {
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 pb-7 border-b border-white/50">
                 <div className="flex flex-col gap-2.5">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="inline-flex items-center h-[28px] px-3 rounded-full text-[9.5px] font-bold uppercase tracking-widest bg-berry/10 text-berry-deep border border-berry/15">
+                    <span className="inline-flex items-center h-[28px] px-3 rounded-full text-[10.5px] font-bold uppercase tracking-widest bg-berry/10 text-berry-deep border border-berry/15">
                       #{activeOrder.id.slice(-8).toUpperCase()}
                     </span>
                     <StatusPill status={activeOrder.status} />
@@ -389,7 +389,7 @@ export default function MyOrders() {
                     )}
                     <div className="h-px bg-white/50 my-2" />
                     <div className="flex items-center justify-between py-1.5">
-                      <span className="kicker text-[9.5px] text-ink-soft inline-flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> {activeOrder.customerInfo?.paymentMethod === 'razorpay' ? 'Paid online' : 'Cash on delivery'}</span>
+                      <span className="kicker text-[10.5px] text-ink-soft inline-flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> {activeOrder.customerInfo?.paymentMethod === 'razorpay' ? 'Paid online' : 'Cash on delivery'}</span>
                       <span className="display-lg text-[1.25rem]">₹{activeOrder.totalAmount}</span>
                     </div>
                   </div>
@@ -459,7 +459,7 @@ export default function MyOrders() {
                     {/* delivered — rate each item; this is the product review */}
                     {pendingItems.length > 0 && (
                       <div className="mt-4 pt-4 border-t border-white/50 flex flex-col gap-3">
-                        <span className="kicker text-[9.5px] text-berry inline-flex items-center gap-1.5"><Star className="h-3 w-3 fill-current" /> Rate what you got</span>
+                        <span className="kicker text-[10.5px] text-berry inline-flex items-center gap-1.5"><Star className="h-3 w-3 fill-current" /> Rate what you got</span>
                         {pendingItems.map((it) => {
                           const productId = it.productId || it.id;
                           const key = `${order.id}_${productId}`;
@@ -534,7 +534,7 @@ export default function MyOrders() {
         {/* ── FAQ ── */}
         <div className="mt-16">
           <div className="text-center max-w-2xl mx-auto mb-8 flex flex-col items-center gap-3">
-            <span className="pill-berry-soft inline-flex items-center h-7 px-4 rounded-full text-[9.5px] font-extrabold uppercase tracking-[0.18em]">Support</span>
+            <span className="pill-berry-soft inline-flex items-center h-7 px-4 rounded-full text-[10.5px] font-extrabold uppercase tracking-[0.18em]">Support</span>
             <h2 className="display-lg text-[1.9rem]">Order FAQs</h2>
           </div>
           <div className="max-w-3xl mx-auto grid grid-cols-1 gap-3">

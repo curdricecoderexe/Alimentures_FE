@@ -9,6 +9,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area,
 } from 'recharts';
 import { authenticatedFetch } from '../../lib/api';
+import { isRevenueOrder, revenueOf } from '../../lib/orderStats';
 import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
 import DashboardSkeleton from '../../components/skeletons/DashboardSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
@@ -70,13 +71,14 @@ export default function AdminDashboard() {
 
         const users = (await usersRes.json()).data || [];
         const products = (await productsRes.json()).data || [];
-        const orders = (await ordersRes.json()).data || [];
+        // Only paid, live orders are sales — cancelled / refunded / unpaid are excluded.
+        const orders = ((await ordersRes.json()).data || []).filter(isRevenueOrder);
 
         setStats({
           totalCustomers: users.filter((u) => u.role?.toLowerCase() === 'customer').length,
           activeProducts: products.length,
           totalOrders: orders.length,
-          totalRevenue: orders.reduce((s, o) => s + (o.totalAmount || 0), 0),
+          totalRevenue: revenueOf(orders),
         });
 
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
