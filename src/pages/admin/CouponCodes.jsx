@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Tag, Plus, Trash2, ToggleLeft, ToggleRight, Copy, Check,
   Zap, Percent, IndianRupee, Calendar, Users, RefreshCw,
-  Sparkles, AlertCircle, ChevronDown, Search, Filter, X
+  TicketPercent, AlertCircle, ChevronDown, Search, Filter, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -226,7 +226,7 @@ export default function CouponCodes() {
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2 rounded-xl bg-gradient-to-br from-[#C41E6B]/10 to-[#E83D6E]/10">
-                  <Sparkles className="w-4 h-4 text-[#C41E6B]" />
+                  <TicketPercent className="w-4 h-4 text-[#C41E6B]" />
                 </div>
                 <h2 className="font-bold text-gray-900">Generate New Coupon</h2>
               </div>
@@ -368,7 +368,7 @@ export default function CouponCodes() {
                     {generating ? (
                       <><RefreshCw className="w-4 h-4 animate-spin" /> Generating...</>
                     ) : (
-                      <><Sparkles className="w-4 h-4" /> Generate Coupon</>
+                      <><TicketPercent className="w-4 h-4" /> Generate Coupon</>
                     )}
                   </button>
                 </div>

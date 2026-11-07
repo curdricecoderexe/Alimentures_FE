@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Image as ImageIcon, Upload, RotateCcw, Check, Loader2, Palette, Sparkles, Film, Save,
+  Image as ImageIcon, Upload, RotateCcw, Check, Loader2, Palette, Film, Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
@@ -482,7 +482,7 @@ export default function AdminAppearance() {
           </div>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-100 px-3.5 py-2 rounded-xl self-start">
-          <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+          <Palette className="w-3.5 h-3.5 text-[#D4AF37]" />
           {customCount} of {slots.length} customised
         </span>
       </div>

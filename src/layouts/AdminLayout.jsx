@@ -14,7 +14,7 @@ import {
   Image as ImageIcon,
   Moon,
   Sun,
-  Sparkles,
+  Share2,
   Leaf,
   Menu,
   X,
@@ -93,6 +93,12 @@ export default function AdminLayout() {
         { path: '/admin/chats', label: 'Chats', icon: MessageSquare },
         { path: '/admin/hero-slides', label: 'Hero Banners', icon: ImageIcon },
         { path: '/admin/appearance', label: 'Templates', icon: Palette },
+      ]
+    },
+    {
+      title: 'Site Settings',
+      items: [
+        { path: '/admin/social-links', label: 'Social Links', icon: Share2 },
       ]
     }
   ];

@@ -162,8 +162,8 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1.5">
                   {form.standardFeeType === 'custom'
-                    ? 'Charged for standard delivery to this PIN instead of the default. Enter 0 for free delivery.'
-                    : 'Follows the default fee in Delivery Rules — changes there apply here automatically.'}
+                    ? 'Used only for local-partner delivery, or for Shiprocket when it can\'t quote. Shiprocket PINs are normally charged by the courier fee bands.'
+                    : 'Follows the courier fee bands in Delivery Rules — changes there apply here automatically.'}
                 </p>
               </div>
               {form.standardFeeType === 'custom' && (
@@ -259,12 +259,8 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
       ? {
         defaultDeliveryFee: num(form.defaultDeliveryFee),
         defaultStandardEta: form.defaultStandardEta,
-        freeDeliveryEnabled: !!form.freeDeliveryEnabled,
-        freeDeliveryThreshold: num(form.freeDeliveryThreshold),
         serviceByDefault: !!form.serviceByDefault,
-        courierLinkedFee: !!form.courierLinkedFee,
-        courierFeeMode: form.courierFeeMode === 'actual' ? 'actual' : 'bands',
-        courierFeeMarkupPct: Math.min(100, num(form.courierFeeMarkupPct)),
+        // Courier-linked 'bands' pricing and "no free delivery" are enforced server-side.
         courierFeeBands: (form.courierFeeBands || [])
           .filter((b) => b.fee !== '' && b.fee != null)
           .map((b) => ({ maxRate: num(b.maxRate), fee: num(b.fee) })),
@@ -284,33 +280,17 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 max-w-2xl">
       {tab === 'standard' ? (
         <>
-          <Row label="Default delivery fee" hint="Charged for unlisted PIN codes and PIN codes set to Default fee"><NumInput k="defaultDeliveryFee" ph="50" /></Row>
+          <div className="mb-2 rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3 text-xs text-amber-800">
+            Delivery is always collected from the customer: the fee follows Shiprocket's live quote for the cart's
+            real parcel weight through the bands below, and is never less than the courier's own charge.
+            Free delivery is switched off.
+          </div>
+          <Row label="Fallback delivery fee (per 0.5 kg)" hint="Only when Shiprocket can't quote (outage): charged per 0.5 kg of parcel weight. Local-partner PINs on Default fee pay this once."><NumInput k="defaultDeliveryFee" ph="70" /></Row>
           <Row label="Default standard ETA"><TextInput k="defaultStandardEta" ph="3–5 business days" /></Row>
-          <Row label="Free delivery over a threshold"><Toggle k="freeDeliveryEnabled" /></Row>
-          {form.freeDeliveryEnabled && <Row label="Free-delivery threshold" hint="Standard delivery is free at or above this subtotal"><NumInput k="freeDeliveryThreshold" ph="500" /></Row>}
-          <Row label="Deliver to unlisted PIN codes" hint="When ON, any 6-digit PIN not in the table is deliverable at the default fee"><Toggle k="serviceByDefault" /></Row>
-          <Row label="Link default fee to courier cost" hint="Charge by Shiprocket's freight quote for the cart (bands below) instead of one flat fee. Custom PIN fees and free delivery still apply."><Toggle k="courierLinkedFee" /></Row>
-          {form.courierLinkedFee && (
-            <Row label="How to charge" hint="Exact cost: the customer pays the cheapest courier's real freight for their cart (+ buffer), and that courier is assigned at dispatch. Fastest orders use the cheapest express courier.">
-              <select value={form.courierFeeMode === 'actual' ? 'actual' : 'bands'} onChange={(e) => set('courierFeeMode', e.target.value)}
-                className={`${inputCls} w-52`}>
-                <option value="actual">Exact cheapest courier cost</option>
-                <option value="bands">Fee bands</option>
-              </select>
-            </Row>
-          )}
-          {form.courierLinkedFee && form.courierFeeMode === 'actual' && (
-            <Row label="Buffer on courier cost" hint="Added on top of the freight quote, to cover weight re-checks by the courier. 0–100%.">
-              <div className="relative w-32">
-                <input type="number" min="0" max="100" value={form.courierFeeMarkupPct ?? 0}
-                  onChange={(e) => set('courierFeeMarkupPct', e.target.value)} className={`${inputCls} pr-7`} />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">%</span>
-              </div>
-            </Row>
-          )}
-          {form.courierLinkedFee && form.courierFeeMode !== 'actual' && (
+          <Row label="Deliver to unlisted PIN codes" hint="When ON, any 6-digit PIN not in the table is deliverable (fee from the bands)"><Toggle k="serviceByDefault" /></Row>
+          {(
             <div className="py-4 space-y-2">
-              <p className="text-xs text-gray-400">If Shiprocket quotes up to <b>₹ freight</b>, charge the customer <b>₹ fee</b>. Leave the last band's freight empty or 0 for "anything above". Falls back to the default fee when Shiprocket can't quote.</p>
+              <p className="text-xs text-gray-400">If Shiprocket quotes up to <b>₹ freight</b>, charge the customer <b>₹ fee</b>. Leave the last band's freight empty or 0 for "anything above". A fee below the quote is raised to the quote. Fastest delivery uses the express courier's quote with the same bands.</p>
               {(form.courierFeeBands || []).map((b, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
                   <span className="text-xs font-bold text-gray-400 w-20">Freight ≤ ₹</span>
@@ -325,7 +305,7 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
                     className="p-2 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               ))}
-              {(form.courierFeeBands || []).length < 10 && (
+              {(form.courierFeeBands || []).length < 20 && (
                 <button type="button" onClick={() => set('courierFeeBands', [...(form.courierFeeBands || []), { maxRate: '', fee: '' }])}
                   className="text-xs font-bold text-[#C41E6B] flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add band</button>
               )}

@@ -94,7 +94,7 @@ export default function NotificationCenter() {
                       {!notif.read && <div className="h-2 w-2 rounded-full bg-blue-500 mt-1" />}
                     </div>
                     <p className="text-xs text-gray-500 font-medium leading-relaxed">{notif.message}</p>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-2">
+                    <p className="text-[10.5px] font-bold text-gray-400 uppercase tracking-widest mt-2">
                       {new Date(notif.createdAt?._seconds * 1000).toLocaleString()}
                     </p>
                   </div>

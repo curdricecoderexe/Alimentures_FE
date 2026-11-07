@@ -146,7 +146,7 @@ export const POLICIES = [
       },
       {
         heading: 'Shipping Charges',
-        body: 'Shipping charges, if any, are shown at checkout before you pay. Where free delivery is offered above a minimum order value, it is applied automatically at checkout. We pay the courier’s charges; you are never asked to pay anything to the delivery agent.',
+        body: 'Shipping charges are based on our courier partner’s rate for your parcel’s weight and delivery PIN code, and are shown at checkout before you pay. Nothing more is collected on delivery; you are never asked to pay anything to the delivery agent.',
       },
       {
         heading: 'Order Tracking',

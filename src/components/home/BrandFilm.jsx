@@ -208,7 +208,7 @@ export default function BrandFilm() {
           />
 
           {/* live badge */}
-          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white text-[9.5px] font-extrabold uppercase tracking-[0.2em]">
+          <div className="absolute top-4 left-4 sm:top-6 sm:left-6 inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-black/30 backdrop-blur-md border border-white/15 text-white text-[10.5px] font-extrabold uppercase tracking-[0.2em]">
             <span className="relative flex h-2 w-2">
               {playing && <span className="absolute inline-flex h-full w-full rounded-full bg-[#FF5FA8] opacity-75 animate-ping" />}
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#FF5FA8]" />

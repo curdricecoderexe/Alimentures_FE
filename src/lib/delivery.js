@@ -9,7 +9,7 @@ import { API_BASE } from './api';
  */
 
 const CACHE_KEY = 'alim_delivery_summary_v1';
-const DEFAULTS = { freeDeliveryEnabled: true, freeDeliveryThreshold: 500, defaultDeliveryFee: 50, standardEta: '' };
+const DEFAULTS = { freeDeliveryEnabled: false, freeDeliveryThreshold: 500, defaultDeliveryFee: 70, minDeliveryFee: 60, standardEta: '' };
 
 const readCache = () => {
   try {

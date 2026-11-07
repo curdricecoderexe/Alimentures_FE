@@ -1,6 +1,6 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, Check, ArrowRight, Sparkles, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
+import { ShoppingCart, Heart, Check, ArrowRight, Wheat, Cookie, Star, HeartHandshake, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,8 +12,8 @@ import { useAppearance } from '../../lib/appearance';
 import { cachedFetch } from '../../lib/api';
 import BrandFilm from '../../components/home/BrandFilm';
 import CatalogueDownload from '../../components/home/CatalogueDownload';
-import FssaiCertificate from '../../components/home/FssaiCertificate';
 import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
+import MobileSliderControls from '../../components/ui/MobileSliderControls';
 import womenImage from '../../assets/cas/women.webp';
 import nammalvarImage from '../../assets/nammalvar.jpg';
 import craftingBgDefault from '../../assets/Munnar.jpg';
@@ -150,11 +150,11 @@ function LineupArtwork({ images }) {
         {/* bottom chips + slide progress */}
         <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-7 flex flex-col items-center gap-3.5">
           <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
               <Leaf className="h-3.5 w-3.5 text-[#9BE28F]" /> 100% Native Base
             </span>
-            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
-              <Sparkles className="h-3.5 w-3.5 text-gold-light" /> Honest Baking
+            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
+              <Wheat className="h-3.5 w-3.5 text-gold-light" /> Honest Baking
             </span>
           </div>
           {images.length > 1 && (
@@ -205,11 +205,11 @@ function LineupArtwork({ images }) {
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
         className="hidden sm:block absolute -left-12 bottom-[28%] z-30 rounded-2xl bg-white/90 backdrop-blur-xl border border-white shadow-[0_24px_50px_-18px_rgba(121,8,63,0.35)] p-3.5 sm:p-4 pr-5 sm:pr-6"
       >
-        <p className="text-[8.5px] sm:text-[9px] font-extrabold uppercase tracking-[0.2em] text-ink-muted">Baked without</p>
+        <p className="text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-ink-muted">Baked without</p>
         <ul className="mt-2 space-y-1.5">
           {LINEUP_WITHOUT.map((item) => (
             <li key={item} className="flex items-center gap-2 text-[11.5px] sm:text-[12.5px] font-bold text-[#221B1F]">
-              <span className="inline-flex items-center justify-center h-5 min-w-[30px] px-1.5 rounded-full bg-berry/10 text-berry text-[9px] font-extrabold">0%</span>
+              <span className="inline-flex items-center justify-center h-5 min-w-[30px] px-1.5 rounded-full bg-berry/10 text-berry text-[10.5px] font-extrabold">0%</span>
               {item}
             </li>
           ))}
@@ -339,6 +339,8 @@ export default function Home() {
   // Category Bar & Row Scroll Refs & Functions
   const categoryBarRef = useRef(null);
   const categoryRowRefs = useRef({});
+  const featuredRowRef = useRef(null);
+  const getFeaturedRow = useCallback(() => featuredRowRef.current, []);
 
   const scrollCategoryBar = (direction) => {
     if (categoryBarRef.current) {
@@ -391,7 +393,7 @@ export default function Home() {
   const getCategoryMeta = (catName) => {
     const c = catName.toLowerCase();
     if (c.includes('cookie') || c.includes('biscuit')) {
-      return { desc: 'Crispy ancient millet biscuits baked slowly with pure country butter', icon: Sparkles };
+      return { desc: 'Crispy ancient millet biscuits baked slowly with pure country butter', icon: Cookie };
     }
     if (c.includes('health') || c.includes('mixture') || c.includes('mix')) {
       return { desc: 'Nutrient-rich multigrain porridge and natural vitality mixes', icon: Sprout };
@@ -721,7 +723,7 @@ export default function Home() {
                 </AnimatePresence>
 
                 {/* Corner slide count badge */}
-                {activeSlides.length > 1 && <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[8.5px] font-bold tracking-widest text-berry shadow-xs">
+                {activeSlides.length > 1 && <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest text-berry shadow-xs">
                   0{currentSlide + 1} / 0{activeSlides.length}
                 </div>}
               </div>
@@ -783,7 +785,7 @@ export default function Home() {
               onClick={scrollToFilm}
               className="h-12 rounded-2xl bg-white border border-hairline text-ink inline-flex items-center justify-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em] shadow-sm active:scale-[0.98] transition-transform"
             >
-              <Sparkles className="h-4 w-4 text-berry" /> Our story
+              <Sprout className="h-4 w-4 text-berry" /> Our story
             </button>
           </div>
 
@@ -905,7 +907,7 @@ export default function Home() {
           <div className="inline-flex gap-5 sm:gap-8 animate-marquee">
             {/* even number of copies → the -50% loop is seamless and fills wide screens */}
             {Array.from({ length: 8 }).flatMap(() => forbiddenIngredients).map((item, idx) => (
-              <span key={idx} className="inline-flex items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-ink-muted shrink-0">
+              <span key={idx} className="inline-flex items-center gap-2 text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-ink-muted shrink-0">
                 <span className="w-1 h-1 rounded-full bg-berry/50 inline-block" />{item}<span className="w-1 h-1 rounded-full bg-gold/50 inline-block" />
               </span>
             ))}
@@ -937,7 +939,7 @@ export default function Home() {
           {/* centered header */}
           <div className="flex flex-col items-center text-center gap-3 sm:gap-4 max-w-2xl mx-auto mb-8 sm:mb-14">
             <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
-              <Sparkles className="h-3.5 w-3.5" /> Signature Blends
+              <Wheat className="h-3.5 w-3.5" /> Signature Blends
             </span>
             <h2 className="font-display font-bold text-[2.2rem] sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
               Featured <span className="accent-text">products</span>
@@ -954,11 +956,12 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Real products: swipe row on phones, grid from tablet up */}
+          {/* Real products: one card at a time on phones, grid from tablet up */}
           {featuredProducts.some((p) => p.id) && (
-            <div className="-mx-4 px-4 scroll-px-4 sm:mx-0 sm:px-0 sm:scroll-px-0 flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scrollbar-none pb-2">
+            <>
+            <div ref={featuredRowRef} className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scrollbar-none pb-2">
               {featuredProducts.filter((p) => p.id).map((item) => (
-                <div key={item.id} className="w-[78%] max-w-[300px] sm:w-auto sm:max-w-none shrink-0 snap-start flex">
+                <div key={item.id} className="w-full sm:w-auto shrink-0 snap-start snap-always flex">
                   <ProductCard
                     product={item}
                     addLabel="Add"
@@ -968,6 +971,8 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            <MobileSliderControls getEl={getFeaturedRow} count={featuredProducts.filter((p) => p.id).length} label="featured product" />
+            </>
           )}
 
           {/* Offline fallback (no product data) */}
@@ -989,8 +994,8 @@ export default function Home() {
                   >
                     <div className="p-2 pb-0">
                       <ProductImageFrame src={item.image} alt={item.name} className="rounded-[20px]">
-                        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[8.5px] font-extrabold uppercase tracking-[0.14em] text-berry z-20">
-                          <Sparkles className="h-3 w-3" /> Featured
+                        <span className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 h-6 px-2.5 rounded-full bg-white/85 backdrop-blur-md border border-white/70 text-[10px] font-extrabold uppercase tracking-[0.14em] text-berry z-20">
+                          <Star className="h-3 w-3 fill-current" /> Featured
                         </span>
                       </ProductImageFrame>
                     </div>
@@ -1005,7 +1010,7 @@ export default function Home() {
                         {(item.badges || []).slice(0, 2).map((badge, bIdx) => (
                           <span
                             key={bIdx}
-                            className="inline-flex items-center h-6 px-2.5 rounded-full bg-cream-deep/60 border border-hairline text-[9.5px] font-bold text-ink-soft"
+                            className="inline-flex items-center h-6 px-2.5 rounded-full bg-cream-deep/60 border border-hairline text-[10.5px] font-bold text-ink-soft"
                           >
                             {badge}
                           </span>
@@ -1047,7 +1052,7 @@ export default function Home() {
 
         <div className="container mx-auto px-4 sm:px-8 lg:px-10 max-w-[1600px] w-full">
           <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 border border-berry/20 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs backdrop-blur-md">
+            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 border border-berry/20 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs backdrop-blur-md">
               Organic Treats
             </span>
             <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
@@ -1081,7 +1086,7 @@ export default function Home() {
                   <button
                     key={category}
                     onClick={() => setActiveCategory(isAll ? 'All' : category)}
-                    className={`shrink-0 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em] transition-all duration-300 border backdrop-blur-md cursor-pointer snap-start ${isSelected
+                    className={`shrink-0 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[10.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em] transition-all duration-300 border backdrop-blur-md cursor-pointer snap-start ${isSelected
                       ? 'bg-berry border-berry text-white shadow-[0_6px_20px_rgba(146,0,117,0.3)] scale-[1.02]'
                       : 'bg-white/90 border-hairline/80 text-ink-soft hover:bg-white hover:border-berry/40 hover:text-berry shadow-2xs'
                       }`}
@@ -1147,14 +1152,14 @@ export default function Home() {
 
                       {/* Left: Large editorial label */}
                       <div className="flex flex-col gap-1.5 min-w-0">
-                        <p className="text-[8.5px] sm:text-[9px] font-bold uppercase tracking-[0.28em] text-berry flex items-center gap-1.5">
+                        <p className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[0.28em] text-berry flex items-center gap-1.5">
                           <IconComp className="w-3 h-3" /> {meta.desc.split(' ').slice(0, 4).join(' ')}
                         </p>
                         <div className="flex items-baseline gap-2 sm:gap-4 flex-wrap">
                           <h3 className="font-display font-bold text-3xl sm:text-5xl md:text-6xl text-[#221B1F] tracking-tight leading-none">
                             {catName}
                           </h3>
-                          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-ink-muted self-end mb-0.5 sm:mb-1">
+                          <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-widest text-ink-muted self-end mb-0.5 sm:mb-1">
                             {displayProducts.length} {displayProducts.length === 1 ? 'item' : 'items'}
                           </span>
                         </div>
@@ -1177,12 +1182,6 @@ export default function Home() {
                           <ChevronRight className="w-4 h-4" />
                         </button>
 
-                        {displayProducts.length > 1 && (
-                          <div className="sm:hidden flex items-center gap-1 px-2.5 py-1 rounded-full bg-cream-deep text-ink-muted text-[9px] font-semibold uppercase tracking-wider select-none">
-                            <span>Swipe</span>
-                            <ArrowRight className="w-3 h-3" />
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -1193,7 +1192,7 @@ export default function Home() {
                         className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-1 sm:py-3 px-0.5 sm:px-2 scroll-smooth snap-x snap-mandatory sm:pr-24 w-full"
                       >
                         {displayProducts.map((item) => (
-                          <div key={item.id || item._id} className="w-[78%] max-w-[300px] sm:w-[calc(25%-16px)] sm:min-w-[245px] sm:max-w-[290px] shrink-0 flex snap-start">
+                          <div key={item.id || item._id} className="w-full sm:w-[calc(25%-16px)] sm:min-w-[245px] sm:max-w-[290px] shrink-0 flex snap-start snap-always">
                             <ProductCard
                               product={item}
                               addLabel="Add"
@@ -1204,6 +1203,7 @@ export default function Home() {
                         ))}
                       </div>
                     </div>
+                    <MobileSliderControls getEl={() => categoryRowRefs.current[catName]} count={displayProducts.length} label={`${catName} product`} />
                   </div>
 
                   {catIdx < visibleCategories.length - 1 && <CatalogDivider />}
@@ -1263,7 +1263,7 @@ export default function Home() {
         {/* ── Floating particles ── */}
         <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-light bg-gold-light/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-gold-light/20 shadow-xs backdrop-blur-md">
+            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-light bg-gold-light/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-gold-light/20 shadow-xs backdrop-blur-md">
               Trust Pillars
             </span>
             <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#221B1F] tracking-tight leading-tight">
@@ -1315,9 +1315,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ⸻ FSSAI CERTIFICATE — lead-gated download (Admin → Catalogue / Leads) ⸻ */}
-      <FssaiCertificate />
-
       {/* ⸻ BRAND FILM — admin-managed video (Admin → Templates) ⸻ */}
       <BrandFilm />
 
@@ -1333,7 +1330,7 @@ export default function Home() {
             </div>
 
             <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left z-10 pt-4 lg:pt-0">
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry border-2 border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-xs text-center">
+              <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry border-2 border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-xs text-center">
                 Clean Snack Lineup
               </span>
 
@@ -1344,7 +1341,7 @@ export default function Home() {
               <div className="h-1 w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto lg:mx-0" />
 
               <div className="space-y-6 text-[#5A4F55] text-base md:text-lg leading-relaxed">
-                <p className="font-bold text-[#221B1F] md:text-justify">
+                <p className="font-bold text-[#221B1F]">
                   A line of healthy, clean-label cookies made from wholesome grains.
                 </p>
               </div>
@@ -1399,7 +1396,7 @@ export default function Home() {
                 <Heart className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
               <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-berry transition-colors tracking-tight leading-snug text-center">Why Alchemi's Matters</h4>
-              <p className="text-[#5A4F55] leading-relaxed md:text-justify text-sm sm:text-base font-medium">
+              <p className="text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium">
                 Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Alchemi's was created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
               </p>
             </div>
@@ -1409,7 +1406,7 @@ export default function Home() {
                 <Zap className="h-7 w-7 sm:h-10 sm:w-10" />
               </div>
               <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-[#D7A94E] transition-colors tracking-tight leading-snug text-center">Healthy Snacking for Modern Living</h4>
-              <p className="text-[#5A4F55] leading-relaxed md:text-justify text-sm sm:text-base font-medium">
+              <p className="text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium">
                 Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemi's is designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
               </p>
             </div>
@@ -1438,7 +1435,7 @@ export default function Home() {
 
         <div className="container mx-auto px-6 max-w-7xl relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/5 border border-berry/15 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs">
+            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/5 border border-berry/15 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs">
               Nutritional Blueprint
             </span>
             <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
@@ -1473,7 +1470,7 @@ export default function Home() {
                       {String(idx + 1).padStart(2, '0')}
                     </span>
                     {millet.local && (
-                      <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-berry bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1 rounded-full">
+                      <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-berry bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1 rounded-full">
                         {millet.local}
                       </span>
                     )}
@@ -1532,11 +1529,11 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="lg:col-span-7 space-y-6 md:text-justify">
-              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium md:text-justify">
+            <div className="lg:col-span-7 space-y-6">
+              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium">
                 Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition.
               </p>
-              <p className="text-sm sm:text-base text-[#221B1F]/80 leading-relaxed font-medium md:text-justify">
+              <p className="text-sm sm:text-base text-[#221B1F]/80 leading-relaxed font-medium">
                 More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives.
               </p>
             </div>
@@ -1560,15 +1557,15 @@ export default function Home() {
               </h2>
               <div className="h-1 w-28 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full" />
 
-              <div className="space-y-6 pt-2 md:text-justify w-full">
-                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium md:text-justify">
+              <div className="space-y-6 pt-2 w-full">
+                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium">
                   Alimenture Industries Private Limited was incorporated in Chennai in December 2023 by visionary entrepreneurs Pavin Saminathan and Magesh Mohan.
                 </p>
-                <p className={`text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium md:text-justify ${storyOpen ? '' : 'line-clamp-4 sm:line-clamp-none'}`}>
+                <p className={`text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium ${storyOpen ? '' : 'line-clamp-4 sm:line-clamp-none'}`}>
                   Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition. More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives. Every product we create reflects our commitment to purity, sustainability, and the well-being of future generations.
                 </p>
                 {!storyOpen && (
-                  <button type="button" onClick={() => setStoryOpen(true)} className="sm:hidden text-[12px] font-extrabold uppercase tracking-[0.14em] text-berry">
+                  <button type="button" onClick={() => setStoryOpen(true)} className="sm:hidden py-2.5 -my-2.5 text-[12px] font-extrabold uppercase tracking-[0.14em] text-berry">
                     Read more
                   </button>
                 )}
@@ -1641,7 +1638,7 @@ export default function Home() {
                   <h4 className="font-display font-bold text-xl sm:text-2xl text-[#221B1F] group-hover:text-berry transition-colors leading-tight text-center sm:text-left tracking-tight">
                     {card.title}
                   </h4>
-                  <p className="text-[13px] sm:text-sm text-ink-soft leading-relaxed font-medium md:text-justify">
+                  <p className="text-[13px] sm:text-sm text-ink-soft leading-relaxed font-medium">
                     {card.desc}
                   </p>
                 </div>
@@ -1674,7 +1671,7 @@ export default function Home() {
           {/* headline */}
           <div className="text-center max-w-3xl mx-auto flex flex-col items-center gap-5">
             <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
-              <Sparkles className="h-3.5 w-3.5" /> Alchemi&rsquo;s Grainlets
+              <Wheat className="h-3.5 w-3.5" /> Alchemi&rsquo;s Grainlets
             </span>
             <h2 className="font-display font-bold text-[2.6rem] sm:text-6xl lg:text-[4.1rem] leading-[1.02] tracking-tight text-[#221B1F] text-balance">
               Crafting grains <span className="accent-text">into gold</span>
@@ -1729,7 +1726,7 @@ export default function Home() {
                 {/* statement */}
                 <div className="space-y-7 text-center lg:text-left flex flex-col items-center lg:items-start">
                   <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.35em] text-[#E9C877] bg-white/[0.06] px-4 py-2 rounded-full border border-white/15">
-                    <Sparkles className="h-3.5 w-3.5" /> Our Commitment
+                    <HeartHandshake className="h-3.5 w-3.5" /> Our Commitment
                   </span>
                   <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-[3.4rem] text-white leading-[1.08] tracking-tight text-balance">
                     Every product we craft is a step toward a{' '}
@@ -1842,14 +1839,14 @@ export default function Home() {
                     <span className="text-sm leading-none">✕</span>
                   </button>
                   {/* Mode badge */}
-                  <span className="absolute top-4 left-4 text-[9px] font-bold uppercase tracking-[0.25em] text-white bg-white/15 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                  <span className="absolute top-4 left-4 text-[10.5px] font-bold uppercase tracking-[0.25em] text-white bg-white/15 border border-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                     {quickAddMode === 'cart' ? '🛒 Add to Cart' : '❤️ Save to Wishlist'}
                   </span>
                   {/* Name overlay */}
                   <div className="absolute bottom-4 left-5 right-5">
                     <h3 className="font-display font-bold text-white text-xl leading-tight">{name}</h3>
                     {item.category && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#D7A94E] mt-0.5 block">{item.category}</span>
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#D7A94E] mt-0.5 block">{item.category}</span>
                     )}
                   </div>
                 </div>
@@ -1858,7 +1855,7 @@ export default function Home() {
                   {/* Variant Selector */}
                   {hasVariants && (
                     <div>
-                      <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-3">Choose Pack Size</p>
+                      <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-3">Choose Pack Size</p>
                       <div className="flex flex-wrap gap-2">
                         {item.variants.map((v, i) => {
                           const sold = v.stock === 0;
@@ -1876,10 +1873,10 @@ export default function Home() {
                                 }`}
                             >
                               {v.weight}
-                              <span className={`block text-[8px] mt-0.5 font-bold ${active ? 'text-berry' : 'text-ink-muted'}`}>₹{v.price}</span>
-                              {sold && <span className="block text-[7px] text-ink-muted">Out of stock</span>}
+                              <span className={`block text-[10px] mt-0.5 font-bold ${active ? 'text-berry' : 'text-ink-muted'}`}>₹{v.price}</span>
+                              {sold && <span className="block text-[10px] text-ink-muted">Out of stock</span>}
                               {!sold && v.stock < 10 && (
-                                <span className="absolute -top-1.5 -right-1.5 text-[7px] bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold">{v.stock} left</span>
+                                <span className="absolute -top-1.5 -right-1.5 text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold">{v.stock} left</span>
                               )}
                             </button>
                           );
@@ -1892,7 +1889,7 @@ export default function Home() {
                   {quickAddMode === 'cart' && !isOutOfStock && (
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-2.5">Quantity</p>
+                        <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-2.5">Quantity</p>
                         <div className="flex items-center gap-0 border border-hairline rounded-2xl bg-cream overflow-hidden">
                           <button
                             onClick={() => setQaQty(q => Math.max(1, q - 1))}
@@ -1923,7 +1920,7 @@ export default function Home() {
                       </div>
                       {totalPrice && (
                         <div className="text-right">
-                          <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mb-1">Total</p>
+                          <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-1">Total</p>
                           <span className="text-2xl font-bold text-[#221B1F]">₹{totalPrice}</span>
                         </div>
                       )}

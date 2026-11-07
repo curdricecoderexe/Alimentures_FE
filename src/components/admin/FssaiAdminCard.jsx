@@ -60,7 +60,7 @@ export default function FssaiAdminCard() {
   };
 
   const toggle = () => run(() => call('/catalogue/admin/fssai', { method: 'PATCH', body: JSON.stringify({ enabled: !info.enabled }) }),
-    info.enabled ? 'FSSAI download hidden from the homepage' : 'FSSAI download shown on the homepage');
+    info.enabled ? 'FSSAI download hidden from the footer' : 'FSSAI download shown in the footer');
 
   const save = () => run(() => call('/catalogue/admin/fssai', { method: 'PATCH', body: JSON.stringify(form) }), 'Certificate details saved');
 
@@ -90,7 +90,7 @@ export default function FssaiAdminCard() {
           <div>
             <h2 className="font-bold text-gray-900">FSSAI certificate</h2>
             <p className="text-xs text-gray-400 font-medium">
-              Homepage download, gated by name + mobile · {info.uploaded ? `uploaded file (${formatKB(info.size)})` : `bundled certificate (${formatKB(info.size)})`}
+              Footer download, gated by name + mobile · {info.uploaded ? `uploaded file (${formatKB(info.size)})` : `bundled certificate (${formatKB(info.size)})`}
             </p>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default function FssaiAdminCard() {
             info.enabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-50 text-gray-500 border border-gray-200'
           }`}
         >
-          {info.enabled ? 'Shown on homepage' : 'Hidden'}
+          {info.enabled ? 'Shown in footer' : 'Hidden'}
         </button>
       </div>
 

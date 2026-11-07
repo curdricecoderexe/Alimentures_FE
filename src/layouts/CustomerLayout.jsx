@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingCart, User, Package, Search, Heart, Truck, Lock, Menu, X, ArrowRight,
-  MapPin, Mail, Phone, Globe, ArrowUp, Send, Sparkles, Check, ChevronRight, LayoutDashboard, Leaf,
+  MapPin, Mail, Phone, Globe, ArrowUp, Send, Check, ChevronRight, LayoutDashboard, Leaf,
   Sprout, Users, CheckCircle2, Quote, ShieldCheck, Loader2
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 // Lazy: keeps socket.io out of the first page load.
 const ChatWidget = lazy(() => import('../components/ChatWidget'));
 import CookieConsent from '../components/CookieConsent';
+import MobileDock from '../components/MobileDock';
 import { PageBackdrop } from '../components/ui/motion';
 import { pageview, initAutoTracking, initPerformance } from '../lib/analytics';
 import { cachedFetch, logout, API_BASE } from '../lib/api';
@@ -25,6 +26,8 @@ import { POLICIES } from '../data/policies';
 import { productPath, categoryPath } from '../lib/seo';
 import { useCategories } from '../lib/categories';
 import { CHENNAI_PAGE } from '../data/localSeo';
+import TrustBadges from '../components/TrustBadges';
+import { SOCIAL_PLATFORMS, resolveSocialLinks } from '../lib/socialPlatforms';
 // Removed Loader import
 // Removed unused import: womenImage
 // Removed unused import: coverImage
@@ -34,6 +37,15 @@ gsap.registerPlugin(ScrollTrigger);
 export default function CustomerLayout() {
   const { cart, wishlist } = useCart();
   const navigate = useNavigate();
+  // Footer social links — managed in Admin → Social Links.
+  const [socialLinks, setSocialLinks] = useState(() => resolveSocialLinks(null));
+  useEffect(() => {
+    let alive = true;
+    cachedFetch(`${API_BASE}/settings`, 5 * 60 * 1000)
+      .then((j) => { if (alive && j?.success) setSocialLinks(resolveSocialLinks(j.data)); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
   // Crawlable links to every category that has products (SEO + navigation).
   const footerCategories = useCategories().filter((c) => c.visible !== false && c.productCount > 0);
   const location = useLocation();
@@ -290,7 +302,7 @@ export default function CustomerLayout() {
     } else { navigate(link.path); }
   };
 
-  const badgeCls = "absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full flex items-center justify-center text-[9.5px] font-bold text-white bg-berry border-2 border-white shadow-sm";
+  const badgeCls = "absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full flex items-center justify-center text-[10.5px] font-bold text-white bg-berry border-2 border-white shadow-sm";
 
   const isHome = location.pathname === '/';
   const isSolidNav = scrolled || !isHome;
@@ -405,7 +417,7 @@ export default function CustomerLayout() {
                         <img src={p.image || ImageWithFallback} alt={p.name} className="w-10 h-10 rounded-lg object-cover border border-berry/10" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-ink group-hover:text-berry transition-colors truncate">{p.name}</p>
-                          <p className="text-[9px] text-ink-muted uppercase tracking-wider">{p.category}</p>
+                          <p className="text-[10.5px] text-ink-muted uppercase tracking-wider">{p.category}</p>
                         </div>
                         <span className="text-berry font-bold text-xs">₹{p.price}</span>
                       </Link>
@@ -483,7 +495,7 @@ export default function CustomerLayout() {
                                 </div>
                               </div>
                               <div className="flex-1 text-left min-w-0">
-                                <span className="inline-block mb-1 text-[8px] font-extrabold bg-cream-deep border border-hairline text-ink-soft px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                <span className="inline-block mb-1 text-[10px] font-extrabold bg-cream-deep border border-hairline text-ink-soft px-2 py-0.5 rounded-full uppercase tracking-widest">
                                   {localStorage.getItem('role') || 'Member'}
                                 </span>
                                 <p className="font-display font-extrabold text-ink text-base leading-tight truncate">{localStorage.getItem('userName') || 'Customer'}</p>
@@ -573,26 +585,7 @@ export default function CustomerLayout() {
 
             {/* Mobile Actions Header Bar */}
             <div className="flex lg:hidden items-center gap-1.5">
-              {/* Wishlist */}
-              <button
-                onClick={() => navigate('/wishlist')}
-                className={`relative h-9 w-9 flex items-center justify-center rounded-full transition-all ${navIconColor} hover:text-[#C21A75]`}
-                aria-label="Wishlist"
-              >
-                <Heart className="h-4 w-4 text-[#A50D5A]" />
-                {wishlist.length > 0 && <span className={`${badgeCls} text-[8px]`}>{wishlist.length}</span>}
-              </button>
-
-              {/* Cart */}
-              <button
-                onClick={() => navigate('/cart')}
-                className={`relative h-9 w-9 flex items-center justify-center rounded-full transition-all ${navIconColor} hover:text-[#C21A75]`}
-                aria-label="Cart"
-              >
-                <ShoppingCart className="h-4 w-4 text-[#A50D5A]" />
-                {cart.length > 0 && <span className={`${badgeCls} text-[8px]`}>{cart.length}</span>}
-              </button>
-
+              {/* Wishlist / Cart live in the bottom MobileDock on small screens */}
               {/* Mobile Hamburger Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
@@ -680,7 +673,7 @@ export default function CustomerLayout() {
                     <Icon className={`h-4.5 w-4.5 mb-1 ${color}`} />
                     <span className="text-[10px] font-bold text-ink-soft">{label}</span>
                     {badge > 0 && (
-                      <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-[#A50D5A] text-white rounded-full text-[8px] font-extrabold flex items-center justify-center">
+                      <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-[#A50D5A] text-white rounded-full text-[10px] font-extrabold flex items-center justify-center">
                         {badge}
                       </span>
                     )}
@@ -690,7 +683,7 @@ export default function CustomerLayout() {
 
               {/* Nav Links */}
               <div className="flex-grow flex flex-col gap-1.5 mt-6">
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.25em] text-ink-muted px-4 mb-1">Navigation</p>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-[0.25em] text-ink-muted px-4 mb-1">Navigation</p>
                 {navLinks.filter((link) => !link.hideOnMobile).map((link, idx) => (
                   <motion.button
                     key={link.name}
@@ -738,7 +731,7 @@ export default function CustomerLayout() {
       {/* Footer */}
       <footer
         id="contact"
-        className="relative overflow-hidden mt-0 pt-20 pb-12 font-sans text-white"
+        className="relative overflow-hidden mt-0 pt-20 pb-32 lg:pb-12 font-sans text-white"
         style={{ background: 'linear-gradient(160deg,#79083F 0%,#5E0631 100%)' }}
       >
         {/* Berry→gold foil hairline */}
@@ -760,10 +753,10 @@ export default function CustomerLayout() {
 
         <div className="container mx-auto px-6 relative z-10">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 lg:gap-12 pb-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-x-6 gap-y-10 lg:gap-12 pb-12">
 
             {/* Interactive Newsletter Subscription Card - Matte Finish */}
-            <div className="sm:col-span-2 md:col-span-3 lg:col-span-12">
+            <div className="col-span-2 md:col-span-3 lg:col-span-12">
               <div className="relative overflow-hidden rounded-[2.5rem] bg-white/[0.07] backdrop-blur-glass border border-white/20 p-8 md:p-12 shadow-2xl">
                 <div className="foil absolute top-0 left-0 right-0 h-[3px]" />
                 {/* Muted Glow lights inside the card */}
@@ -837,9 +830,9 @@ export default function CustomerLayout() {
             </div>
 
             {/* Brand Narrative Column */}
-            <div className="sm:col-span-2 md:col-span-3 lg:col-span-4 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
-              <div>
-                <img src={logo} alt="Alimenture Brand Logo" className="h-16 sm:h-20 w-auto object-contain drop-shadow-sm brightness-125 contrast-125 mx-auto sm:mx-0" />
+            <div className="col-span-2 md:col-span-3 lg:col-span-4 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
+              <div className="inline-flex rounded-2xl bg-white px-4 py-2.5 shadow-[0_14px_30px_-16px_rgba(0,0,0,0.55)]">
+                <img src={logo} alt="Alimenture Brand Logo" className="h-11 sm:h-14 w-auto object-contain" />
               </div>
               <p className="text-sm text-white/90 leading-relaxed max-w-sm font-sans font-medium">
                 Dream of Toxic-Free Food. Ancient heritage grains, traditional clean millets, and natural nourishment — we refuse to compromise.
@@ -862,14 +855,14 @@ export default function CustomerLayout() {
             </div>
 
             {/* Navigation Column */}
-            <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
-              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Explore</h4>
-              <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+            <div className="col-span-1 lg:col-span-2 space-y-4 text-left flex flex-col items-start">
+              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-left">Explore</h4>
+              <ul className="space-y-0.5 text-sm text-white/80 font-medium font-sans flex flex-col items-start">
                 {navLinks.map(link => (
                   <li key={link.name}>
                     <button
                       onClick={() => handleNavClick(link)}
-                      className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors text-center sm:text-left"
+                      className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                       {link.name}
@@ -880,14 +873,14 @@ export default function CustomerLayout() {
             </div>
 
             {/* Shop + Account Column */}
-            <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
+            <div className="col-span-1 lg:col-span-2 space-y-4 text-left flex flex-col items-start">
               {footerCategories.length > 0 && (
                 <>
-                  <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Shop</h4>
-                  <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+                  <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-left">Shop</h4>
+                  <ul className="space-y-0.5 text-sm text-white/80 font-medium font-sans flex flex-col items-start">
                     {footerCategories.map((c) => (
                       <li key={c.id}>
-                        <Link to={categoryPath(c.name)} className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                        <Link to={categoryPath(c.name)} className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left">
                           <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                           {c.name}
                         </Link>
@@ -895,7 +888,7 @@ export default function CustomerLayout() {
                     ))}
                     {CHENNAI_PAGE.published && (
                       <li>
-                        <Link to="/locations/chennai" className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                        <Link to="/locations/chennai" className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left">
                           <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                           Delivery in Chennai
                         </Link>
@@ -904,22 +897,22 @@ export default function CustomerLayout() {
                   </ul>
                 </>
               )}
-              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Account</h4>
-              <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-left">Account</h4>
+              <ul className="space-y-0.5 text-sm text-white/80 font-medium font-sans flex flex-col items-start">
                 <li>
-                  <Link to="/orders" className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                  <Link to="/orders" className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                     Track Orders
                   </Link>
                 </li>
                 <li>
-                  <Link to="/wishlist" className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                  <Link to="/wishlist" className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                     Wishlist
                   </Link>
                 </li>
                 <li>
-                  <Link to="/cart" className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors">
+                  <Link to="/cart" className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                     Cart
                   </Link>
@@ -928,14 +921,14 @@ export default function CustomerLayout() {
             </div>
 
             {/* Policies & Guidelines Column */}
-            <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
-              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Policies</h4>
-              <ul className="space-y-3.5 text-sm text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+            <div className="col-span-1 lg:col-span-2 space-y-4 text-left flex flex-col items-start">
+              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-left">Policies</h4>
+              <ul className="space-y-0.5 text-sm text-white/80 font-medium font-sans flex flex-col items-start">
                 {POLICIES.map(policy => (
                   <li key={policy.slug}>
                     <Link
                       to={`/policies/${policy.slug}`}
-                      className="group/link flex items-center justify-center sm:justify-start gap-1 hover:text-white transition-colors text-center sm:text-left"
+                      className="group/link flex items-center justify-start gap-1 py-1.5 hover:text-white transition-colors text-left"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-[#A50D5A] scale-0 group-hover/link:scale-100 transition-transform duration-300 mr-0 group-hover/link:mr-2" />
                       {policy.name}
@@ -946,9 +939,9 @@ export default function CustomerLayout() {
             </div>
 
             {/* Interactive Contact Details */}
-            <div className="sm:col-span-2 md:col-span-2 lg:col-span-2 space-y-6 text-center sm:text-left flex flex-col items-center sm:items-start">
-              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-center sm:text-left">Direct Contact</h4>
-              <div className="space-y-4 text-xs text-white/80 font-medium font-sans flex flex-col items-center sm:items-start">
+            <div className="col-span-2 md:col-span-2 lg:col-span-2 space-y-4 text-left flex flex-col items-start">
+              <h4 className="font-sans font-extrabold text-xs uppercase tracking-widest text-[#D7A94E] text-left">Direct Contact</h4>
+              <div className="space-y-3 text-[13px] text-white/85 font-medium font-sans flex flex-col items-start">
 
                 {/* Location */}
                 <div className="flex items-center gap-3 group">
@@ -967,7 +960,7 @@ export default function CustomerLayout() {
                 </a>
 
                 {/* Phone lines */}
-                <div className="space-y-2 flex flex-col items-center sm:items-start">
+                <div className="space-y-3 flex flex-col items-start">
                   <a href="tel:+917358196132" className="flex items-center gap-3 group">
                     <div className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/15 shadow-sm flex items-center justify-center text-[#D7A94E] group-hover:bg-white/20 group-hover:border-[#D7A94E]/40 group-hover:scale-110 transition-all duration-300 shrink-0">
                       <Phone className="h-4 w-4" />
@@ -996,6 +989,9 @@ export default function CustomerLayout() {
 
           </div>
 
+          {/* Payment, licence & shipping partners */}
+          <TrustBadges />
+
           {/* Socials & Sub-Footer */}
           <div className="mt-8 pt-8 border-t border-white/40 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-3.5 text-center md:text-left">
@@ -1005,63 +1001,22 @@ export default function CustomerLayout() {
 
               {/* Branded Social circle badges */}
               <div className="flex justify-center md:justify-start gap-3">
-                {[
-                  {
-                    icon: (
-                      <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                      </svg>
-                    ),
-                    href: 'https://instagram.com/alimenture',
-                    label: 'Instagram',
-                    color: 'hover:text-[#A50D5A] hover:border-[#A50D5A]/50 hover:bg-white/10'
-                  },
-                  {
-                    icon: (
-                      <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                      </svg>
-                    ),
-                    href: 'https://facebook.com/alimenture',
-                    label: 'Facebook',
-                    color: 'hover:text-[#1877F2] hover:border-[#1877F2]/50 hover:bg-white/10'
-                  },
-                  {
-                    icon: (
-                      <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                        <rect x="2" y="9" width="4" height="12"></rect>
-                        <circle cx="4" cy="4" r="2"></circle>
-                      </svg>
-                    ),
-                    href: 'https://linkedin.com/company/alimenture',
-                    label: 'LinkedIn',
-                    color: 'hover:text-[#0A66C2] hover:border-[#0A66C2]/50 hover:bg-white/10'
-                  },
-                  {
-                    icon: (
-                      <svg className="h-4 w-4 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                      </svg>
-                    ),
-                    href: 'https://twitter.com/alimenture',
-                    label: 'Twitter',
-                    color: 'hover:text-[#1DA1F2] hover:border-[#1DA1F2]/50 hover:bg-white/10'
-                  },
-                ].map(social => (
-                  <a
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className={`h-9 w-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:-translate-y-1 transition-all duration-300 ${social.color}`}
-                  >
-                    {social.icon}
-                  </a>
-                ))}
+                {socialLinks.map((social, i) => {
+                  const meta = SOCIAL_PLATFORMS[social.platform];
+                  return (
+                    <a
+                      key={`${social.platform}-${i}`}
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={meta.label}
+                      title={meta.label}
+                      className={`h-9 w-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:-translate-y-1 hover:bg-white/10 transition-all duration-300 [&>svg]:h-4 [&>svg]:w-4 ${meta.hover}`}
+                    >
+                      {meta.icon}
+                    </a>
+                  );
+                })}
               </div>
             </div>
 
@@ -1076,6 +1031,7 @@ export default function CustomerLayout() {
         </div>
       </footer>
 
+      <MobileDock />
       <CookieConsent />
       <Suspense fallback={null}><ChatWidget /></Suspense>
     </div>

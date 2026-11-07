@@ -32,7 +32,7 @@ const item = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, trans
 function Field({ label, name, value, onChange, placeholder, full, type = 'text' }) {
   return (
     <label className={full ? 'sm:col-span-2 block' : 'block'}>
-      <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">{label}</span>
+      <span className="kicker text-[10.5px] text-ink-soft mb-1.5 block">{label}</span>
       <input
         type={type}
         name={name}
@@ -405,14 +405,14 @@ export default function Checkout() {
                     <p className="text-[11.5px] text-ink-muted">We'll send order updates here</p>
                   </div>
                 </div>
-                <span className="pill-berry-soft inline-flex items-center h-[26px] px-3 rounded-full text-[9px] font-bold uppercase tracking-widest">Signed in</span>
+                <span className="pill-berry-soft inline-flex items-center h-[26px] px-3 rounded-full text-[10.5px] font-bold uppercase tracking-widest">Signed in</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First name" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Sriram" />
                 <Field label="Last name" name="lastName" value={formData.lastName} onChange={handleInputChange} />
                 <Field label="Phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91 98847 33453" full />
                 <label className="sm:col-span-2 block">
-                  <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">Email</span>
+                  <span className="kicker text-[10.5px] text-ink-soft mb-1.5 block">Email</span>
                   <div className="w-full h-[52px] px-4 rounded-2xl bg-cream border border-hairline flex items-center text-[14px] font-medium text-ink-soft">
                     {localStorage.getItem('userEmail') || 'your account email'}
                   </div>
@@ -438,7 +438,7 @@ export default function Checkout() {
               {savedAddresses.length > 0 && (
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-2.5">
-                    <span className="kicker text-[9px] text-ink-soft">Saved addresses</span>
+                    <span className="kicker text-[10.5px] text-ink-soft">Saved addresses</span>
                     <button type="button" onClick={() => navigate('/addresses')} className="text-[10px] font-bold text-berry hover:opacity-70 transition-opacity">
                       Manage
                     </button>
@@ -460,7 +460,7 @@ export default function Checkout() {
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-[12.5px] font-bold text-ink truncate">{a.fullName}</span>
                             {a.isDefault && (
-                              <span className="pill-berry-soft inline-flex items-center h-5 px-2 rounded-full text-[8px] font-bold uppercase tracking-wider shrink-0">Default</span>
+                              <span className="pill-berry-soft inline-flex items-center h-5 px-2 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0">Default</span>
                             )}
                           </div>
                           <p className="text-[11.5px] text-ink-soft leading-snug mt-1 line-clamp-2">
@@ -468,7 +468,7 @@ export default function Checkout() {
                           </p>
                           {a.phone && <p className="text-[11px] text-ink-muted mt-0.5">{a.phone}</p>}
                           {active && (
-                            <span className="mt-1.5 inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-wider text-berry">
+                            <span className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-bold uppercase tracking-wider text-berry">
                               <Check className="h-3 w-3" strokeWidth={3} /> Using this
                             </span>
                           )}
@@ -483,7 +483,7 @@ export default function Checkout() {
               {formData.coords && (
                 <div className="mb-4 space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <span className="kicker text-[9px] text-leaf inline-flex items-center gap-1.5">
+                    <span className="kicker text-[10.5px] text-leaf inline-flex items-center gap-1.5">
                       <Check className="h-3 w-3" strokeWidth={3} /> Location verified
                     </span>
                     <button onClick={() => setFormData((p) => ({ ...p, coords: null }))} className="text-[10px] font-bold text-ink-muted hover:text-danger transition-colors">Remove</button>
@@ -499,7 +499,7 @@ export default function Checkout() {
                 <Field label="Street address *" name="address" value={formData.address} onChange={handleInputChange} placeholder="Flat 4B, 12 Green Avenue" full />
 
                 <label className="sm:col-span-2 block">
-                  <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">State *</span>
+                  <span className="kicker text-[10.5px] text-ink-soft mb-1.5 block">State *</span>
                   <SearchableSelect
                     value={formData.state}
                     onChange={(v) => { persist({ ...formData, state: v }); setSelectedAddrId(null); }}
@@ -514,7 +514,7 @@ export default function Checkout() {
                 <Field label="City *" name="city" value={formData.city} onChange={handleInputChange} placeholder="Chennai" />
 
                 <label className="block">
-                  <span className="kicker text-[9.5px] text-ink-soft mb-1.5 block">PIN code *</span>
+                  <span className="kicker text-[10.5px] text-ink-soft mb-1.5 block">PIN code *</span>
                   <input
                     name="pincode" inputMode="numeric" pattern="[0-9]*" maxLength={6}
                     value={formData.pincode} onChange={handleInputChange} placeholder="600001"
@@ -554,7 +554,7 @@ export default function Checkout() {
                 </div>
               ) : deliveryOpts ? (
                 <div className="flex flex-col gap-3">
-                  <p className="kicker text-[9px] text-leaf inline-flex items-center gap-1.5">
+                  <p className="kicker text-[10.5px] text-leaf inline-flex items-center gap-1.5">
                     <Check className="h-3 w-3" strokeWidth={3} /> Delivery available
                     {deliveryOpts.city ? ` · ${deliveryOpts.city}` : ''}
                   </p>
@@ -621,7 +621,7 @@ export default function Checkout() {
             <div className="glass foil-top rounded-panel p-6 sm:p-7">
               <div className="flex items-center justify-between mb-4">
                 <p className="kicker text-[10px] text-ink-soft">Order summary</p>
-                <button onClick={() => navigate('/cart')} className="kicker text-[9.5px] text-berry hover:opacity-70 transition-opacity">Edit cart</button>
+                <button onClick={() => navigate('/cart')} className="kicker text-[10.5px] text-berry hover:opacity-70 transition-opacity">Edit cart</button>
               </div>
 
               <div className="flex flex-col gap-3 pb-4 border-b border-white/50">
@@ -629,7 +629,7 @@ export default function Checkout() {
                   <div key={(it.id || it._id) + it.selectedWeight} className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-cream border border-hairline shrink-0 relative">
                       <img src={it.image || FallbackImg} alt={it.name || it.title} className="w-full h-full object-cover" />
-                      <span className="absolute -top-1.5 -right-1.5 h-[18px] min-w-[18px] px-1 rounded-full bg-berry text-white text-[9px] font-display font-extrabold flex items-center justify-center border-2 border-cream">
+                      <span className="absolute -top-1.5 -right-1.5 h-[18px] min-w-[18px] px-1 rounded-full bg-berry text-white text-[10.5px] font-display font-extrabold flex items-center justify-center border-2 border-cream">
                         {it.quantity}
                       </span>
                     </div>
@@ -662,14 +662,14 @@ export default function Checkout() {
                       ? <span className="inline-flex items-center gap-1.5 text-[12px] text-ink-muted"><Loader2 className="h-3.5 w-3.5 animate-spin text-berry" /> Calculating…</span>
                       : <span className="text-[12px] text-ink-muted">Enter PIN code</span>)
                     : shipping === 0
-                    ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[9px] font-extrabold uppercase tracking-widest">Free</span>
+                    ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-widest">Free</span>
                     : <span className="display-md text-[14px]">₹{shipping}</span>}
                 </div>
 
                 <div className="h-px bg-white/50 my-2.5" />
                 <div className="flex items-end justify-between pt-2 pb-5">
                   <div>
-                    <p className="kicker text-[9.5px] text-ink-soft">Total payable</p>
+                    <p className="kicker text-[10.5px] text-ink-soft">Total payable</p>
                     <p className="text-[11px] text-ink-muted mt-0.5">{feeReady ? 'Inclusive of all taxes' : 'Delivery added after PIN check'}</p>
                   </div>
                   <p className="display-lg text-[1.9rem]">₹{total}</p>

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Send, MessageSquare, UserCircle2, Mail, Phone, CalendarDays, ShoppingBag, MapPin, CreditCard, Banknote, CheckCheck } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
+import { isRevenueOrder } from '../../lib/orderStats';
 
 const SOCKET_URL = API_BASE.replace(/\/api\/?$/, '');
 
@@ -281,7 +282,8 @@ export default function StaffChats() {
     }
   };
 
-  const totalSpent = customerOrders.reduce((s, o) => s + (o.totalAmount || o.total || 0), 0);
+  // Paid, live orders only — cancelled / refunded / unpaid orders aren't money spent.
+  const totalSpent = customerOrders.filter(isRevenueOrder).reduce((s, o) => s + (o.totalAmount || o.total || 0), 0);
   const ongoingOrders = customerOrders.filter((o) => ONGOING_STATUSES.includes((o.status || '').toLowerCase()));
   const previousOrders = customerOrders.filter((o) => !ONGOING_STATUSES.includes((o.status || '').toLowerCase()));
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
-import { ShoppingCart, Heart, Trash2, ArrowLeft, Sparkles, ArrowRight, Star, Shield, Leaf, Zap, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Heart, Trash2, ArrowLeft, ArrowRight, Star, Shield, Leaf, Zap, ChevronDown } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import FallbackImg from '../../assets/lan.webp';
 import { toast } from 'sonner';
@@ -62,12 +62,12 @@ export default function Wishlist() {
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
                 <div className="px-4 py-2.5 sm:px-5 sm:py-3 glass-sm rounded-2xl shadow-sm text-center min-w-[80px]">
                   <p className="text-xl sm:text-2xl font-extrabold text-[#A50D5A]">{wishlist.length}</p>
-                  <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mt-0.5">Items</p>
+                  <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mt-0.5">Items</p>
                 </div>
                 {estimatedValue > 0 && (
                   <div className="px-4 py-2.5 sm:px-5 sm:py-3 glass-sm rounded-2xl shadow-sm text-center">
                     <p className="text-xl sm:text-2xl font-extrabold text-[#221B1F]">₹{estimatedValue}</p>
-                    <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest mt-0.5">Est. Value</p>
+                    <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mt-0.5">Est. Value</p>
                   </div>
                 )}
               </div>
@@ -106,14 +106,14 @@ export default function Wishlist() {
                         loading="lazy" decoding="async"
                         onLoad={e => e.target.classList.remove('opacity-0')} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#D7A94E] text-white font-extrabold uppercase text-[8px] tracking-widest shadow-sm">Heritage</span>
+                      <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#D7A94E] text-white font-extrabold uppercase text-[10px] tracking-widest shadow-sm">Heritage</span>
                       <button onClick={() => toggleWishlist(item)}
                         className="absolute top-3 right-3 h-8 w-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 transition-all border border-white/50 shadow-sm">
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                       <div className="absolute bottom-0 left-0 right-0 p-3.5">
                         <h3 className="font-display font-extrabold text-white text-base leading-tight line-clamp-1">{item.name || item.title}</h3>
-                        {item.category && <p className="text-white/60 text-[9px] font-bold uppercase tracking-widest mt-0.5">{item.category}</p>}
+                        {item.category && <p className="text-white/60 text-[10.5px] font-bold uppercase tracking-widest mt-0.5">{item.category}</p>}
                       </div>
                     </div>
 
@@ -121,13 +121,13 @@ export default function Wishlist() {
                     <div className="p-4 flex-1 flex flex-col gap-3">
                       <div className="flex flex-wrap gap-1.5">
                         {getBenefitBadges(item).slice(0, 3).map((b, i) => (
-                          <span key={i} className="px-2 py-0.5 rounded bg-cream border border-hairline/80 text-[9px] font-semibold text-ink-muted">{b}</span>
+                          <span key={i} className="px-2 py-0.5 rounded bg-cream border border-hairline/80 text-[10.5px] font-semibold text-ink-muted">{b}</span>
                         ))}
                       </div>
 
                       <div className="mt-auto pt-3 border-t border-hairline flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-[9px] font-bold text-ink-muted uppercase tracking-widest">Price</p>
+                          <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest">Price</p>
                           <p className="text-lg font-extrabold text-[#221B1F] leading-none mt-0.5">₹{item.price}</p>
                         </div>
                         <button
@@ -138,7 +138,7 @@ export default function Wishlist() {
                             toggleWishlist(item);
                             toast.success('Moved to cart!');
                           }}
-                          className="flex-1 h-9 rounded-xl btn-berry font-extrabold uppercase text-[9px] tracking-[0.15em] hover:bg-[#7a0062] transition-colors flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(146,0,117,0.2)]">
+                          className="flex-1 h-9 rounded-xl btn-berry font-extrabold uppercase text-[10.5px] tracking-[0.15em] hover:bg-[#7a0062] transition-colors flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(146,0,117,0.2)]">
                           <ShoppingCart className="h-3.5 w-3.5" /> Add to Cart
                         </button>
                       </div>
@@ -155,8 +155,8 @@ export default function Wishlist() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-16 relative rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#1F0320] via-[#2B062C] to-[#150216] p-6 sm:p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl">
             <div className="relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/15 rounded-full text-[9px] font-extrabold text-[#D7A94E] uppercase tracking-widest mb-3">
-                <Sparkles className="h-3 w-3" /> Curated Wellness Deck
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/15 rounded-full text-[10.5px] font-extrabold text-[#D7A94E] uppercase tracking-widest mb-3">
+                <Heart className="h-3 w-3 fill-current" /> Curated Wellness Deck
               </span>
               <h3 className="font-display font-extrabold text-white text-xl sm:text-2xl md:text-3xl leading-tight">
                 {wishlist.length} item{wishlist.length > 1 ? 's' : ''} ready to nourish you
