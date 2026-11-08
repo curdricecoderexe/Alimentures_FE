@@ -223,11 +223,11 @@ export default function Cart() {
                 const id = item.id || item._id || item.uid;
                 return (
                   <motion.div
-                    key={id}
+                    key={`${id}-${item.selectedWeight ?? ''}`}
                     layout
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.4, ease: EASE }}
-                    className="glass rounded-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-center"
+                    className="relative glass rounded-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-center"
                   >
                     <div className="w-full h-40 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-cream border border-hairline shrink-0 plate-berry">
                       <img
@@ -257,11 +257,15 @@ export default function Cart() {
                     <div className="flex items-center justify-between sm:justify-normal sm:flex-col sm:items-end gap-4">
                       <div className="flex items-center gap-1 h-[42px] px-1.5 rounded-full glass-sm">
                         <button
-                          onClick={() => updateQuantity(id, item.selectedWeight, -1)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-ink-muted hover:text-berry transition-colors"
-                          aria-label="Decrease quantity"
+                          onClick={() => item.quantity <= 1
+                            ? removeFromCart(id, item.selectedWeight)
+                            : updateQuantity(id, item.selectedWeight, -1)}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${item.quantity <= 1 ? 'text-danger/80 hover:text-danger' : 'text-ink-muted hover:text-berry'}`}
+                          aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
                         >
-                          <Minus className="h-3.5 w-3.5" strokeWidth={2.6} />
+                          {item.quantity <= 1
+                            ? <Trash2 className="h-3.5 w-3.5" strokeWidth={2.4} />
+                            : <Minus className="h-3.5 w-3.5" strokeWidth={2.6} />}
                         </button>
                         <span className="display-md text-[15px] w-6 text-center">{item.quantity}</span>
                         <button
@@ -281,7 +285,7 @@ export default function Cart() {
 
                     <button
                       onClick={() => removeFromCart(id, item.selectedWeight)}
-                      className="hidden sm:flex w-9 h-9 rounded-xl items-center justify-center text-ink-muted hover:text-danger border border-hairline transition-colors shrink-0"
+                      className="absolute top-6 right-6 sm:static flex w-9 h-9 rounded-xl items-center justify-center text-ink-muted hover:text-danger bg-white/90 backdrop-blur sm:bg-transparent border border-hairline shadow-sm sm:shadow-none transition-colors shrink-0"
                       aria-label="Remove item"
                     >
                       <Trash2 className="h-4 w-4" />
