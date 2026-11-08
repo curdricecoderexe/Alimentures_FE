@@ -1816,6 +1816,9 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/60 backdrop-blur-md z-[999] flex items-end sm:items-center justify-center p-4"
               onClick={closeQuickAdd}
+              role="dialog"
+              aria-modal="true"
+              aria-label={quickAddMode === 'cart' ? 'Add to cart' : 'Save to wishlist'}
             >
               <motion.div
                 initial={{ opacity: 0, y: 60, scale: 0.96 }}
