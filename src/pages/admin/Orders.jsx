@@ -584,6 +584,7 @@ export default function AdminOrders() {
 
               {/* SHIPROCKET */}
               <ShiprocketPanel
+                isAdmin
                 order={selectedOrder}
                 onOrderUpdated={(patch) => {
                   setSelectedOrder(prev => (prev ? { ...prev, ...patch } : prev));

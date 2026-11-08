@@ -260,6 +260,8 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
         defaultDeliveryFee: num(form.defaultDeliveryFee),
         defaultStandardEta: form.defaultStandardEta,
         serviceByDefault: !!form.serviceByDefault,
+        handlingFee: num(form.handlingFee),
+        freightBufferPct: num(form.freightBufferPct),
         // Courier-linked 'bands' pricing and "no free delivery" are enforced server-side.
         courierFeeBands: (form.courierFeeBands || [])
           .filter((b) => b.fee !== '' && b.fee != null)
@@ -287,6 +289,14 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
           </div>
           <Row label="Fallback delivery fee (per 0.5 kg)" hint="Only when Shiprocket can't quote (outage): charged per 0.5 kg of parcel weight. Local-partner PINs on Default fee pay this once."><NumInput k="defaultDeliveryFee" ph="70" /></Row>
           <Row label="Default standard ETA"><TextInput k="defaultStandardEta" ph="3–5 business days" /></Row>
+          <Row label="Packing & handling charge" hint="Added to every courier-quoted fee (standard and fastest) and shown to the customer as included"><NumInput k="handlingFee" ph="0" /></Row>
+          <Row label="Freight safety buffer (%)" hint="Added to the courier quote before choosing the band — covers small re-weigh differences without charging after payment">
+            <div className="relative w-32">
+              <input type="number" min="0" max="50" value={form.freightBufferPct ?? ''} placeholder="0"
+                onChange={(e) => set('freightBufferPct', e.target.value)} className={`${inputCls} pr-7`} />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">%</span>
+            </div>
+          </Row>
           <Row label="Deliver to unlisted PIN codes" hint="When ON, any 6-digit PIN not in the table is deliverable (fee from the bands)"><Toggle k="serviceByDefault" /></Row>
           {(
             <div className="py-4 space-y-2">

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { API_BASE, authenticatedFetch } from '../lib/api';
+import PackingVerification from './PackingVerification';
 
 const SHIPPABLE = ['pending', 'processing', 'packed', 'payment_successful_no_stock'];
 
@@ -39,16 +40,37 @@ const loadShiprocketStatus = () => {
   return statusPromise;
 };
 
-let boxesPromise = null;
-const loadBoxes = () => {
-  if (!boxesPromise) {
-    boxesPromise = authenticatedFetch(`${API_BASE}/shipping/packaging`)
+// Packaging catalogue + rules (boxes, verification requirement, divisor).
+let packagingPromise = null;
+const loadPackaging = () => {
+  if (!packagingPromise) {
+    packagingPromise = authenticatedFetch(`${API_BASE}/shipping/packaging`)
       .then((r) => (r ? r.json() : null))
-      .then((d) => (d?.success ? (d.data.boxes || []).filter((b) => b.isActive) : []))
-      .catch(() => { boxesPromise = null; return []; });
+      .then((d) => (d?.success ? d.data : null))
+      .catch(() => { packagingPromise = null; return null; });
   }
-  return boxesPromise;
+  return packagingPromise;
 };
+
+const DISPATCH_OK_ADJUSTMENTS = ['none', 'absorbed', 'within_tolerance', 'approved'];
+
+/** Why booking is blocked (mirrors the server gate), or null. */
+function dispatchBlockReason(order, packaging) {
+  const lg = order?.logistics || {};
+  if (packaging?.requirePackingVerification && order?.deliveryPartner !== 'local'
+    && !['verified', 'overridden'].includes(lg.verification?.status)) {
+    return 'Verify packing (weigh + measure the parcel) before booking the courier.';
+  }
+  if (lg.adjustment?.status && !DISPATCH_OK_ADJUSTMENTS.includes(lg.adjustment.status)) {
+    return 'The shipping cost difference needs an admin decision first.';
+  }
+  if (lg.pushedMismatch && order?.shipment?.shipmentId && !order?.shipment?.awb) {
+    const measuredAt = new Date(lg.actual?.measuredAt || 0).getTime();
+    const ok = (lg.overrides || []).some((o) => o.kind === 'panel_updated' && new Date(o.at).getTime() >= measuredAt);
+    if (!ok) return 'Correct the parcel size in the Shiprocket panel and have an admin confirm it.';
+  }
+  return null;
+}
 
 const EMPTY_CUSTOM = { length: '', breadth: '', height: '', weightKg: '' };
 
@@ -68,13 +90,14 @@ const fmtPkg = (p) => `${p.boxName}${p.boxId && p.boxName !== p.boxId ? ` (${p.b
  * Shiprocket fulfilment controls for one order (admin + staff order modals).
  * `onOrderUpdated(patch)` receives `{ shipment, status? }` after every change.
  */
-export default function ShiprocketPanel({ order, onOrderUpdated }) {
+export default function ShiprocketPanel({ order, onOrderUpdated, isAdmin = false }) {
   const [enabled, setEnabled] = useState(null);
   const [busy, setBusy] = useState(null);
   const [couriers, setCouriers] = useState(null);
   const [defaultCourierId, setDefaultCourierId] = useState(null);
   const [courierId, setCourierId] = useState('');
-  const [boxes, setBoxes] = useState([]);
+  const [packaging, setPackaging] = useState(null);
+  const boxes = (packaging?.boxes || []).filter((b) => b.isActive);
   const [boxChoice, setBoxChoice] = useState('');
   const [custom, setCustom] = useState(EMPTY_CUSTOM);
   const [pkg, setPkg] = useState(null);
@@ -82,7 +105,10 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   const sh = order?.shipment || {};
   const isLocal = order?.deliveryPartner === 'local';
   const isFastest = order?.deliveryMethod === 'fastest';
+  const block = dispatchBlockReason(order, packaging);
+  const verifiedParcel = order?.logistics?.verification?.status === 'verified';
   const canPush = enabled && !sh.shipmentId && SHIPPABLE.includes(order?.status) && (!isLocal || forceLocal);
+  const showPacking = enabled && !sh.awb && SHIPPABLE.includes(order?.status) && (!isLocal || forceLocal);
   const freight = sh.freightEstimate ?? order?.estimatedShippingCost ?? null;
   const feeCharged = Number(order?.deliveryFee ?? order?.shipping ?? 0);
   const quoted = order?.quotedCourier || null;
@@ -101,11 +127,11 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
   }, [order?.id]);
 
   useEffect(() => {
-    if (!canPush) return undefined;
+    if (!enabled) return undefined;
     let alive = true;
-    loadBoxes().then((b) => { if (alive) setBoxes(b); });
+    loadPackaging().then((p) => { if (alive) setPackaging(p); });
     return () => { alive = false; };
-  }, [canPush]);
+  }, [enabled]);
 
   // Live parcel preview for the chosen box (debounced for custom typing).
   useEffect(() => {
@@ -176,6 +202,15 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
 
   const ship = async () => {
     const shipment = await call('ship', 'ship', { body: courierId ? { courierId: Number(courierId) } : {} });
+    if (!shipment) {
+      // A dispatch-time price check may have flagged the order — show it.
+      try {
+        const r = await authenticatedFetch(`${API_BASE}/orders/${order.id}`);
+        const d = r ? await r.json().catch(() => ({})) : {};
+        if (d?.success && d.data?.logistics) onOrderUpdated?.({ logistics: d.data.logistics });
+      } catch { /* best effort */ }
+      return;
+    }
     if (shipment) {
       onOrderUpdated?.({ shipment, status: SHIPPABLE.includes(order.status) ? 'packed' : order.status });
       toast.success(`AWB ${shipment.awb} assigned · pickup requested`);
@@ -300,7 +335,18 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
               </div>
             )}
 
-            {canPush && (
+            {showPacking && (
+              <PackingVerification order={order} packaging={packaging} isAdmin={isAdmin} onOrderUpdated={onOrderUpdated} />
+            )}
+
+            {block && (sh.shipmentId ? !sh.awb : canPush) && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[11px] font-semibold">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>{block}</span>
+              </div>
+            )}
+
+            {canPush && !verifiedParcel && !packaging?.requirePackingVerification && (
               <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A1021] space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
                   <Box className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
@@ -349,7 +395,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
 
             <div className="flex flex-wrap gap-2">
               {canPush && (
-                <Button onClick={createShipment} disabled={!!busy} className="h-9 px-3.5 rounded-xl bg-black !text-white font-bold text-xs">
+                <Button onClick={createShipment} disabled={!!busy || !!block} className="h-9 px-3.5 rounded-xl bg-black !text-white font-bold text-xs">
                   {busy === 'create' ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Send className="h-3.5 w-3.5 mr-1.5" />}
                   Push to Shiprocket
                 </Button>
@@ -358,7 +404,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
               {sh.shipmentId && !sh.awb && sh.state !== 'cancelled' && (
                 <>
                   {couriers === null ? (
-                    <Button variant="outline" onClick={loadCouriers} disabled={!!busy} className="h-9 px-3.5 rounded-xl font-bold text-xs">
+                    <Button variant="outline" onClick={loadCouriers} disabled={!!busy || !!block} className="h-9 px-3.5 rounded-xl font-bold text-xs">
                       {busy === 'couriers' && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
                       Choose courier
                     </Button>
@@ -379,7 +425,7 @@ export default function ShiprocketPanel({ order, onOrderUpdated }) {
                       ))}
                     </select>
                   )}
-                  <Button onClick={ship} disabled={!!busy} className="h-9 px-3.5 rounded-xl bg-black !text-white font-bold text-xs">
+                  <Button onClick={ship} disabled={!!busy || !!block} className="h-9 px-3.5 rounded-xl bg-black !text-white font-bold text-xs">
                     {busy === 'ship' ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Truck className="h-3.5 w-3.5 mr-1.5" />}
                     Assign courier &amp; schedule pickup
                   </Button>

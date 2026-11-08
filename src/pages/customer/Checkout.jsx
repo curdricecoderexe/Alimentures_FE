@@ -587,6 +587,18 @@ export default function Checkout() {
                   {deliveryOpts.fastest && !deliveryOpts.fastest.available && deliveryOpts.fastest.reason && (
                     <p className="text-[11px] text-ink-muted pl-1">{deliveryOpts.fastest.reason}</p>
                   )}
+                  {/* How the delivery price is worked out — no surprises after payment. */}
+                  {(deliveryOpts.parcel || deliveryOpts.handlingFee > 0) && (
+                    <p className="text-[11px] leading-relaxed text-ink-muted pl-1">
+                      {deliveryOpts.parcel && (
+                        <>Priced for a {deliveryOpts.parcel.estimated ? '~' : ''}{Number(deliveryOpts.parcel.billableKg).toFixed(2)} kg parcel
+                          {deliveryOpts.parcel.packageType && deliveryOpts.parcel.packageType !== 'box' ? ` (${deliveryOpts.parcel.packageType})` : ''}
+                          {' '}— couriers charge by weight or size, whichever is higher.{' '}</>
+                      )}
+                      {deliveryOpts.handlingFee > 0 && <>Includes ₹{deliveryOpts.handlingFee} packing &amp; handling.{' '}</>}
+                      The price you see is final once you pay.
+                    </p>
+                  )}
                 </div>
               ) : null}
             </motion.div>
@@ -627,9 +639,12 @@ export default function Checkout() {
               <div className="flex flex-col gap-3 pb-4 border-b border-white/50">
                 {cart.map((it) => (
                   <div key={(it.id || it._id) + it.selectedWeight} className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-cream border border-hairline shrink-0 relative">
-                      <img src={it.image || FallbackImg} alt={it.name || it.title} className="w-full h-full object-cover" />
-                      <span className="absolute -top-1.5 -right-1.5 h-[18px] min-w-[18px] px-1 rounded-full bg-berry text-white text-[10.5px] font-display font-extrabold flex items-center justify-center border-2 border-cream">
+                    {/* Outer box positions the badge; inner box clips the image to the rounded corners. */}
+                    <div className="relative w-12 h-12 shrink-0">
+                      <div className="w-full h-full rounded-xl overflow-hidden bg-cream border border-hairline">
+                        <img src={it.image || FallbackImg} alt={it.name || it.title} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="absolute -top-1.5 -right-1.5 z-[1] h-[18px] min-w-[18px] px-1 rounded-full bg-berry text-white text-[10.5px] font-display font-extrabold flex items-center justify-center border-2 border-white shadow-sm">
                         {it.quantity}
                       </span>
                     </div>
@@ -656,6 +671,9 @@ export default function Checkout() {
                 <div className="flex justify-between items-center py-2.5 text-sm">
                   <span className="text-ink-soft">
                     Delivery{deliveryMethod === 'fastest' ? ' · fastest' : ' · standard'}
+                    {feeReady && deliveryOpts?.handlingFee > 0 && (
+                      <span className="block text-[10.5px] text-ink-muted">incl. ₹{deliveryOpts.handlingFee} packing &amp; handling</span>
+                    )}
                   </span>
                   {shipping == null
                     ? (deliveryChecking
