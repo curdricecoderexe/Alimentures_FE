@@ -1227,7 +1227,7 @@ export default function Home() {
                 </button>
               </div>
 
-              <div className="flex flex-wrap justify-start gap-6">
+              <div className="flex flex-wrap justify-center gap-6">
                 {filteredProducts.map((item) => (
                   <div key={item.id || item._id} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-[320px] min-w-[220px]">
                     <ProductCard

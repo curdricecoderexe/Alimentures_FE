@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Truck, Package, CheckCircle, MapPin, CreditCard, Star, ArrowLeft, ArrowRight,
-  ChevronDown, Check, MessageCircle, FileText, RotateCcw, Boxes, ExternalLink,
+  ChevronDown, Check, MessageCircle, FileText, RotateCcw, Boxes, ExternalLink, Send, Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,6 +14,8 @@ import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 import SEO from '../../components/SEO';
 
 const EASE = [0.16, 1, 0.3, 1];
+
+const RATING_LABELS = ['', 'Not for me', 'It was okay', 'Good', 'Really good', 'Loved it!'];
 
 const ORDER_FAQS = [
   { q: 'How do I track my order in real time?', a: 'We ship through Shiprocket. Once a courier is assigned, this page shows the courier name, AWB number and live scan updates, and Shiprocket/the courier also sends tracking by SMS, email or WhatsApp.' },
@@ -447,55 +449,94 @@ export default function MyOrders() {
                         </p>
                       </div>
 
-                      <span className="display-md text-[18px] shrink-0">₹{order.totalAmount}</span>
-
-                      <div className="flex gap-2 shrink-0">
-                        <button onClick={() => reorder(order)} className="btn-glass h-9 px-4 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-berry inline-flex items-center gap-1.5">
-                          <RotateCcw className="h-3.5 w-3.5" /> Reorder
-                        </button>
+                      <div className="flex items-center justify-between gap-4 sm:contents">
+                        <span className="display-md text-[18px] shrink-0">₹{order.totalAmount}</span>
+                        <div className="flex gap-2 shrink-0">
+                          <button onClick={() => reorder(order)} className="btn-glass h-9 px-4 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-berry inline-flex items-center gap-1.5">
+                            <RotateCcw className="h-3.5 w-3.5" /> Reorder
+                          </button>
+                        </div>
                       </div>
                     </div>
 
                     {/* delivered — rate each item; this is the product review */}
                     {pendingItems.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-white/50 flex flex-col gap-3">
-                        <span className="kicker text-[10.5px] text-berry inline-flex items-center gap-1.5"><Star className="h-3 w-3 fill-current" /> Rate what you got</span>
-                        {pendingItems.map((it) => {
-                          const productId = it.productId || it.id;
-                          const key = `${order.id}_${productId}`;
-                          const r = getItemRating(key);
-                          const submitting = submittingKey === key;
-                          return (
-                            <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <div className="flex items-center gap-2.5 sm:w-[190px] shrink-0 min-w-0">
-                                <span className="w-9 h-9 rounded-lg overflow-hidden bg-cream border border-hairline shrink-0">
-                                  <img src={it.image || FallbackImg} alt={it.name} className="w-full h-full object-cover" />
-                                </span>
-                                <p className="text-[12px] font-medium text-ink truncate">{it.name}</p>
-                              </div>
-                              <div className="flex gap-0.5 shrink-0">
-                                {[1, 2, 3, 4, 5].map((s) => (
-                                  <button key={s} onClick={() => setItemRatings((p) => ({ ...p, [key]: { ...getItemRating(key), rating: s } }))}>
-                                    <Star className={`h-4 w-4 transition-transform hover:scale-110 ${s <= r.rating ? 'text-gold-light fill-gold-light' : 'text-hairline'}`} />
+                      <div className="mt-5 pt-5 border-t border-hairline/70">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <span className="kicker text-[10.5px] text-berry inline-flex items-center gap-1.5">
+                            <Star className="h-3.5 w-3.5 fill-current" /> Rate what you got
+                          </span>
+                          <span className="text-[11px] font-semibold text-ink-muted">
+                            {pendingItems.length} {pendingItems.length === 1 ? 'item' : 'items'} to review
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {pendingItems.map((it) => {
+                            const productId = it.productId || it.id;
+                            const key = `${order.id}_${productId}`;
+                            const r = getItemRating(key);
+                            const submitting = submittingKey === key;
+                            const setRating = (patch) => setItemRatings((p) => ({ ...p, [key]: { ...getItemRating(key), ...patch } }));
+                            return (
+                              <div key={key} className="rounded-2xl bg-white/85 border border-hairline p-3.5 sm:p-4 shadow-[0_10px_26px_-18px_rgba(120,10,64,0.35)]">
+                                {/* product */}
+                                <div className="flex items-center gap-3">
+                                  <span className="w-12 h-12 rounded-xl overflow-hidden bg-cream border border-hairline shrink-0">
+                                    <img src={it.image || FallbackImg} alt={it.name} className="w-full h-full object-cover" />
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="display-md text-[14px] leading-tight line-clamp-1">{it.name}</p>
+                                    <p className="text-[11.5px] text-ink-muted mt-0.5">{it.selectedWeight || 'Standard'}</p>
+                                  </div>
+                                </div>
+
+                                {/* stars — 36px tap targets */}
+                                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                  <div className="flex -ml-1.5" role="radiogroup" aria-label={`Rate ${it.name}`}>
+                                    {[1, 2, 3, 4, 5].map((s) => (
+                                      <button
+                                        key={s}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={r.rating === s}
+                                        aria-label={`${s} star${s > 1 ? 's' : ''}`}
+                                        onClick={() => setRating({ rating: s })}
+                                        className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-gold-tint active:scale-90 transition-all"
+                                      >
+                                        <Star className={`h-6 w-6 transition-colors ${s <= r.rating ? 'text-gold-light fill-gold-light' : 'text-hairline fill-hairline/40'}`} />
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <span className="text-[12px] font-bold text-gold">{RATING_LABELS[r.rating]}</span>
+                                </div>
+
+                                {/* comment + send */}
+                                <div className="mt-3 flex flex-col sm:flex-row sm:items-end gap-2.5">
+                                  <textarea
+                                    rows={2}
+                                    maxLength={500}
+                                    value={r.comment}
+                                    onChange={(e) => setRating({ comment: e.target.value })}
+                                    placeholder="How was it? Taste, freshness, packaging… (optional)"
+                                    aria-label={`Review for ${it.name}`}
+                                    className="flex-1 min-h-[76px] sm:min-h-[48px] resize-none px-3.5 py-2.5 rounded-xl bg-cream/70 border border-hairline text-[16px] sm:text-[13px] leading-snug text-ink outline-none transition-all focus:bg-white focus:border-berry/50 focus:ring-2 focus:ring-berry/10 placeholder:text-ink-muted"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => submitItemReview(order.id, productId)}
+                                    disabled={submitting}
+                                    className="btn-berry h-11 px-5 rounded-xl text-[10.5px] font-extrabold uppercase tracking-wider shrink-0 inline-flex items-center justify-center gap-2 disabled:opacity-60"
+                                  >
+                                    {submitting
+                                      ? <><Loader2 className="h-4 w-4 animate-spin" /> Posting…</>
+                                      : <><Send className="h-3.5 w-3.5" /> Post review</>}
                                   </button>
-                                ))}
+                                </div>
                               </div>
-                              <input
-                                value={r.comment}
-                                onChange={(e) => setItemRatings((p) => ({ ...p, [key]: { ...getItemRating(key), comment: e.target.value } }))}
-                                placeholder="How was it?"
-                                className="flex-1 h-9 px-3 rounded-lg bg-white border border-hairline text-[12px] outline-none focus:border-berry/50 placeholder:text-ink-muted"
-                              />
-                              <button
-                                onClick={() => submitItemReview(order.id, productId)}
-                                disabled={submitting}
-                                className="btn-berry h-9 px-4 rounded-full text-[10px] font-extrabold uppercase tracking-wider shrink-0 disabled:opacity-60"
-                              >
-                                {submitting ? 'Sending…' : 'Send'}
-                              </button>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                     {reviewableItems.length > 0 && pendingItems.length === 0 && (
