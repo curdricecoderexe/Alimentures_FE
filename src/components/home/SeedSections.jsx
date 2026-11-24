@@ -38,7 +38,6 @@ export function BenefitBand() {
       <div className="relative mx-auto max-w-[1440px] px-4 sm:px-8 lg:px-12 pt-14 pb-24 sm:py-20 lg:py-24 grid xl:grid-cols-12 gap-6 sm:gap-8 xl:gap-10 items-center">
         {/* heading stacks above the tiles until xl, so it never gets squeezed into a narrow column */}
         <Reveal className="xl:col-span-4 xl:pl-10 2xl:pl-32">
-          <span className="eyebrow mb-4">Made with nothing to hide</span>
           <h2 className="headline text-[1.6rem] leading-[1.15] sm:text-[2rem] lg:text-[2.1rem] max-w-[22rem] lg:max-w-[30rem] xl:max-w-[22rem]">
             Alimenture bakes you can feel good about, <em>from the first bite.</em>
           </h2>
@@ -83,6 +82,10 @@ function CraftFilm({ src, poster }) {
   const ref = useRef(null);
   const reduce = useReducedMotion();
   const [muted, setMuted] = useState(true);
+  // The film fades in once its first frame is decoded. No poster image, so the
+  // cookie photo never flashes before the video starts.
+  const [readySrc, setReadySrc] = useState(null);
+  const ready = readySrc === src;
 
   useEffect(() => {
     const v = ref.current;
@@ -111,16 +114,18 @@ function CraftFilm({ src, poster }) {
       {src ? (
         <video
           ref={ref}
+          key={src}
           src={src}
-          poster={poster}
           muted
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
+          onLoadedData={() => setReadySrc(src)}
+          onPlaying={() => setReadySrc(src)}
           disablePictureInPicture
           controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
           aria-label="Alimenture brand film: how our millet bakes are made"
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`}
         />
       ) : (
         <img src={poster} alt="Alimenture millet cookies" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
@@ -172,7 +177,6 @@ export function CraftSpotlight({ bgImage, productImage }) {
           <div className="relative grid lg:grid-cols-12 gap-10 lg:gap-6 items-center px-6 sm:px-12 lg:px-16 py-10 sm:py-16 lg:py-20">
             {/* left: statement */}
             <div className="lg:col-span-5 flex flex-col items-start gap-6 sm:gap-8">
-              <span className="eyebrow eyebrow-light">Slow-bake craft</span>
               <h2 className="headline headline-on-dark text-[2.2rem] sm:text-5xl lg:text-[3.6rem] [&_em]:[background:none] [&_em]:text-[#FFE2A8]">
                 Most cookies start with maida. <em>Ours start with millets.</em>
               </h2>
@@ -237,7 +241,6 @@ export function CategoryRows({ rows }) {
 
       <div className="relative mx-auto max-w-[1240px] 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-10 lg:gap-16">
         <Reveal className="lg:col-span-4 space-y-5 lg:sticky lg:top-28 self-start">
-          <span className="eyebrow">Shop by need</span>
           <h2 className="headline text-4xl sm:text-5xl lg:text-[3.4rem]">
             Daily nourishment <em>starts here.</em>
           </h2>

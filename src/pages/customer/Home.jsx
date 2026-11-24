@@ -14,7 +14,6 @@ import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard'
 import ProductCardSkeleton from '../../components/skeletons/ProductCardSkeleton';
 import { Reveal } from '../../components/ui/motion';
 import MobileSliderControls from '../../components/ui/MobileSliderControls';
-import womenImage from '../../assets/cas/women.webp';
 import featuredBgDefault from '../../assets/feature-bg.webp';
 
 
@@ -425,7 +424,19 @@ export default function Home() {
                 />
               </AnimatePresence>
             ) : (
-              <img src={womenImage} alt="Alimenture heritage-grain snacks" className="absolute inset-0 h-full w-full object-cover object-[70%_center]" loading="eager" fetchPriority="high" />
+              /* No banners yet (none uploaded, or the API is unreachable): a neutral placeholder. */
+              <div
+                role="img"
+                aria-label="Banner image"
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ backgroundImage: 'radial-gradient(80% 90% at 70% 40%, rgba(248,168,48,0.16) 0%, transparent 60%), linear-gradient(135deg,#5F1C54 0%,#2B0B33 100%)' }}
+              >
+                <svg viewBox="0 0 64 64" className="h-16 w-16 sm:h-20 sm:w-20 text-paper/25" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <rect x="6" y="12" width="52" height="40" rx="6" />
+                  <circle cx="22" cy="26" r="5" />
+                  <path d="M6 44l14-12 12 10 8-6 18 14" strokeLinejoin="round" />
+                </svg>
+              </div>
             )}
           </div>
 
@@ -486,7 +497,6 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1240px] 2xl:max-w-[1400px] relative z-10">
           {/* centered header */}
           <div className="flex flex-col items-center text-center gap-3 sm:gap-4 max-w-2xl mx-auto mb-8 sm:mb-14">
-            <span className="eyebrow">Signature Blends</span>
             <h2 className="headline text-[2.4rem] sm:text-6xl lg:text-[4.25rem]">
               Featured <span className="accent-text">products</span>
             </h2>
@@ -593,7 +603,6 @@ export default function Home() {
         <div className="relative mx-auto max-w-[1240px] 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8">
           {/* header */}
           <div className="text-center max-w-2xl mx-auto space-y-3 sm:space-y-4">
-            <span className="eyebrow">Organic treats</span>
             <h2 className="headline text-[2.1rem] sm:text-5xl lg:text-[3.6rem]">
               Traditional <em>nourishment catalog</em>
             </h2>
@@ -817,12 +826,12 @@ export default function Home() {
                               className={`relative px-4 py-2.5 rounded-2xl font-bold text-xs transition-all border-2 ${sold
                                 ? 'border-hairline text-ink-muted cursor-not-allowed bg-cream line-through'
                                 : active
-                                  ? 'border-berry bg-berry/6 text-berry shadow-[0_4px_12px_rgba(176,18,143,0.15)]'
-                                  : 'border-hairline text-ink-soft hover:border-berry/40 hover:bg-berry/3 bg-white'
+                                  ? 'border-mulberry bg-mulberry-tint text-mulberry shadow-[0_4px_12px_rgba(124,39,110,0.15)]'
+                                  : 'border-hairline text-ink-soft hover:border-mulberry/40 bg-white'
                                 }`}
                             >
                               {v.weight}
-                              <span className={`block text-[10px] mt-0.5 font-bold ${active ? 'text-berry' : 'text-ink-muted'}`}>₹{v.price}</span>
+                              <span className={`block text-[10px] mt-0.5 font-bold ${active ? 'text-mulberry' : 'text-ink-muted'}`}>₹{v.price}</span>
                               {sold && <span className="block text-[10px] text-ink-muted">Out of stock</span>}
                               {!sold && v.stock < 10 && (
                                 <span className="absolute -top-1.5 -right-1.5 text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold">{v.stock} left</span>
@@ -887,18 +896,16 @@ export default function Home() {
                   <div className="flex gap-3 pt-1">
                     <button
                       onClick={closeQuickAdd}
-                      className="h-12 px-5 rounded-2xl border border-hairline text-ink-muted font-bold text-[10px] uppercase tracking-wider hover:border-hairline hover:bg-cream transition-all bg-white"
+                      className="h-12 px-5 rounded-[14px] border border-hairline text-ink-soft text-[13px] font-semibold uppercase tracking-[0.05em] hover:border-mulberry/30 hover:text-mulberry transition-colors bg-white"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={confirmQuickAdd}
                       disabled={isOutOfStock}
-                      className={`flex-1 h-12 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${isOutOfStock
-                        ? 'bg-cream-deep text-ink-muted cursor-not-allowed'
-                        : quickAddMode === 'cart'
-                          ? 'bg-gradient-to-r from-berry to-berry-bright text-white shadow-[0_8px_24px_rgba(176,18,143,0.3)] hover:shadow-[0_12px_32px_rgba(176,18,143,0.45)] hover:opacity-95'
-                          : 'bg-gradient-to-r from-berry-bright to-berry text-white shadow-[0_8px_24px_rgba(212,20,143,0.3)] hover:opacity-95'
+                      className={`flex-1 h-12 rounded-[14px] text-[13px] font-semibold uppercase tracking-[0.05em] flex items-center justify-center gap-2 ${isOutOfStock
+                        ? 'bg-cream text-ink-muted border border-hairline cursor-not-allowed'
+                        : 'btn-brand'
                         }`}
                     >
                       {quickAddMode === 'cart' ? <ShoppingCart className="h-4 w-4" /> : <Heart className="h-4 w-4" />}

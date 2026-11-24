@@ -106,7 +106,7 @@ function NotFoundPost() {
 function ArticleSkeleton() {
   const bar = 'bg-ink/[0.06] animate-pulse';
   return (
-    <div className="min-h-screen bg-paper px-4 sm:px-6 pt-28 sm:pt-32" aria-hidden="true">
+    <div className="min-h-screen -mt-20 bg-paper px-4 sm:px-6 pt-48 sm:pt-52" aria-hidden="true">
       <div className="mx-auto max-w-[760px] space-y-4 pt-12">
         <div className={`h-3 w-24 mx-auto ${bar}`} />
         <div className={`h-12 w-full ${bar}`} />
@@ -136,7 +136,7 @@ export default function BlogPost() {
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: post.title, path: `/blog/${post.slug}` }];
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans">
+    <div className="min-h-screen -mt-20 pt-20 bg-paper text-ink font-sans">
       <SEO
         title={`${post.title} | ${BRAND}`}
         description={post.excerpt}

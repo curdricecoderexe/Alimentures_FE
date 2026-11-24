@@ -1,11 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
-import { Heart, X, ArrowRight } from 'lucide-react';
+import { Heart, X, ArrowRight, ShieldCheck, HandHeart, Droplets } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import SEO from '../../components/SEO';
 import { ProductImageFrame } from '../../components/ui/ProductCard';
-import { SpotMillet, SpotSugarcane, SpotSeal } from '../../components/home/BotanicalArt';
 import { Reveal } from '../../components/ui/motion';
 import { productPath } from '../../lib/seo';
 import { ShopHero, ShopSectionHead, FaqList, CARD, CARD_HOVER, LABEL } from '../../components/shop/ShopSections';
@@ -22,9 +21,9 @@ const WISHLIST_FAQS = [
 ];
 
 const PROMISES = [
-  { Art: SpotSeal, title: 'Toxin-free certified', desc: 'Independently lab tested for complete absence of synthetic fertilizers, pesticide residue, and industrial heavy metals.' },
-  { Art: SpotMillet, title: 'Native heritage grains', desc: 'Sourced direct from farming collectives cultivating Ragi, Thinai, and ancient native grains in living soils.' },
-  { Art: SpotSugarcane, title: 'Palm-sugar sweetened', desc: 'Sweetened exclusively with raw native palm sugar and coconut jaggery. Zero chemical sweeteners or white sugar added.' },
+  { Icon: ShieldCheck, title: 'Toxin-free certified', desc: 'Independently lab tested for complete absence of synthetic fertilizers, pesticide residue, and industrial heavy metals.' },
+  { Icon: HandHeart, title: 'Native heritage grains', desc: 'Sourced direct from farming collectives cultivating Ragi, Thinai, and ancient native grains in living soils.' },
+  { Icon: Droplets, title: 'Palm-sugar sweetened', desc: 'Sweetened exclusively with raw native palm sugar and coconut jaggery. Zero chemical sweeteners or white sugar added.' },
 ];
 
 const getBenefitBadges = (item) => {
@@ -204,9 +203,9 @@ export default function Wishlist() {
         <div className="mx-auto max-w-[1240px] lg:px-2">
           <ShopSectionHead center eyebrow="Our purity promise" title={<>Beyond clean <em>food standards</em></>} />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-            {PROMISES.map(({ Art, title, desc }, i) => (
+            {PROMISES.map(({ Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 0.06} className={`${CARD} ${CARD_HOVER} p-7 sm:p-8`}>
-                <Art className="h-14 w-14 mb-6" />
+                <span className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-mulberry/[0.06] text-mulberry"><Icon className="h-5 w-5" strokeWidth={1.5} /></span>
                 <h3 className="font-display text-xl text-ink tracking-[-0.01em] mb-2">{title}</h3>
                 <p className="text-ink-soft text-[14.5px] leading-relaxed">{desc}</p>
               </Reveal>

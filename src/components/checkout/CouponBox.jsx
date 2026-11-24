@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPercent, X, Loader2, Gift, Check } from 'lucide-react';
+import { CouponTicket, Confetti, CountUp } from '../coupon/WelcomeOffer';
 import { useWelcomeCoupon, validateCoupon } from '../../lib/welcomeCoupon';
 
 /**
@@ -13,6 +15,7 @@ export default function CouponBox({ orderValue, applied, onChange }) {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [celebrate, setCelebrate] = useState(0); // bumps on each successful apply → replays the burst
 
   const apply = async (value) => {
     if (!value.trim() || busy) return;
@@ -21,6 +24,7 @@ export default function CouponBox({ orderValue, applied, onChange }) {
     try {
       const next = await validateCoupon(value, orderValue);
       onChange(next);
+      setCelebrate((n) => n + 1);
       setCode('');
       toast.success(`Coupon applied — ₹${next.discountAmount} off`);
     } catch (err) {
@@ -35,42 +39,71 @@ export default function CouponBox({ orderValue, applied, onChange }) {
 
   return (
     <div className="space-y-3">
-      {suggest && (
-        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-berry/35 bg-berry-tint/50 p-3.5">
-          <span className="h-10 w-10 shrink-0 rounded-xl bg-paper border border-berry/20 text-berry flex items-center justify-center">
-            <Gift className="h-[18px] w-[18px]" strokeWidth={1.6} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-display uppercase tracking-[0.14em] text-berry">Suggested for you</p>
-            <p className="text-[13.5px] text-ink leading-snug">
-              <span className="font-display font-semibold tracking-wide">{welcome.code}</span>
-              <span className="text-ink-soft"> · {welcome.discountValue}% off your first order</span>
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => apply(welcome.code)}
-            disabled={busy}
-            className="h-9 px-4 shrink-0 rounded-full bg-mulberry text-paper text-[13px] font-display font-medium hover:bg-mulberry-deep transition-colors disabled:opacity-60"
+      <AnimatePresence initial={true}>
+        {suggest && (
+          <motion.div
+            key="suggest"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, height: 0, marginBottom: -12 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
           >
-            {applied ? 'Switch' : 'Apply'}
-          </button>
-        </div>
-      )}
+            <CouponTicket className="pl-5 pr-3.5 py-3.5">
+              <div className="flex items-center gap-3">
+                <motion.span
+                  className="h-11 w-11 shrink-0 rounded-xl bg-mulberry text-paper flex items-center justify-center shadow-[0_8px_18px_-8px_rgba(124,39,110,0.7)]"
+                  animate={{ rotate: [0, -8, 8, -4, 0] }}
+                  transition={{ duration: 0.9, delay: 0.5, repeat: Infinity, repeatDelay: 4 }}
+                >
+                  <Gift className="h-5 w-5" strokeWidth={1.6} />
+                </motion.span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-display uppercase tracking-[0.14em] text-gold">Welcome gift · for you</p>
+                  <p className="text-[14px] text-ink leading-snug">
+                    <span className="font-display font-semibold text-mulberry-deep"><CountUp to={Number(welcome.discountValue) || 10} delay={0.4} />% off</span>
+                    <span className="text-ink-soft"> your first order</span>
+                  </p>
+                  <p className="font-display text-[12.5px] tracking-[0.08em] text-ink-muted truncate">{welcome.code}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => apply(welcome.code)}
+                  disabled={busy}
+                  className="h-10 px-4 shrink-0 rounded-full bg-mulberry text-paper text-[13px] font-display font-medium hover:bg-mulberry-deep transition-colors disabled:opacity-60 inline-flex items-center gap-1.5"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : applied ? 'Switch' : 'Apply'}
+                </button>
+              </div>
+            </CouponTicket>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {applied ? (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-leaf/30 bg-leaf/5 px-4 py-3">
+        <motion.div
+          key={applied.code}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 24 }}
+          className="relative flex items-center justify-between gap-3 rounded-2xl border border-leaf/30 bg-leaf/5 px-4 py-3"
+        >
+          {celebrate > 0 && <Confetti key={celebrate} count={26} spread={140} className="z-10" />}
           <span className="flex items-center gap-2.5 min-w-0">
-            <span className="h-7 w-7 shrink-0 rounded-full bg-leaf text-paper flex items-center justify-center"><Check className="h-3.5 w-3.5" strokeWidth={2.2} /></span>
+            <motion.span
+              className="h-8 w-8 shrink-0 rounded-full bg-leaf text-paper flex items-center justify-center"
+              initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.1 }}
+            >
+              <Check className="h-4 w-4" strokeWidth={2.2} />
+            </motion.span>
             <span className="min-w-0">
-              <span className="block text-[13.5px] font-display font-semibold text-ink tracking-wide truncate">{applied.code}</span>
-              <span className="block text-[12px] text-ink-soft">You save ₹{applied.discountAmount}</span>
+              <span className="block text-[13.5px] font-display font-semibold text-ink tracking-wide truncate">{applied.code} applied</span>
+              <span className="block text-[12.5px] text-leaf">You save ₹<CountUp to={Number(applied.discountAmount) || 0} delay={0.15} duration={0.8} /></span>
             </span>
           </span>
           <button type="button" onClick={remove} aria-label="Remove coupon" className="h-8 w-8 rounded-full flex items-center justify-center text-ink-muted hover:bg-ink/5 hover:text-ink">
             <X className="h-4 w-4" />
           </button>
-        </div>
+        </motion.div>
       ) : (
         <form onSubmit={(e) => { e.preventDefault(); apply(code); }}>
           <div className={`flex items-center gap-2 rounded-2xl border bg-paper pl-3.5 pr-1.5 h-12 transition-colors ${error ? 'border-danger/50' : 'border-ink/15 focus-within:border-berry/60'}`}>

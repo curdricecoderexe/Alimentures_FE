@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import { MilletSpray, WheatSpray } from '../home/BotanicalArt';
 import { Reveal } from '../ui/motion';
 
 /* Shared building blocks for the shopper pages (Cart, Wishlist), written in
-   the landing page's editorial voice: cream field, botanical sprays, "● Label"
+   the landing page's editorial voice: cream field, "● Label"
    eyebrow, light Outfit headline, white hairline cards and pill buttons. */
 
 export const CARD = 'rounded-[22px] bg-white border border-[#ECE6DA]';
@@ -18,8 +17,6 @@ export function ShopHero({ eyebrow, title, text, aside, children }) {
     // -mt-20 cancels CustomerLayout's pt-20 so the cream field runs to the top
     // edge (behind the floating nav) instead of exposing PageBackdrop's pink wash.
     <section className="relative z-10 -mt-20 overflow-clip bg-cream pt-36 sm:pt-44 pb-12 sm:pb-16 px-4 sm:px-6 font-sans">
-      <MilletSpray className="pointer-events-none absolute -left-10 sm:-left-6 -bottom-12 w-[130px] sm:w-[190px] lg:w-[220px] opacity-80 -rotate-[8deg]" />
-      <WheatSpray className="pointer-events-none absolute -right-10 sm:-right-6 -bottom-12 w-[130px] sm:w-[180px] lg:w-[210px] opacity-75 rotate-[6deg]" />
       <div className="relative mx-auto max-w-[1240px] lg:px-2">
         <div className={`flex flex-col gap-6 ${aside ? 'lg:flex-row lg:items-end lg:justify-between' : 'items-center text-center'}`}>
           <motion.div

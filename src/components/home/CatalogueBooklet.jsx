@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cachedFetch, API_BASE } from '../../lib/api';
 import { displayName } from '../../lib/seo';
 import { useCategories } from '../../lib/categories';
@@ -18,12 +19,19 @@ const FALLBACK = [
   { name: 'Classic Coclets', category: 'Cookies', image: imgCoclets },
 ];
 const TURN_EVERY_MS = 2600;
+const TURN_EVERY_MS_PHONE = 5000; // phones show full details, so give time to read
 const TURN_EASE = [0.645, 0.045, 0.355, 1]; // ease-in-out, like a hand turning a page
 
 const fromPrice = (p) => {
   const vs = Array.isArray(p.variants) ? p.variants.map((v) => Number(v.price)).filter((n) => n > 0) : [];
   return vs.length ? Math.min(...vs) : Number(p.price) || 0;
 };
+/** Every pack size with its own price, cheapest first. */
+const variantList = (p) => (Array.isArray(p.variants) ? p.variants : [])
+  .map((v) => ({ weight: v.weight, price: Number(v.price) || 0, mrp: Number(v.mrp || v.originalPrice) || 0 }))
+  .filter((v) => v.weight && v.price > 0)
+  .sort((a, b) => a.price - b.price);
+const rupees = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
 const packSizes = (p) => (Array.isArray(p.variants) ? p.variants.map((v) => v.weight).filter(Boolean) : []);
 const nameOf = (p) => displayName(p.name || p.title || '');
 const keyOf = (p) => p.id || p._id || p.name;
@@ -94,6 +102,44 @@ function ProductPage({ product, n, count }) {
   );
 }
 
+/** Phones: one page with the photo and the full product details, easy to read. */
+function MobileProductPage({ product }) {
+  const variants = variantList(product);
+  const price = fromPrice(product);
+  return (
+    <div className="flex h-full flex-col p-3">
+      <div className="relative overflow-hidden rounded-[12px] bg-cream ring-1 ring-[#EFE4D1] aspect-[16/10]">
+        <img src={product.image} alt={nameOf(product)} className="h-full w-full object-cover" loading="lazy" draggable="false" />
+      </div>
+      <div className="px-1.5 pt-3.5 pb-1 text-ink">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A09A92]">{product.category || 'Alimenture'}</p>
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <p className="font-display text-[18px] leading-snug font-medium line-clamp-2">{nameOf(product)}</p>
+          {price > 0 && (
+            <p className="shrink-0 text-right leading-none">
+              {variants.length > 1 && <span className="block text-[10.5px] text-ink-muted mb-1">from</span>}
+              <span className="font-display text-[20px] font-semibold text-mulberry-deep tabular-nums">{rupees(price)}</span>
+            </p>
+          )}
+        </div>
+        {product.description && <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft line-clamp-2">{product.description}</p>}
+        {variants.length > 0 && (
+          <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Pack sizes and prices">
+            {variants.slice(0, 4).map((v) => (
+              <li key={v.weight} className="inline-flex items-center gap-1.5 h-8 rounded-full bg-white px-3 ring-1 ring-[#E8DCC6] text-[12.5px]">
+                <span className="text-ink-soft">{v.weight}</span>
+                <span className="h-3 w-px bg-[#E8DCC6]" />
+                <span className="font-semibold text-ink tabular-nums">{rupees(v.price)}</span>
+                {v.mrp > v.price && <span className="text-[11px] text-ink-muted line-through tabular-nums">{rupees(v.mrp)}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Animated catalogue booklet with a realistic 3D page turn.
  * The right-hand leaf (product photo on the front, product notes on the back)
@@ -110,6 +156,7 @@ export default function CatalogueBooklet() {
   const [left, setLeft] = useState(-1);  // -1 = cover, otherwise notes of products[left]
   const [turning, setTurning] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [dir, setDir] = useState(1); // phones: slide direction
   const [wide, setWide] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches);
 
   useEffect(() => {
@@ -151,7 +198,7 @@ export default function CatalogueBooklet() {
 
   const turn = useCallback(() => {
     if (turning || count < 2) return;
-    if (still) { setLeft(right); setRight(next); return; }
+    if (still || !wide) { setDir(1); setLeft(right); setRight(next); return; }
     setTurning(true);
     animate(rot, wide ? -180 : -100, {
       duration: wide ? 0.75 : 0.55,
@@ -164,9 +211,27 @@ export default function CatalogueBooklet() {
   useEffect(() => { turnRef.current = turn; }, [turn]);
   useEffect(() => {
     if (paused || count < 2) return undefined;
-    const id = setInterval(() => turnRef.current(), TURN_EVERY_MS);
+    const id = setInterval(() => turnRef.current(), wide ? TURN_EVERY_MS : TURN_EVERY_MS_PHONE);
     return () => clearInterval(id);
-  }, [paused, count]);
+  }, [paused, count, wide]);
+
+  // Phones: a tap or swipe pauses auto-turning for a while so the details can be read.
+  const resumeTimer = useRef(null);
+  const holdOnPhone = () => {
+    setPaused(true);
+    clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => setPaused(false), 9000);
+  };
+  useEffect(() => () => clearTimeout(resumeTimer.current), []);
+  const step = (delta) => {
+    if (count < 2) return;
+    holdOnPhone();
+    setDir(delta);
+    const i = (right + delta + count) % count;
+    setRight(i);
+    setLeft(i === 0 ? -1 : i - 1);
+  };
+  const swipeStart = useRef(null);
 
   const jumpTo = (i) => {
     if (turning || i === right) return;
@@ -208,7 +273,7 @@ export default function CatalogueBooklet() {
         <span aria-hidden="true" className="hidden sm:block absolute top-1.5 bottom-1.5 -left-[5px] w-[5px] rounded-l-[6px] bg-[repeating-linear-gradient(90deg,#D9CBB0_0px,#D9CBB0_1px,#EFE5D2_1px,#EFE5D2_2px)] shadow-[-2px_6px_12px_-6px_rgba(0,0,0,0.5)]" />
 
         <div
-          className={`relative grid grid-cols-1 sm:grid-cols-2 min-h-[260px] sm:min-h-[290px] rounded-[16px] ${PAPER} shadow-[0_40px_80px_-30px_rgba(0,0,0,0.65)] ring-1 ring-black/10`}
+          className={`relative grid grid-cols-1 sm:grid-cols-2 sm:min-h-[290px] rounded-[16px] ${PAPER} shadow-[0_40px_80px_-30px_rgba(0,0,0,0.65)] ring-1 ring-black/10`}
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* left page: the cover, then the notes of the last turned leaf */}
@@ -218,15 +283,35 @@ export default function CatalogueBooklet() {
           </div>
 
           {/* right page beneath the leaf */}
-          <div className="relative">
-            <ProductPage product={still ? current : beneath} n={(still ? right : (turning ? next : right)) + 1} count={count} />
+          <div className="relative overflow-hidden sm:overflow-visible rounded-[16px] sm:rounded-none">
+            {!wide ? (
+              <AnimatePresence mode="popLayout" initial={false} custom={dir}>
+                <motion.div
+                  key={right}
+                  custom={dir}
+                  initial={still ? { opacity: 0 } : { opacity: 0, x: dir * 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={still ? { opacity: 0 } : { opacity: 0, x: dir * -40 }}
+                  transition={{ duration: 0.45, ease: TURN_EASE }}
+                  onTouchStart={(e) => { holdOnPhone(); swipeStart.current = e.touches[0].clientX; }}
+                  onTouchEnd={(e) => {
+                    const dx = e.changedTouches[0].clientX - (swipeStart.current ?? e.changedTouches[0].clientX);
+                    if (Math.abs(dx) > 40) step(dx < 0 ? 1 : -1);
+                  }}
+                >
+                  <MobileProductPage product={current} />
+                </motion.div>
+              </AnimatePresence>
+            ) : (
+              <ProductPage product={still ? current : beneath} n={(still ? right : (turning ? next : right)) + 1} count={count} />
+            )}
             <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-black/[0.12] to-transparent" />
             {/* shadow cast by the turning leaf */}
             <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" style={{ opacity: castShadow }} />
           </div>
 
           {/* the leaf: front = product, back = notes */}
-          {!still && (
+          {!still && wide && (
             <motion.div
               className="absolute inset-y-0 right-0 w-full sm:w-1/2 z-20"
               style={{ rotateY: rot, z: lift, transformStyle: 'preserve-3d', transformOrigin: 'left center', opacity: wide ? 1 : fadeAway }}
@@ -256,7 +341,19 @@ export default function CatalogueBooklet() {
       </div>
 
       {/* page dots */}
-      {count > 1 && (
+      {count > 1 && !wide && (
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <button type="button" onClick={() => step(-1)} aria-label="Previous product" className="h-10 w-10 rounded-full bg-white/15 ring-1 ring-white/30 text-white flex items-center justify-center active:scale-95 transition">
+            <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
+          </button>
+          <span className="text-[13px] text-white/80 tabular-nums">{pad(right + 1)} / {pad(count)}</span>
+          <button type="button" onClick={() => step(1)} aria-label="Next product" className="h-10 w-10 rounded-full bg-white/15 ring-1 ring-white/30 text-white flex items-center justify-center active:scale-95 transition">
+            <ChevronRight className="h-5 w-5" strokeWidth={1.75} />
+          </button>
+        </div>
+      )}
+
+      {count > 1 && wide && (
         <div className="mt-1 flex flex-wrap items-center justify-center" role="tablist" aria-label="Catalogue pages">
           {products.slice(0, 12).map((p, i) => (
             <button

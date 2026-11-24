@@ -44,7 +44,7 @@ export function VariantSelectorModal({
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
-          <Badge className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-[#E83D6E] border-0 rounded-full font-bold px-3 py-1 text-[10px] tracking-widest uppercase">
+          <Badge className="absolute top-4 left-4 bg-white/90 backdrop-blur-md text-mulberry border-0 rounded-full font-bold px-3 py-1 text-[10px] tracking-widest uppercase">
             {product.category || 'Biscuit'}
           </Badge>
         </div>
@@ -73,7 +73,7 @@ export function VariantSelectorModal({
                     onClick={() => setSelectedVariant(variant)}
                     className={`px-4 py-4 rounded-2xl font-bold text-sm transition-all border-2 text-left flex flex-col gap-1 relative overflow-hidden ${
                       selectedVariant?.weight === variant.weight 
-                      ? 'border-[#E83D6E] bg-violet-50 text-[#E83D6E] shadow-md shadow-violet-100' 
+                      ? 'border-mulberry bg-mulberry-tint text-mulberry shadow-md shadow-mulberry/10' 
                       : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:text-gray-600 bg-white'
                     } ${isOutOfStock && mode === 'cart' ? 'opacity-50 grayscale cursor-not-allowed border-gray-100 bg-gray-50' : ''}`}
                   >
@@ -95,10 +95,10 @@ export function VariantSelectorModal({
           <Button 
             onClick={handleConfirm}
             disabled={mode === 'cart' && (!selectedVariant || selectedVariant.stock <= 0)}
-            className={`w-full h-14 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
+            className={`w-full h-14 rounded-[14px] text-[14px] font-semibold uppercase tracking-[0.05em] flex items-center justify-center gap-2 ${
               mode === 'cart' && (!selectedVariant || selectedVariant.stock <= 0)
-              ? 'bg-gray-200 text-gray-400 shadow-none'
-              : 'bg-[#E83D6E] hover:bg-[#B0128F] text-white shadow-violet-100'
+              ? 'bg-cream text-ink-muted border border-hairline shadow-none'
+              : 'bg-mulberry hover:bg-mulberry-deep text-white shadow-[0_10px_22px_-16px_rgba(95,28,84,0.7)] active:scale-[.985] transition-colors'
             }`}
           >
             {mode === 'cart' ? (

@@ -330,29 +330,29 @@ export function ChristmasBand({ to = '/shop', cta = 'Shop Christmas gifts' }) {
         <Twinkle className="right-[6%] top-[18%]" size={16} delay={0.8} />
         <Twinkle className="right-[40%] bottom-[16%]" size={10} delay={2} color={C.paper} />
 
-        <div className="relative mx-auto max-w-[1240px] grid md:grid-cols-[1.15fr_1fr] items-center gap-6 px-6 sm:px-10 lg:px-14">
+        <div className="relative mx-auto max-w-[1240px] grid md:grid-cols-[1.15fr_1fr] items-center gap-4 md:gap-6 px-5 sm:px-10 lg:px-14">
           {/* copy */}
-          <div className="py-10 sm:py-14 md:py-16">
-            <span className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full border border-gold-light/40 bg-paper/[0.06] text-[11px] font-display uppercase tracking-[0.18em] text-gold-light">
+          <div className="pt-9 pb-1 sm:py-14 md:py-16 text-center md:text-left">
+            <span className="inline-flex items-center gap-2 h-7 sm:h-8 px-3 sm:px-3.5 rounded-full border border-gold-light/40 bg-paper/[0.06] text-[10px] sm:text-[11px] font-display uppercase tracking-[0.16em] sm:tracking-[0.18em] text-gold-light">
               <Sparkle style={{ width: 10, height: 10 }} /> {seasonLine()}
             </span>
-            <h2 className="headline text-paper mt-5 text-[2.1rem] sm:text-5xl lg:text-[3.4rem] leading-[1.04]">
-              A wholesome Christmas, <em className="!text-gold-light">gift-wrapped.</em>
+            <h2 className="headline text-paper mt-4 sm:mt-5 text-[1.6rem] min-[400px]:text-[1.85rem] sm:text-5xl lg:text-[3.4rem] leading-[1.08] sm:leading-[1.04]">
+              A wholesome Christmas,<br className="md:hidden" /> <em className="!text-gold-light">gift-wrapped.</em>
             </h2>
-            <p className="mt-4 text-[15px] sm:text-base text-paper/75 leading-relaxed max-w-md">
+            <p className="mt-3 sm:mt-4 text-[14px] sm:text-base text-paper/75 leading-relaxed max-w-[21rem] sm:max-w-md mx-auto md:mx-0">
               Festive hampers and millet treats, hand-packed in Chennai — the thoughtful way to say Merry Christmas.
             </p>
-            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link to={to} className="btn-light">{cta} <ArrowRight className="h-4 w-4" strokeWidth={1.75} /></Link>
+            <div className="mt-6 sm:mt-7 flex flex-col sm:flex-row sm:flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-3.5">
+              <Link to={to} className="btn-light w-full max-w-[20rem] sm:w-auto justify-center">{cta} <ArrowRight className="h-4 w-4" strokeWidth={1.75} /></Link>
               <Link to="/shop" className="link-arrow link-arrow-light">Shop all treats</Link>
             </div>
           </div>
 
           {/* illustrated scene */}
-          <div className="relative h-[230px] sm:h-[300px] md:h-[360px] -mx-2 md:mx-0">
+          <div className="relative mt-2 sm:mt-0 h-[170px] sm:h-[300px] md:h-[360px] mx-auto w-full max-w-[360px] sm:max-w-none md:mx-0">
             <div className="absolute left-1/2 bottom-3 -translate-x-1/2 h-10 w-[85%] rounded-[50%] bg-gold-light/20 blur-xl" aria-hidden="true" />
-            <ChristmasTree className="absolute right-[6%] sm:right-[10%] bottom-0 h-[96%] w-auto drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)]" />
-            <motion.div className="absolute left-[2%] sm:left-[6%] bottom-0 w-[46%] max-w-[230px]" {...float(0.3, 3)}>
+            <ChristmasTree className="absolute right-[8%] sm:right-[10%] bottom-0 h-[98%] sm:h-[96%] w-auto drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)]" />
+            <motion.div className="absolute left-[6%] bottom-0 w-[44%] max-w-[170px] sm:max-w-[230px]" {...float(0.3, 3)}>
               <GiftStack className="w-full h-auto drop-shadow-[0_18px_24px_rgba(0,0,0,0.35)]" />
             </motion.div>
             {/* hanging baubles */}
@@ -363,7 +363,7 @@ export function ChristmasBand({ to = '/shop', cta = 'Shop Christmas gifts' }) {
               <motion.div
                 key={b.left}
                 aria-hidden="true"
-                className="absolute top-0 flex flex-col items-center origin-top"
+                className="absolute top-0 hidden md:flex flex-col items-center origin-top"
                 style={{ left: b.left }}
                 animate={reduce ? undefined : { rotate: [-4, 4, -4] }}
                 transition={{ duration: 4.8 + b.d, repeat: Infinity, ease: 'easeInOut' }}

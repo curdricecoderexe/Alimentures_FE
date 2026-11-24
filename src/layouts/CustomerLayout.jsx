@@ -17,6 +17,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { toast } from 'sonner';
 // Lazy: keeps socket.io out of the first page load.
 const ChatWidget = lazy(() => import('../components/ChatWidget'));
+const WelcomeOfferGate = lazy(() => import('../components/coupon/WelcomeOffer').then((m) => ({ default: m.WelcomeOfferGate })));
 import CookieConsent from '../components/CookieConsent';
 import MobileDock from '../components/MobileDock';
 import { PageBackdrop } from '../components/ui/motion';
@@ -30,8 +31,8 @@ import TrustBadges from '../components/TrustBadges';
 import ShopMenu from '../components/nav/ShopMenu';
 import { SOCIAL_PLATFORMS, resolveSocialLinks } from '../lib/socialPlatforms';
 import { hampersVisibleIn } from '../lib/storefrontSettings';
+import { fetchWelcomeCoupon } from '../lib/welcomeCoupon';
 // Removed Loader import
-// Removed unused import: womenImage
 // Removed unused import: coverImage
 
 gsap.registerPlugin(ScrollTrigger);
@@ -319,7 +320,7 @@ export default function CustomerLayout() {
           {/* LEFT PILL — logo + primary links */}
           <div className="relative pointer-events-auto" onMouseLeave={scheduleShopClose}>
             <nav aria-label="Main" className={`${pillCls} flex items-center h-14 sm:h-[60px] pl-3 sm:pl-4 pr-2`}>
-              <Link to="/" className="flex items-center shrink-0 pr-2" aria-label="Alimenture home">
+              <Link to="/" className="flex items-center shrink-0 pr-7 sm:pr-8 lg:pr-2" aria-label="Alimenture home">
                 <img src={logo} alt="Alimenture" className="h-12 sm:h-[58px] w-auto object-contain -my-1 scale-[1.18] origin-left" />
               </Link>
 
@@ -851,7 +852,7 @@ export default function CustomerLayout() {
           {/* Columns */}
           <div className="mt-12 sm:mt-14 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-x-6 gap-y-10">
             {/* Brand */}
-            <div className="col-span-2 md:col-span-4 lg:col-span-4 lg:pr-8">
+            <div className="col-span-2 md:col-span-4 lg:col-span-3 lg:pr-4">
               <Link to="/" className="inline-flex rounded-[14px] bg-white px-3.5 py-2" aria-label="Alimenture home">
                 <img src={logo} alt="Alimenture" className="h-10 sm:h-11 w-auto object-contain" />
               </Link>
@@ -926,11 +927,11 @@ export default function CustomerLayout() {
             </nav>
 
             {/* Contact */}
-            <div className="col-span-2 md:col-span-1 lg:col-span-2">
+            <div className="col-span-2 md:col-span-4 lg:col-span-3">
               <h4 className={footerHeadCls}>Contact</h4>
               <ul className="mt-4 space-y-3 text-[14px]">
                 <li className="flex items-start gap-2.5"><MapPin className="h-4 w-4 mt-0.5 text-white/40 shrink-0" /> Chennai, Tamil Nadu</li>
-                <li><a href="mailto:alimentureindustries@gmail.com" className={`${footerLinkCls} flex items-start gap-2.5 min-w-0`}><Mail className="h-4 w-4 mt-0.5 text-white/40 shrink-0" /> <span className="min-w-0 [overflow-wrap:anywhere] lg:text-[13px] xl:text-[14px]">alimentureindustries<wbr />@gmail.com</span></a></li>
+                <li><a href="mailto:alimentureindustries@gmail.com" className={`${footerLinkCls} flex items-center gap-2.5`}><Mail className="h-4 w-4 text-white/40 shrink-0" /> <span className="whitespace-nowrap lg:text-[13px] xl:text-[14px]">alimentureindustries@gmail.com</span></a></li>
                 <li><a href="tel:+917358196132" className={`${footerLinkCls} flex items-center gap-2.5`}><Phone className="h-4 w-4 text-white/40 shrink-0" /> +91 73581 96132</a></li>
                 <li><a href="tel:+919884733453" className={`${footerLinkCls} flex items-center gap-2.5`}><Phone className="h-4 w-4 text-white/40 shrink-0" /> +91 98847 33453</a></li>
               </ul>
@@ -953,6 +954,7 @@ export default function CustomerLayout() {
       <MobileDock />
       <CookieConsent />
       <Suspense fallback={null}><ChatWidget /></Suspense>
+      <Suspense fallback={null}><WelcomeOfferGate pathname={location.pathname} fetchCoupon={fetchWelcomeCoupon} /></Suspense>
     </div>
   );
 }

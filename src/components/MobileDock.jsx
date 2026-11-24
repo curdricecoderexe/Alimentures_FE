@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Store, Heart, ShoppingCart, User, Package, MapPin, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { Home, Store, Heart, ShoppingCart, User, Package, MapPin, LogIn, UserPlus, LogOut, MessageCircle } from 'lucide-react';
 import Dock from './Dock/Dock';
 import { useCart } from '../context/CartContext';
 import { logout } from '../lib/api';
@@ -79,6 +79,12 @@ export default function MobileDock() {
       onClick: () => navigate('/cart'),
     }),
     item({
+      icon: glyph(MessageCircle),
+      label: 'Chat',
+      current: false,
+      onClick: () => window.dispatchEvent(new CustomEvent('open-support-chat')),
+    }),
+    item({
       icon: glyph(User),
       label: signedIn ? 'Account' : 'Sign In',
       current: isAccount,
@@ -110,11 +116,11 @@ export default function MobileDock() {
       <Dock
         items={items}
         theme="brand"
-        baseItemSize={46}
+        baseItemSize={44}
         magnification={58}
         distance={120}
         panelHeight={60}
-        gap={10}
+        gap={8}
         roundness={0.55}
         accentColor="#B0128F"
         badgeColor="#D4148F"

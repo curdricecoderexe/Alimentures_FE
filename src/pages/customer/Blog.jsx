@@ -232,7 +232,7 @@ export default function Blog() {
     : `${category} · ${results.length} ${results.length === 1 ? 'article' : 'articles'}`;
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans">
+    <div className="min-h-screen -mt-20 pt-20 bg-paper text-ink font-sans">
       <SEO title={BLOG_SEO.title} description={BLOG_SEO.description} url="/blog" />
 
       {/* Masthead */}

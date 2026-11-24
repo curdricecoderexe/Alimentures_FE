@@ -638,17 +638,17 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 }
 
 /* Dialogs / Modals in Dark Mode */
-.dark-theme [role="dialog"],
-html.dark [role="dialog"] {
+.dark-theme [role="dialog"]:not([data-own-style]),
+html.dark [role="dialog"]:not([data-own-style]) {
   background-color: #1A1021 !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #F3F4F6 !important;
 }
 
-.dark-theme [role="dialog"] input,
-.dark-theme [role="dialog"] textarea,
-html.dark [role="dialog"] input,
-html.dark [role="dialog"] textarea {
+.dark-theme [role="dialog"]:not([data-own-style]) input,
+.dark-theme [role="dialog"]:not([data-own-style]) textarea,
+html.dark [role="dialog"]:not([data-own-style]) input,
+html.dark [role="dialog"]:not([data-own-style]) textarea {
   background-color: #24162E !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #F9FAFB !important;
@@ -665,73 +665,73 @@ html.dark * {
   z-index: 200 !important;
 }
 
-body [role="dialog"] {
+body [role="dialog"]:not([data-own-style]) {
   z-index: 210 !important;
   background-color: #FFFFFF !important;
   color: #111827 !important;
   border-color: #F3F4F6 !important;
 }
 
-body [role="dialog"] .bg-white {
+body [role="dialog"]:not([data-own-style]) .bg-white {
   background-color: #FFFFFF !important;
   color: #111827 !important;
 }
 
-body [role="dialog"] .bg-gray-50,
-body [role="dialog"] .bg-gray-100 {
+body [role="dialog"]:not([data-own-style]) .bg-gray-50,
+body [role="dialog"]:not([data-own-style]) .bg-gray-100 {
   background-color: #F9FAFB !important;
   color: #111827 !important;
   border-color: #F3F4F6 !important;
 }
 
-body [role="dialog"] input,
-body [role="dialog"] textarea {
+body [role="dialog"]:not([data-own-style]) input,
+body [role="dialog"]:not([data-own-style]) textarea {
   background-color: #F9FAFB !important;
   color: #111827 !important;
   border-color: #E5E7EB !important;
 }
 
 /* Dark Mode Modal Dialog Overrides */
-html.dark [role="dialog"],
-.dark-theme [role="dialog"] {
+html.dark [role="dialog"]:not([data-own-style]),
+.dark-theme [role="dialog"]:not([data-own-style]) {
   background-color: #160D1D !important;
   color: #F3F4F6 !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
-html.dark [role="dialog"] .bg-white,
-html.dark [role="dialog"] .bg-gray-50,
-html.dark [role="dialog"] .bg-gray-100,
-.dark-theme [role="dialog"] .bg-white,
-.dark-theme [role="dialog"] .bg-gray-50,
-.dark-theme [role="dialog"] .bg-gray-100 {
+html.dark [role="dialog"]:not([data-own-style]) .bg-white,
+html.dark [role="dialog"]:not([data-own-style]) .bg-gray-50,
+html.dark [role="dialog"]:not([data-own-style]) .bg-gray-100,
+.dark-theme [role="dialog"]:not([data-own-style]) .bg-white,
+.dark-theme [role="dialog"]:not([data-own-style]) .bg-gray-50,
+.dark-theme [role="dialog"]:not([data-own-style]) .bg-gray-100 {
   background-color: #23152E !important;
   color: #F3F4F6 !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-html.dark [role="dialog"] p,
-html.dark [role="dialog"] h1,
-html.dark [role="dialog"] h2,
-html.dark [role="dialog"] h3,
-.dark-theme [role="dialog"] p,
-.dark-theme [role="dialog"] h1,
-.dark-theme [role="dialog"] h2,
-.dark-theme [role="dialog"] h3 {
+html.dark [role="dialog"]:not([data-own-style]) p,
+html.dark [role="dialog"]:not([data-own-style]) h1,
+html.dark [role="dialog"]:not([data-own-style]) h2,
+html.dark [role="dialog"]:not([data-own-style]) h3,
+.dark-theme [role="dialog"]:not([data-own-style]) p,
+.dark-theme [role="dialog"]:not([data-own-style]) h1,
+.dark-theme [role="dialog"]:not([data-own-style]) h2,
+.dark-theme [role="dialog"]:not([data-own-style]) h3 {
   color: #F9FAFB !important;
 }
 
-html.dark [role="dialog"] .text-gray-500,
-html.dark [role="dialog"] .text-gray-600,
-.dark-theme [role="dialog"] .text-gray-500,
-.dark-theme [role="dialog"] .text-gray-600 {
+html.dark [role="dialog"]:not([data-own-style]) .text-gray-500,
+html.dark [role="dialog"]:not([data-own-style]) .text-gray-600,
+.dark-theme [role="dialog"]:not([data-own-style]) .text-gray-500,
+.dark-theme [role="dialog"]:not([data-own-style]) .text-gray-600 {
   color: #9CA3AF !important;
 }
 
-html.dark [role="dialog"] input,
-html.dark [role="dialog"] textarea,
-.dark-theme [role="dialog"] input,
-.dark-theme [role="dialog"] textarea {
+html.dark [role="dialog"]:not([data-own-style]) input,
+html.dark [role="dialog"]:not([data-own-style]) textarea,
+.dark-theme [role="dialog"]:not([data-own-style]) input,
+.dark-theme [role="dialog"]:not([data-own-style]) textarea {
   background-color: #2B1B38 !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #F9FAFB !important;

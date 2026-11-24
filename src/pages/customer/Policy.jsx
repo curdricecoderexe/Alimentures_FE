@@ -23,7 +23,7 @@ const scrollToId = (id) => {
 
 function PolicyDirectory() {
   return (
-    <div className="relative text-ink font-sans min-h-screen overflow-hidden">
+    <div className="relative -mt-20 text-ink font-sans min-h-screen overflow-hidden">
       <SEO
         title="Policies & Legal"
         description="Alimenture policies: privacy, terms of service, shipping, returns & refunds, cancellation, and quality guidelines."
@@ -72,7 +72,7 @@ function PolicyDirectory() {
 function PolicyHero({ eyebrow, title, updated, intro }) {
   return (
     <header
-      className="relative overflow-hidden px-6 pb-16 pt-32 text-white foil-top"
+      className="relative overflow-hidden px-6 pb-16 pt-52 text-white foil-top"
       style={{ background: 'linear-gradient(155deg,#79083F 0%,#A50D5A 55%,#6A0637 100%)' }}
     >
       <div
@@ -148,7 +148,7 @@ export default function Policy() {
   }
 
   return (
-    <div className="relative font-sans text-ink overflow-hidden">
+    <div className="relative -mt-20 font-sans text-ink overflow-hidden">
       <SEO
         title={policy.title}
         description={policy.summary}

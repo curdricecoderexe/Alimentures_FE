@@ -7,11 +7,11 @@ import { useAppearance } from '../../lib/appearance';
 import { Reveal } from '../ui/motion';
 import { useStorefrontSettings } from '../../lib/storefrontSettings';
 import { MilletSpray, WheatSpray } from '../home/BotanicalArt';
-import womenImage from '../../assets/cas/women.webp';
+import lineupDefaultImage from '../../assets/cas/banner.webp';
 import nammalvarImage from '../../assets/nammalvar.jpg';
 import craftingBgDefault from '../../assets/Munnar.jpg';
 import superGrainsBgDefault from '../../assets/bf.webp';
-import commitmentBgDefault from '../../assets/bg-1.webp';
+import commitmentBgDefault from '../../assets/commitment-millets.webp';
 
 import fingerMilletImg from '../../assets/fav/finger.webp';
 import foxtailMilletImg from '../../assets/fav/foxtail.webp';
@@ -272,7 +272,6 @@ export function FarmToPantry() {
       <div ref={ref} className="max-w-[1240px] mx-auto">
         <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 lg:mb-4">
           <div className="lg:col-span-8 space-y-5">
-            <span className="eyebrow eyebrow-gold">Farm to pantry</span>
             <h2 className="headline text-4xl sm:text-6xl">Four honest steps. <em>Nothing hidden.</em></h2>
           </div>
           <p className="lg:col-span-4 text-[15px] text-ink-soft leading-relaxed">
@@ -339,11 +338,10 @@ export function WhyWeStarted({ first = false }) {
   return (
     <>
       {/* ⸻ 6. OUR PURPOSE ⸻ */}
-      <section id="about" className={`${first ? 'pt-28 sm:pt-36' : 'pt-16 sm:pt-28'} pb-16 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-paper relative font-sans`}>
+      <section id="about" className={`${first ? '-mt-20 pt-48 sm:pt-56' : 'pt-16 sm:pt-28'} pb-16 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-paper relative font-sans`}>
         <div className="max-w-[1240px] mx-auto">
           <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 sm:mb-20">
             <div className="lg:col-span-8 space-y-5">
-              <span className="eyebrow">Our purpose</span>
               <h2 className="headline text-[2.4rem] sm:text-6xl lg:text-[4.25rem]">Why we <em>started</em></h2>
             </div>
             <p className="lg:col-span-4 text-[15px] text-ink-soft leading-relaxed">
@@ -417,7 +415,6 @@ export function OurStorySection() {
         <div className="container mx-auto px-6 max-w-7xl relative z-10">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
             <div className="space-y-6 sm:space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
-              <span className="eyebrow">Our Story</span>
               <h2 className="headline text-[2.4rem] sm:text-6xl lg:text-[4.25rem]">
                 Built on a Mission.<br /><span className="accent-text">Not a Trend.</span>
               </h2>
@@ -494,7 +491,6 @@ export function ThreeSPhilosophy() {
         <div className="max-w-[1240px] mx-auto">
           <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 sm:mb-20">
             <div className="lg:col-span-8 space-y-5">
-              <span className="eyebrow eyebrow-gold">Foundational pillars</span>
               <h2 className="headline text-[2.4rem] sm:text-6xl lg:text-[4.25rem]">
                 The 3S philosophy of <em>Alimenture</em>
               </h2>
@@ -602,7 +598,6 @@ export function CraftingGold() {
 
         <div className="relative mx-auto max-w-[1080px] px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-3xl mx-auto flex flex-col items-center gap-5">
-            <span className="eyebrow eyebrow-gold">Alchemi&rsquo;s Grainlets</span>
             <h2 className="headline text-[2.6rem] sm:text-6xl lg:text-[4.5rem]">Crafting grains <em>into gold</em></h2>
             <p className="text-[15px] sm:text-lg text-ink-soft leading-relaxed max-w-xl">
               We don&rsquo;t bake compromises. Every recipe is thoughtfully crafted with superior ingredients, exceptional taste, and honest goodness.
@@ -671,7 +666,6 @@ export function SuperGrains() {
         <div className="max-w-[1240px] mx-auto">
           <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 sm:mb-16">
             <div className="lg:col-span-7 space-y-5">
-              <span className="eyebrow">Nutritional blueprint</span>
               <h2 className="headline text-[2.3rem] sm:text-6xl">Powered by ancient <em>super grains</em></h2>
             </div>
             <p lang="en" className="lg:col-span-5 text-[15px] text-ink-soft leading-relaxed text-justify hyphens-auto">
@@ -730,7 +724,6 @@ export function WhyFamilies() {
         <div className="max-w-[1240px] mx-auto">
           <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 sm:mb-16">
             <div className="lg:col-span-8 space-y-5">
-              <span className="eyebrow eyebrow-gold">Trust pillars</span>
               <h2 className="headline text-[2.3rem] sm:text-6xl">Why families choose <em>Alimenture</em></h2>
             </div>
             <p className="lg:col-span-4 text-[15px] text-ink-soft leading-relaxed">
@@ -801,7 +794,6 @@ export function OurCommitment() {
             <Reveal className="lg:col-span-5 flex items-center gap-5 sm:gap-6">
               <img src={commitmentBg} alt="" aria-hidden="true" loading="lazy" decoding="async" className="hidden sm:block h-24 w-24 lg:h-28 lg:w-28 shrink-0 rounded-full object-cover ring-1 ring-gold-light/40 ring-offset-4 ring-offset-mulberry-deep" />
               <div className="space-y-3">
-                <span className="eyebrow eyebrow-light">{copy.eyebrow}</span>
                 <h2 className="headline text-paper text-[1.75rem] sm:text-[2.25rem] leading-tight">
                   {copy.headline}{copy.highlight && <> <em className="!text-gold-light">{copy.highlight}</em></>}
                 </h2>
@@ -844,7 +836,7 @@ const LINEUP_FEATURES = [
 export function CleanSnackLineup({ first = false }) {
   const appearance = useAppearance();
   const lineupCustom = [appearance.lineupImage1, appearance.lineupImage2, appearance.lineupImage3].filter(Boolean);
-  const lineupImages = lineupCustom.length ? lineupCustom : [womenImage];
+  const lineupImages = lineupCustom.length ? lineupCustom : [lineupDefaultImage];
   return (
     <>
       {/* ⸻ CLEAN SNACK LINEUP · ALCHEMI'S ⸻ */}
@@ -855,7 +847,6 @@ export function CleanSnackLineup({ first = false }) {
           </div>
 
           <Reveal className="lg:col-span-6 space-y-7">
-            <span className="eyebrow">Clean snack lineup</span>
             <h2 className="headline text-[3rem] sm:text-7xl lg:text-[5.25rem]"><em>Alchemi&rsquo;s</em></h2>
             <p className="font-display text-xl sm:text-2xl text-ink leading-snug max-w-md">
               A line of healthy, clean-label cookies made from wholesome grains.
@@ -914,7 +905,6 @@ export function AlchemisMatters() {
           <div>
             <Reveal className="grid lg:grid-cols-12 gap-6 lg:gap-10 items-end mb-12 sm:mb-16">
               <div className="lg:col-span-6 space-y-5">
-                <span className="eyebrow">The difference</span>
                 <h2 className="headline text-[2.3rem] sm:text-6xl">Why <em>Alchemi&rsquo;s</em> matters</h2>
               </div>
               <p lang="en" className="lg:col-span-6 text-[15px] text-ink-soft leading-relaxed text-justify hyphens-auto">
@@ -954,7 +944,6 @@ export function AlchemisMatters() {
           {/* ── Healthy Snacking for Modern Living ── */}
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-16">
             <Reveal className="lg:col-span-5 space-y-6 lg:sticky lg:top-32 self-start">
-              <span className="eyebrow eyebrow-gold">Everyday wellness</span>
               <h2 className="headline text-[2.3rem] sm:text-6xl">Healthy snacking for <em>modern living</em></h2>
               <p lang="en" className="text-[15px] text-ink-soft leading-relaxed max-w-md text-justify hyphens-auto">
                 Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemi&rsquo;s is designed to become part of your daily wellness lifestyle.
