@@ -30,9 +30,10 @@ export default function ProductReviews({
   reviewCount = 0,
 }) {
   return (
-    <section className="mt-24 pt-16 border-t border-hairline">
+    <section className="mt-16 sm:mt-24 pt-12 sm:pt-16 border-t border-hairline">
       <div className="mb-10">
-        <h3 className="text-2xl font-extrabold uppercase tracking-widest text-[#221B1F]">Customer Reviews</h3>
+        <span className="eyebrow">Reviews</span>
+        <h3 className="headline mt-3 text-[2rem] sm:text-[2.6rem]">What customers <em>are saying.</em></h3>
         <div className="flex items-center gap-3 mt-3">
           <StarRow value={Math.round(averageRating)} />
           <span className="text-sm font-bold text-ink-muted">
@@ -57,7 +58,7 @@ export default function ProductReviews({
                 <StarRow value={r.rating} size="h-4 w-4" />
                 <span className="text-[11px] text-ink-muted font-semibold">{fmtDate(r.createdAt)}</span>
               </div>
-              {r.title && <h4 className="font-display font-extrabold text-[15px] text-[#221B1F]">{r.title}</h4>}
+              {r.title && <h4 className="font-display font-extrabold text-[15px] text-[#1F1726]">{r.title}</h4>}
               <p className="text-sm text-ink-soft font-medium leading-relaxed whitespace-pre-line" style={{ overflowWrap: 'anywhere' }}>
                 {r.comment}
               </p>

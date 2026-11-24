@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ShipmentIssueBadge from '../../components/ShipmentIssueBadge';
+import DeleteOrdersDialog from '../../components/admin/DeleteOrdersDialog';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
@@ -203,32 +204,20 @@ export default function AdminOrders() {
     setSelectedOrder(null);
   };
 
-  // Only closed orders can be deleted (the API enforces the same rule): active
-  // paid orders must be cancelled or refunded first so stock and money are settled.
-  const DELETABLE = ['cancelled', 'refunded', 'payment_failed', 'failed', 'payment_pending'];
-  const canDelete = (o) => DELETABLE.includes(String(o?.status || '').toLowerCase());
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  useEffect(() => { setConfirmDelete(false); }, [selectedOrder?.id]);
-
-  const handleDeleteOrder = async () => {
-    if (!selectedOrder) return;
-    if (!confirmDelete) { setConfirmDelete(true); return; }
-    setDeleting(true);
-    try {
-      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders/${selectedOrder.id}`, { method: 'DELETE' });
-      if (!res) return;
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to delete order');
-      setOrders(prev => prev.filter(o => o.id !== selectedOrder.id));
-      toast.success(`Order ${selectedOrder.id} deleted`);
-      setSelectedOrder(null);
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setDeleting(false);
-      setConfirmDelete(false);
-    }
+  // Deleting (any status) is OTP-confirmed in DeleteOrdersDialog.
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [deleteTargets, setDeleteTargets] = useState(null); // orders queued for deletion
+  const toggleSelected = (id) => setSelectedIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+  const handleOrdersDeleted = (ids) => {
+    const gone = new Set(ids);
+    setOrders((prev) => prev.filter((o) => !gone.has(o.id)));
+    setSelectedIds(new Set());
+    setDeleteTargets(null);
+    if (selectedOrder && gone.has(selectedOrder.id)) setSelectedOrder(null);
   };
 
   const filteredOrders = orders.filter(o => 
@@ -238,16 +227,16 @@ export default function AdminOrders() {
   );
 
   if (isLoading) {
-    if (showSkeleton) return <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen"><TableSkeleton /></div>;
+    if (showSkeleton) return <div className="bg-transparent min-h-screen"><TableSkeleton /></div>;
     return <div className="min-h-screen bg-transparent"></div>;
   }
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Orders.</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Orders</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Manage logistics and customer fulfillment</p>
         </div>
         <Button 
@@ -289,11 +278,39 @@ export default function AdminOrders() {
             </Select>
           </div>
 
+          {/* Selection bar */}
+          {filteredOrders.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 border-b border-gray-50 text-sm">
+              <label className="inline-flex items-center gap-2 font-bold text-gray-600 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-black"
+                  checked={filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id))}
+                  onChange={(e) => setSelectedIds(e.target.checked ? new Set(filteredOrders.map((o) => o.id)) : new Set())}
+                />
+                {selectedIds.size > 0 ? `${selectedIds.size} selected` : `Select all ${filteredOrders.length}`}
+              </label>
+              {selectedIds.size > 0 && (
+                <>
+                  <button type="button" onClick={() => setSelectedIds(new Set())} className="h-9 px-3 rounded-xl text-gray-500 font-bold hover:bg-gray-100">Clear</button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTargets(orders.filter((o) => selectedIds.has(o.id)))}
+                    className="ml-auto h-9 px-4 rounded-xl bg-red-600 text-white font-bold inline-flex items-center gap-2 hover:bg-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete selected
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Mobile Card List View (< 768px) */}
           <div className="block md:hidden divide-y divide-gray-100">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="p-4 space-y-3 bg-white">
+              <div key={order.id} className={`p-4 space-y-3 ${selectedIds.has(order.id) ? 'bg-red-50/40' : 'bg-white'}`}>
                 <div className="flex items-start justify-between gap-3">
+                  <input type="checkbox" aria-label={`Select order ${order.id}`} className="mt-1 h-4 w-4 accent-black shrink-0" checked={selectedIds.has(order.id)} onChange={() => toggleSelected(order.id)} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-gray-900 leading-tight truncate">{order.customerInfo?.name || order.customer || 'Unknown'}</p>
                     {(order.customerInfo?.phone || order.customerInfo?.city) && (
@@ -341,7 +358,16 @@ export default function AdminOrders() {
             <Table>
               <TableHeader className="bg-gray-50">
                 <TableRow className="border-0">
-                  <TableHead className="h-14 text-[11px] font-bold uppercase text-gray-500 tracking-[0.2em] pl-8">Recipient</TableHead>
+                  <TableHead className="h-14 w-12 pl-6">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all orders"
+                      className="h-4 w-4 accent-black"
+                      checked={filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id))}
+                      onChange={(e) => setSelectedIds(e.target.checked ? new Set(filteredOrders.map((o) => o.id)) : new Set())}
+                    />
+                  </TableHead>
+                  <TableHead className="h-14 text-[11px] font-bold uppercase text-gray-500 tracking-[0.2em] pl-2">Recipient</TableHead>
                   <TableHead className="h-14 text-[11px] font-bold uppercase text-gray-500 tracking-[0.2em]">Summary</TableHead>
                   <TableHead className="h-14 text-[11px] font-bold uppercase text-gray-500 tracking-[0.2em]">Logistics</TableHead>
                   <TableHead className="h-14 text-[11px] font-bold uppercase text-gray-500 tracking-[0.2em] text-right pr-8">Actions</TableHead>
@@ -353,9 +379,12 @@ export default function AdminOrders() {
                     <motion.tr 
                       layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       key={order.id} 
-                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/20 group transition-colors"
+                      className={`border-b border-gray-50 last:border-0 hover:bg-gray-50/20 group transition-colors ${selectedIds.has(order.id) ? 'bg-red-50/40' : ''}`}
                     >
-                      <TableCell className="py-6 pl-8">
+                      <TableCell className="py-6 pl-6 w-12 align-top">
+                        <input type="checkbox" aria-label={`Select order ${order.id}`} className="mt-1 h-4 w-4 accent-black" checked={selectedIds.has(order.id)} onChange={() => toggleSelected(order.id)} />
+                      </TableCell>
+                      <TableCell className="py-6 pl-2">
                         <div>
                           <p className="text-base font-bold text-gray-900 leading-tight">{order.customerInfo?.name || order.customer || 'Unknown'}</p>
                           {order.customerInfo?.phone && <p className="text-xs font-semibold text-gray-600 mt-1">{order.customerInfo.phone}</p>}
@@ -648,17 +677,14 @@ export default function AdminOrders() {
               </div>
 
               <DialogFooter className="gap-3">
-                {canDelete(selectedOrder) && (
-                  <Button
-                    variant="ghost"
-                    disabled={deleting}
-                    onClick={handleDeleteOrder}
-                    className={`h-14 rounded-2xl font-bold flex-1 gap-2 ${confirmDelete ? 'bg-red-500 !text-white hover:bg-red-600' : 'text-red-500 hover:bg-red-50'}`}
-                    title="Permanently delete this closed order"
-                  >
-                    <Trash2 className="h-4 w-4" /> {deleting ? 'Deleting…' : confirmDelete ? 'Confirm delete' : 'Delete order'}
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  onClick={() => setDeleteTargets([selectedOrder])}
+                  className="h-14 rounded-2xl font-bold flex-1 gap-2 text-red-500 hover:bg-red-50"
+                  title="Permanently delete this order (confirmed with an emailed code)"
+                >
+                  <Trash2 className="h-4 w-4" /> Delete order
+                </Button>
                 <Button 
                   variant="ghost" 
                   className="h-14 rounded-2xl font-bold text-gray-500 flex-1"
@@ -677,6 +703,9 @@ export default function AdminOrders() {
           )}
         </DialogContent>
       </Dialog>
+      {deleteTargets && (
+        <DeleteOrdersDialog orders={deleteTargets} onClose={() => setDeleteTargets(null)} onDeleted={handleOrdersDeleted} />
+      )}
     </div>
   );
 }

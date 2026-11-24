@@ -116,8 +116,8 @@ export default function MobileDock() {
         panelHeight={60}
         gap={10}
         roundness={0.55}
-        accentColor="#A50D5A"
-        badgeColor="#C21A75"
+        accentColor="#B0128F"
+        badgeColor="#D4148F"
         style={{ pointerEvents: modalOpen ? 'none' : 'auto' }}
       />
     </nav>

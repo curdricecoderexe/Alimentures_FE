@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { authenticatedFetch, API_BASE } from '../../lib/api';
-import { clearAppearanceCache } from '../../lib/appearance';
+import { clearAppearanceCache, clearPageAppearanceCache } from '../../lib/appearance';
 import {
   clearHomeVideoCache, filmStreamUrl, DEFAULT_FILM_SRC, DEFAULT_FILM_TITLE, DEFAULT_FILM_SUBTITLE,
 } from '../../lib/homeVideo';
@@ -18,6 +18,14 @@ import craftingBgDefault from '../../assets/Munnar.jpg';
 import superGrainsBgDefault from '../../assets/bf.webp';
 import commitmentBgDefault from '../../assets/bg-1.webp';
 import lineupImageDefault from '../../assets/cas/women.webp';
+import craftCookieDefault from '../../assets/fav/penta_bite.webp';
+import catalogueBgDefault from '../../assets/cas/banner.webp';
+import hampersHeroDefault from '../../assets/cas/banner.webp';
+import hamperFestiveDefault from '../../assets/product/4.jpg';
+import redMilletsDefault from '../../assets/fav/red_millets_mate.webp';
+import triGrainDefault from '../../assets/fav/tri_grain_gain.webp';
+import cocletsDefault from '../../assets/fav/classic_coclets.webp';
+import heritageDefault from '../../assets/fav/mappillai_samba.webp';
 
 // The exact bundled fallback for each slot, so "Reset" previews match what the
 // live site actually shows. The 5 catalog-category slots and the optional
@@ -29,6 +37,21 @@ const BUNDLED_DEFAULTS = {
   superGrainsBg: superGrainsBgDefault,
   commitmentBg: commitmentBgDefault,
   lineupImage1: lineupImageDefault,
+  craftSpotlightBg: superGrainsBgDefault,
+  craftSpotlightImage: craftCookieDefault,
+  catalogueBg: catalogueBgDefault,
+  hampersHero: hampersHeroDefault,
+  // Gift Hampers page (served with ?page=hampers) — same defaults as src/pages/customer/Hampers.jsx
+  'hamper-grainlets-quartet': hampersHeroDefault,
+  'hamper-festive-harvest': hamperFestiveDefault,
+  'hamper-corporate-thank-you': craftCookieDefault,
+  'hamper-wellness-ritual': triGrainDefault,
+  'hamper-little-joys': cocletsDefault,
+  'hamper-heritage-collection': heritageDefault,
+  'grainlet-red-millets-mate': redMilletsDefault,
+  'grainlet-penta-bite': craftCookieDefault,
+  'grainlet-tri-grain-gain': triGrainDefault,
+  'grainlet-classic-coclets': cocletsDefault,
 };
 
 const MAX_DIMENSION = 1800;
@@ -70,7 +93,7 @@ function compressImage(file) {
   });
 }
 
-function SlotCard({ slot, currentImage, onSaved }) {
+export function SlotCard({ slot, currentImage, onSaved }) {
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(currentImage || null);
   const inputRef = useRef(null);
@@ -105,6 +128,7 @@ function SlotCard({ slot, currentImage, onSaved }) {
       if (res.ok && json.success) {
         toast.success(`${slot.label} updated`, { id: toastId });
         clearAppearanceCache();
+        clearPageAppearanceCache();
         onSaved(slot.key, dataUri);
       } else {
         toast.error(json.error || 'Upload failed', { id: toastId });
@@ -129,6 +153,7 @@ function SlotCard({ slot, currentImage, onSaved }) {
       if (res.ok && json.success) {
         toast.success(`${slot.label} reset to default`, { id: toastId });
         clearAppearanceCache();
+        clearPageAppearanceCache();
         setPreview(null);
         onSaved(slot.key, null);
       } else {
@@ -157,13 +182,13 @@ function SlotCard({ slot, currentImage, onSaved }) {
           </div>
         )}
         <span className={`absolute top-3 left-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${
-          isCustom ? 'bg-[#C41E6B] text-white' : 'bg-white/85 text-gray-500 border border-gray-200'
+          isCustom ? 'bg-[#B0128F] text-white' : 'bg-white/85 text-gray-500 border border-gray-200'
         }`}>
           {isCustom ? <><Check className="w-3 h-3" /> Custom</> : 'Default'}
         </span>
         {busy && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-[#C41E6B] animate-spin" />
+            <Loader2 className="w-6 h-6 text-[#B0128F] animate-spin" />
           </div>
         )}
       </div>
@@ -177,14 +202,14 @@ function SlotCard({ slot, currentImage, onSaved }) {
           <button
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#221B1F] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-black transition-colors disabled:opacity-50"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 rounded-xl bg-[#1F1726] text-white text-[11px] font-bold uppercase tracking-wider hover:bg-black transition-colors disabled:opacity-50"
           >
             <Upload className="w-3.5 h-3.5" /> {isCustom ? 'Replace' : 'Upload'}
           </button>
           <button
             onClick={handleReset}
             disabled={busy || !isCustom}
-            className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-gray-200 text-gray-500 text-[11px] font-bold uppercase tracking-wider hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-xl border border-gray-200 text-gray-500 text-[11px] font-bold uppercase tracking-wider hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -203,6 +228,7 @@ function uploadVideoFile(file, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('PUT', `${API_BASE}/home-video/file`);
+    xhr.withCredentials = true; // send the session cookie (XHR skips the fetch wrapper)
     const token = localStorage.getItem('token');
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
@@ -326,7 +352,7 @@ function HomeFilmCard() {
         {/* #t= makes the browser paint a first frame instead of a black box */}
         {info && <video key={src} src={`${src}#t=0.5`} controls muted playsInline preload="metadata" className="absolute inset-0 w-full h-full object-contain" />}
         <span className={`absolute top-3 left-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${
-          isCustom ? 'bg-[#C41E6B] text-white' : 'bg-white/85 text-gray-500 border border-gray-200'
+          isCustom ? 'bg-[#B0128F] text-white' : 'bg-white/85 text-gray-500 border border-gray-200'
         }`}>
           {isCustom ? <><Check className="w-3 h-3" /> Custom</> : 'Default'}
         </span>
@@ -335,7 +361,7 @@ function HomeFilmCard() {
             <Loader2 className="w-6 h-6 animate-spin" />
             <span className="text-xs font-bold tracking-wider">{Math.round(progress * 100)}%</span>
             <div className="w-2/3 h-1.5 rounded-full bg-white/20 overflow-hidden">
-              <div className="h-full bg-[#C41E6B] transition-[width]" style={{ width: `${progress * 100}%` }} />
+              <div className="h-full bg-[#B0128F] transition-[width]" style={{ width: `${progress * 100}%` }} />
             </div>
           </div>
         )}
@@ -355,7 +381,7 @@ function HomeFilmCard() {
               type="checkbox"
               checked={form.enabled}
               onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
-              className="accent-[#C41E6B] w-4 h-4"
+              className="accent-[#B0128F] w-4 h-4"
             />
             Show on site
           </label>
@@ -368,7 +394,7 @@ function HomeFilmCard() {
             maxLength={120}
             placeholder={DEFAULT_FILM_TITLE}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C41E6B]"
+            className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#B0128F]"
           />
         </div>
         <div className="space-y-1.5">
@@ -379,7 +405,7 @@ function HomeFilmCard() {
             rows={3}
             placeholder={DEFAULT_FILM_SUBTITLE}
             onChange={(e) => setForm((f) => ({ ...f, subtitle: e.target.value }))}
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#C41E6B]"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#B0128F]"
           />
         </div>
 
@@ -387,14 +413,14 @@ function HomeFilmCard() {
           <button
             onClick={handleSave}
             disabled={busy}
-            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl bg-[#C41E6B] text-white text-[11px] font-bold uppercase tracking-wider whitespace-nowrap hover:brightness-110 transition disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl bg-[#B0128F] text-white text-[11px] font-bold uppercase tracking-wider whitespace-nowrap hover:brightness-110 transition disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5 shrink-0" /> Save
           </button>
           <button
             onClick={() => inputRef.current?.click()}
             disabled={busy}
-            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl bg-[#221B1F] text-white text-[11px] font-bold uppercase tracking-wider whitespace-nowrap hover:bg-black transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl bg-[#1F1726] text-white text-[11px] font-bold uppercase tracking-wider whitespace-nowrap hover:bg-black transition-colors disabled:opacity-50"
           >
             <Upload className="w-3.5 h-3.5 shrink-0" /> {isCustom ? 'Replace' : 'Upload'}
           </button>
@@ -403,7 +429,7 @@ function HomeFilmCard() {
             disabled={busy || !isCustom}
             title="Revert to the default film"
             aria-label="Revert to the default film"
-            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl border border-gray-200 text-gray-500 text-[11px] font-bold uppercase tracking-wider hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-3 rounded-xl border border-gray-200 text-gray-500 text-[11px] font-bold uppercase tracking-wider hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -426,18 +452,22 @@ export default function AdminAppearance() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [slotRes, imgRes] = await Promise.all([
+      const [slotRes, imgRes, hampersRes] = await Promise.all([
         authenticatedFetch(`${API_BASE}/appearance/slots`),
         authenticatedFetch(`${API_BASE}/appearance`),
+        authenticatedFetch(`${API_BASE}/appearance?page=hampers`),
       ]);
       if (slotRes) {
         const j = await slotRes.json();
         if (j.success) setSlots(j.data || []);
       }
-      if (imgRes) {
-        const j = await imgRes.json();
-        if (j.success) setImages(j.data || {});
+      const merged = {};
+      for (const r of [imgRes, hampersRes]) {
+        if (!r) continue;
+        const j = await r.json();
+        if (j.success) Object.assign(merged, j.data || {});
       }
+      setImages(merged);
     } catch {
       toast.error('Failed to load appearance settings');
     } finally {
@@ -467,11 +497,11 @@ export default function AdminAppearance() {
   const customCount = slots.filter((s) => images[s.key]).length;
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 space-y-8 bg-transparent min-h-screen font-sans">
+    <div className="space-y-8 bg-transparent min-h-screen font-sans">
       {/* header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <span className="w-11 h-11 rounded-2xl bg-[#C41E6B]/10 flex items-center justify-center text-[#C41E6B] shrink-0">
+          <span className="w-11 h-11 rounded-2xl bg-[#B0128F]/10 flex items-center justify-center text-[#B0128F] shrink-0">
             <Palette className="w-5 h-5" />
           </span>
           <div>
@@ -487,7 +517,7 @@ export default function AdminAppearance() {
         </span>
       </div>
 
-      <div className="rounded-2xl bg-[#C41E6B]/[0.04] border border-[#C41E6B]/15 px-4 py-3 text-[12px] text-gray-600 leading-relaxed">
+      <div className="rounded-2xl bg-[#B0128F]/[0.04] border border-[#B0128F]/15 px-4 py-3 text-[12px] text-gray-600 leading-relaxed">
         Images are downscaled and converted to WebP automatically (max ~850&nbsp;KB). Landscape shots work
         best for section backdrops; a taller image suits the auth panel. Every section keeps a bundled
         fallback, so “Reset” always returns it to the original look.

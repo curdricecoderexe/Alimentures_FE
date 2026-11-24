@@ -20,7 +20,7 @@ const EASE = [0.16, 1, 0.3, 1];
    (berry / gold / leaf / blue) is validated colour-blind-safe for ≤4 slots;
    anything past 4 folds into "Other". */
 const C = {
-  ink: '#221B1F', inkSoft: '#5A4F55', muted: '#8E848B', grid: '#EEE6D6',
+  ink: '#1F1726', inkSoft: '#574D60', muted: '#8A8193', grid: '#E6D8BF',
   berry: '#A50D5A', gold: '#B27B26', leaf: '#2E7D51',
   cat: ['#A50D5A', '#D98A1E', '#1F7A4D', '#3E6DB0'],
   catOther: '#B8AEB4',

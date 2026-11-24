@@ -311,6 +311,42 @@ export const HOME_SEO = {
   description: 'Millet & heritage-rice cookies made with country sugar, plus A2 ghee, raw forest honey and bakes. Made in Chennai by Alimenture, delivered across India.',
 };
 
+export const ABOUT_SEO = {
+  title: `About Us — Our Story, Commitment & 3S Philosophy | ${BRAND}`,
+  description: 'Who we are: a Chennai food company reviving heritage millets with clean-label recipes — our story, our 3S philosophy, and our commitment to farmers and a healthier India.',
+};
+
+export const WHY_CHOOSE_SEO = {
+  title: `Why Choose Us — Clean Snacks from Heritage Grains | ${BRAND}`,
+  description: "Why families choose Alimenture: Alchemi's clean-label cookies, ten ancient super grains and an honest farm-to-pantry process with nothing hidden.",
+};
+
+export const BLOG_SEO = {
+  title: `The Grain Journal — Millet Recipes, Heritage Grains & Mindful Living | ${BRAND}`,
+  description: 'Stories, recipes and guides from the Alimenture kitchen: millets for beginners, heritage rices of Tamil Nadu, mindful snacking and thoughtful gifting.',
+};
+
+export const HAMPERS_SEO = {
+  title: `Gift Hampers — Festive, Corporate & Wellness Hampers | ${BRAND}`,
+  description: 'Curated gift hampers of millet cookies, raw honey, jaggery and health mixes. Festive, corporate and wellness boxes, personalised and shipped across India.',
+};
+
+/** Article JSON-LD for a blog post (src/data/blog.js). */
+export function articleJsonLd(post, image) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: { '@type': 'Organization', name: post.author || ORG_NAME },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
+    ...(image ? { image: absoluteUrl(image) } : {}),
+  };
+}
+
 export const SHOP_SEO = {
   title: `Shop Millet Cookies, Ghee, Honey & More | ${BRAND}`,
   description: 'Browse every Alimenture product: millet and heritage-rice cookies, A2 ghee, raw forest honey, country sugar and baked treats. Made in Chennai, delivered across India.',

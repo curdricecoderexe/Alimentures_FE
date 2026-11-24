@@ -101,15 +101,15 @@ export default function SuperGrains() {
   };
 
   if (isLoading && grains.length === 0) {
-    if (showSkeleton) return <div className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen"><TableSkeleton /></div>;
+    if (showSkeleton) return <div className="bg-transparent min-h-screen"><TableSkeleton /></div>;
     return <div className="min-h-screen bg-transparent"></div>;
   }
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Ancient Super Grains.</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Ancient Super Grains</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">Manage Nutritional Blueprint list</p>
         </div>
         <div className="flex justify-center sm:justify-end">
@@ -144,7 +144,7 @@ export default function SuperGrains() {
                     </div>
                     <div>
                       <p className="font-bold text-gray-900 text-sm">{grain.name}</p>
-                      <p className="text-[9.5px] font-bold uppercase tracking-wider text-[#E91E8C] mt-0.5">{grain.local}</p>
+                      <p className="text-[9.5px] font-bold uppercase tracking-wider text-[#B0128F] mt-0.5">{grain.local}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -182,7 +182,7 @@ export default function SuperGrains() {
                         </div>
                         <div>
                           <p className="font-bold text-gray-900">{grain.name}</p>
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#E91E8C] mt-1">{grain.local}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#B0128F] mt-1">{grain.local}</p>
                         </div>
                       </div>
                     </TableCell>

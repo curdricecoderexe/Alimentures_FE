@@ -1,8 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, useRouteError } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useRouteError } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppSkeleton from './components/skeletons/AppSkeleton';
+import OpsPageSkeleton from './components/skeletons/OpsPageSkeleton';
 import { reportClientError } from './lib/reportError';
 
 // Shown when a route throws (render error, lazy-chunk load failure, etc.)
@@ -27,7 +28,7 @@ function RouteError() {
         onClick={() => window.location.assign('/')}
         style={{
           marginTop: '4px', padding: '12px 26px', borderRadius: '999px', border: 'none',
-          background: '#C41E6B', color: '#fff', fontWeight: 700, fontSize: '0.8rem',
+          background: '#B0128F', color: '#fff', fontWeight: 700, fontSize: '0.8rem',
           textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer',
         }}
       >
@@ -43,12 +44,19 @@ const Loadable = (Component) => (props) => (
     <Component {...props} />
   </Suspense>
 );
+// Admin / Staff: a theme-aware fallback that sits inside the portal shell, so
+// switching pages never flashes the light storefront skeleton in dark mode.
+const LoadableOps = (Component, { standalone = false } = {}) => (props) => (
+  <Suspense fallback={<OpsPageSkeleton standalone={standalone} />}>
+    <Component {...props} />
+  </Suspense>
+);
 
 // Layouts
 import CustomerLayout from './layouts/CustomerLayout';
 // Staff/admin shells are lazy so storefront visitors never download them.
-const StaffLayout = Loadable(lazy(() => import('./layouts/StaffLayout')));
-const AdminLayout = Loadable(lazy(() => import('./layouts/AdminLayout')));
+const StaffLayout = LoadableOps(lazy(() => import('./layouts/StaffLayout')), { standalone: true });
+const AdminLayout = LoadableOps(lazy(() => import('./layouts/AdminLayout')), { standalone: true });
 
 // Pages
 const Login = Loadable(lazy(() => import('./pages/Login')));
@@ -67,34 +75,42 @@ const ProductDetails = Loadable(lazy(() => import('./pages/customer/ProductDetai
 const Wishlist = Loadable(lazy(() => import('./pages/customer/Wishlist')));
 const MyAddresses = Loadable(lazy(() => import('./pages/customer/MyAddresses')));
 const Policy = Loadable(lazy(() => import('./pages/customer/Policy')));
+const About = Loadable(lazy(() => import('./pages/customer/About')));
+const WhyChooseUs = Loadable(lazy(() => import('./pages/customer/WhyChooseUs')));
 const LocationChennai = Loadable(lazy(() => import('./pages/customer/LocationChennai')));
+const Hampers = Loadable(lazy(() => import('./pages/customer/Hampers')));
+const Blog = Loadable(lazy(() => import('./pages/customer/Blog')));
+const BlogPost = Loadable(lazy(() => import('./pages/customer/BlogPost')));
 
 // Staff Pages
-const StaffDashboard = Loadable(lazy(() => import('./pages/staff/Dashboard')));
-const StaffOrders = Loadable(lazy(() => import('./pages/staff/Orders')));
-const StaffInventory = Loadable(lazy(() => import('./pages/staff/Inventory')));
-const StaffChats = Loadable(lazy(() => import('./pages/staff/Chats')));
+const StaffDashboard = LoadableOps(lazy(() => import('./pages/staff/Dashboard')));
+const StaffOrders = LoadableOps(lazy(() => import('./pages/staff/Orders')));
+const StaffInventory = LoadableOps(lazy(() => import('./pages/staff/Inventory')));
+const StaffChats = LoadableOps(lazy(() => import('./pages/staff/Chats')));
 
 // Admin Pages
-const AdminDashboard = Loadable(lazy(() => import('./pages/admin/Dashboard')));
-const AdminProducts = Loadable(lazy(() => import('./pages/admin/Products')));
-const AdminSuperGrains = Loadable(lazy(() => import('./pages/admin/SuperGrains')));
-const AdminOrders = Loadable(lazy(() => import('./pages/admin/Orders')));
-const AdminUsers = Loadable(lazy(() => import('./pages/admin/Users')));
-const AdminAnalytics = Loadable(lazy(() => import('./pages/admin/Analytics')));
-const AdminReviews = Loadable(lazy(() => import('./pages/admin/Reviews')));
-const AdminChats = Loadable(lazy(() => import('./pages/admin/Chats')));
-const AdminHeroSlides = Loadable(lazy(() => import('./pages/admin/HeroSlides')));
-const AdminCookiesAnalytics = Loadable(lazy(() => import('./pages/admin/CookiesAnalytics')));
-const AdminCouponCodes = Loadable(lazy(() => import('./pages/admin/CouponCodes')));
-const AdminPincodeDelivery = Loadable(lazy(() => import('./pages/admin/PincodeDelivery')));
-const AdminShippingBoxes = Loadable(lazy(() => import('./pages/admin/ShippingBoxes')));
-const AdminAppearance = Loadable(lazy(() => import('./pages/admin/Appearance')));
-const AdminCategories = Loadable(lazy(() => import('./pages/admin/Categories')));
-const AdminCatalogue = Loadable(lazy(() => import('./pages/admin/Catalogue')));
-const AdminLeads = Loadable(lazy(() => import('./pages/admin/Leads')));
-const AdminSubscribers = Loadable(lazy(() => import('./pages/admin/Subscribers')));
-const AdminSocialLinks = Loadable(lazy(() => import('./pages/admin/SocialLinks')));
+const AdminDashboard = LoadableOps(lazy(() => import('./pages/admin/Dashboard')));
+const AdminProducts = LoadableOps(lazy(() => import('./pages/admin/Products')));
+const AdminSuperGrains = LoadableOps(lazy(() => import('./pages/admin/SuperGrains')));
+const BlogPostsManager = LoadableOps(lazy(() => import('./pages/admin/BlogPosts')));
+const AdminHampers = LoadableOps(lazy(() => import('./pages/admin/Hampers')));
+const AdminAboutPage = LoadableOps(lazy(() => import('./pages/admin/AboutPage')));
+const AdminOrders = LoadableOps(lazy(() => import('./pages/admin/Orders')));
+const AdminUsers = LoadableOps(lazy(() => import('./pages/admin/Users')));
+const AdminAnalytics = LoadableOps(lazy(() => import('./pages/admin/Analytics')));
+const AdminReviews = LoadableOps(lazy(() => import('./pages/admin/Reviews')));
+const AdminChats = LoadableOps(lazy(() => import('./pages/admin/Chats')));
+const AdminHeroSlides = LoadableOps(lazy(() => import('./pages/admin/HeroSlides')));
+const AdminCookiesAnalytics = LoadableOps(lazy(() => import('./pages/admin/CookiesAnalytics')));
+const AdminCouponCodes = LoadableOps(lazy(() => import('./pages/admin/CouponCodes')));
+const AdminPincodeDelivery = LoadableOps(lazy(() => import('./pages/admin/PincodeDelivery')));
+const AdminShippingBoxes = LoadableOps(lazy(() => import('./pages/admin/ShippingBoxes')));
+const AdminAppearance = LoadableOps(lazy(() => import('./pages/admin/Appearance')));
+const AdminCategories = LoadableOps(lazy(() => import('./pages/admin/Categories')));
+const AdminCatalogue = LoadableOps(lazy(() => import('./pages/admin/Catalogue')));
+const AdminLeads = LoadableOps(lazy(() => import('./pages/admin/Leads')));
+const AdminSubscribers = LoadableOps(lazy(() => import('./pages/admin/Subscribers')));
+const AdminSocialLinks = LoadableOps(lazy(() => import('./pages/admin/SocialLinks')));
 
 export const router = createBrowserRouter([
   { path: '*', element: <NotFound />, errorElement: <RouteError /> },
@@ -126,6 +142,12 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <CustomerHome /> },
       { path: "shop", element: <Shop /> },
+      { path: "about", element: <About /> },
+      { path: "our-story", element: <Navigate to="/about#story" replace /> },
+      { path: "why-choose-us", element: <WhyChooseUs /> },
+      { path: "hampers", element: <Hampers /> },
+      { path: "blog", element: <Blog /> },
+      { path: "blog/:slug", element: <BlogPost /> },
       { path: "cart", element: <Cart /> },
       { path: "checkout", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><Checkout /></ProtectedRoute> },
       { path: "orders", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><OrderTracking /></ProtectedRoute> },
@@ -151,6 +173,7 @@ export const router = createBrowserRouter([
       { path: "orders", element: <StaffOrders /> },
       { path: "inventory", element: <StaffInventory /> },
       { path: "chats", element: <StaffChats /> },
+      { path: "blog", element: <BlogPostsManager /> },
     ],
   },
   // Admin Routes
@@ -166,6 +189,9 @@ export const router = createBrowserRouter([
       { path: "leads", element: <AdminLeads /> },
       { path: "subscribers", element: <AdminSubscribers /> },
       { path: "super-grains", element: <AdminSuperGrains /> },
+      { path: "hampers", element: <AdminHampers /> },
+      { path: "about-page", element: <AdminAboutPage /> },
+      { path: "blog", element: <BlogPostsManager /> },
       { path: "orders", element: <AdminOrders /> },
       { path: "users", element: <AdminUsers /> },
       { path: "analytics", element: <AdminAnalytics /> },

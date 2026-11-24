@@ -7,23 +7,36 @@
    Tokens mirror tailwind.config.js so raw CSS can use them too.
    ═══════════════════════════════════════════════════════════ */
 :root {
-  --paper: #FFFFFF;
-  --cream: #FBF7EF;
-  --cream-deep: #F4EBDA;
+  --paper: #FFFDF9;
+  --cream: #F7F0E3;
+  --sandal: #E6D3B3;
+  --sandal-deep: #CDB48A;
+  --night: #2B0B33;
+  --mulberry: #7C276E;
+  --mulberry-deep: #5F1C54;
+  --pink: #D4148F;
+  --violet: #6A1A8A;
+  --brand-gradient: linear-gradient(100deg, var(--pink) 0%, var(--berry) 45%, var(--violet) 100%);
+  --night-soft: #3A1042;
+  --cream-deep: #EBDDC3;
 
-  --berry: #A50D5A;
-  --berry-bright: #C21A75;
-  --berry-deep: #79083F;
-  --berry-tint: #FBEDF4;
+  --berry: #B0128F;
+  --berry-bright: #D4148F;
+  --berry-deep: #6A1A8A;
+  --berry-tint: #FBE9F5;
 
-  --gold: #B27B26;
-  --gold-light: #D7A94E;
-  --gold-tint: #F9F1E1;
+  --gold: #C7801A;
+  --gold-light: #F8A830;
+  --gold-tint: #FEF3E0;
 
-  --ink: #221B1F;
-  --ink-soft: #5A4F55;
-  --ink-muted: #8E848B;
-  --hairline: #EEE6D6;
+  --plum: #7A1E96;
+  --plum-deep: #3A0A40;
+  --cocoa: #5C3410;
+
+  --ink: #1F1726;
+  --ink-soft: #574D60;
+  --ink-muted: #8A8193;
+  --hairline: #E6D8BF;
   --leaf: #2E7D51;
 
   --glass: rgba(255, 255, 255, .56);
@@ -31,10 +44,10 @@
   --glass-border: rgba(255, 255, 255, .70);
   --glass-blur: blur(22px) saturate(180%);
 
-  --shadow-glass: 0 22px 54px -24px rgba(120, 10, 64, .22), 0 4px 14px -6px rgba(34, 27, 31, .10), inset 0 1px 0 rgba(255, 255, 255, .75);
-  --shadow-glass-sm: 0 14px 34px -18px rgba(120, 10, 64, .20), inset 0 1px 0 rgba(255, 255, 255, .7);
-  --shadow-glass-lift: 0 34px 62px -26px rgba(120, 10, 64, .34), inset 0 1px 0 rgba(255, 255, 255, .8);
-  --shadow-berry: 0 16px 32px -14px rgba(165, 13, 90, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
+  --shadow-glass: 0 22px 54px -24px rgba(106,26,138, .22), 0 4px 14px -6px rgba(31,23,38, .10), inset 0 1px 0 rgba(255, 255, 255, .75);
+  --shadow-glass-sm: 0 14px 34px -18px rgba(106,26,138, .20), inset 0 1px 0 rgba(255, 255, 255, .7);
+  --shadow-glass-lift: 0 34px 62px -26px rgba(106,26,138, .34), inset 0 1px 0 rgba(255, 255, 255, .8);
+  --shadow-berry: 0 16px 32px -14px rgba(176,18,143, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
 
   --foil: linear-gradient(90deg, transparent, var(--gold-light) 22%, var(--berry) 50%, var(--gold-light) 78%, transparent);
 }
@@ -76,7 +89,7 @@
   .glass-hover:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-glass-lift);
-    border-color: rgba(165, 13, 90, .28);
+    border-color: rgba(176,18,143, .28);
   }
 
   /* ── Ambient colour field behind glass ──────────────────── */
@@ -104,7 +117,8 @@
     letter-spacing: .18em; text-transform: uppercase;
   }
   .accent-text {
-    background: linear-gradient(100deg, var(--berry), var(--gold-light));
+    /* logo wordmark: pink → violet */
+    background: var(--brand-gradient);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .rule-berry {
@@ -112,13 +126,141 @@
     background: linear-gradient(90deg, var(--berry), var(--gold-light));
   }
 
+  /* ── Seed-style editorial primitives (see designs.md) ───── */
+  /* "● Label" eyebrow — plain text + brand dot, no pill box */
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: .55rem;
+    font-family: 'Outfit', sans-serif; font-weight: 600; font-size: .72rem;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .eyebrow::before {
+    content: ""; width: .5rem; height: .5rem; border-radius: 9999px; flex: none;
+    background: var(--brand-gradient);
+  }
+  .eyebrow-gold::before { background: var(--gold-light); }
+  .eyebrow-light { color: rgba(255,255,255,.92); }
+  .eyebrow-light::before { background: var(--gold-light); }
+
+  /* Large, light, tightly tracked headline — Seed's signature voice (weight ~350) */
+  .headline {
+    font-family: 'Outfit', sans-serif; font-weight: 400;
+    letter-spacing: -.035em; line-height: 1.06; color: var(--ink);
+    text-wrap: balance;
+  }
+  .headline em { font-style: normal; color: var(--berry); }
+  .headline-on-dark { color: #FFFDF9; }
+  .headline-on-dark em {
+    background: linear-gradient(100deg, #FF8FD0 0%, #F06BC0 40%, #C9A0FF 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .text-brand-gradient { background: var(--brand-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Pill buttons — Seed: 52px, fully rounded, regular weight, flat (no glow) */
+  .btn-pill {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 3.25rem; padding: 0 1.6rem; border-radius: 9999px;
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 1rem; letter-spacing: -.005em;
+    background: var(--mulberry); color: #FFFDF9;
+    transition: background-color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-pill:hover { background: var(--mulberry-deep); }
+  .btn-pill:active { transform: scale(.97); }
+  .btn-pill-sm { height: 2.4rem; padding: 0 1.1rem; font-size: .875rem; }
+  /* Logo gradient button (pink → violet) — Add to cart & primary product actions.
+     The gradient is drawn wider than the button and glides on hover. */
+  .btn-brand {
+    background-color: var(--mulberry);
+    color: #FFFFFF;
+    box-shadow: 0 10px 22px -16px rgba(95, 28, 84, 0.7);
+    transition: background-color .25s ease, box-shadow .3s ease, transform .2s ease;
+  }
+  .btn-brand:hover { background-color: var(--mulberry-deep); box-shadow: 0 14px 26px -16px rgba(95, 28, 84, 0.8); }
+  .btn-brand:active { transform: scale(.985); }
+  .btn-brand:focus-visible { outline: 2px solid var(--mulberry); outline-offset: 2px; }
+
+  /* Light pill — for dark brand fields (Seed's cream "Take the Quiz") */
+  .btn-light {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 3.25rem; padding: 0 1.6rem; border-radius: 9999px;
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 1rem;
+    background: #FFFDF9; color: var(--night);
+    transition: background-color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-light:hover { background: var(--mulberry); color: #FFFDF9; }
+  .btn-light:active { transform: scale(.97); }
+  /* Gold pill — promos / highlights */
+  .btn-gold {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 3.25rem; padding: 0 1.6rem; border-radius: 9999px;
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 1rem;
+    background: var(--gold-light); color: var(--night);
+    transition: background-color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-gold:hover { background: #FFFDF9; }
+  .btn-outline {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 3.25rem; padding: 0 1.6rem; border-radius: 9999px;
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: 1rem;
+    background: transparent; color: var(--ink); border: 1px solid rgba(31,23,38,.22);
+    transition: border-color .25s ease, color .25s ease, background-color .25s ease;
+  }
+  .btn-outline:hover { border-color: var(--berry); color: var(--berry); background: rgba(176,18,143,.05); }
+
+  /* Small promo badge above hero headline (Seed's lime pill → gold) */
+  .badge-gold {
+    display: inline-flex; align-items: center; gap: .4rem; height: 1.75rem; padding: 0 .8rem;
+    border-radius: 9999px; background: var(--gold-light); color: var(--night);
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: .8rem;
+  }
+  /* Outlined product "code" chip (Seed's DS-01® chip) */
+  .chip-code {
+    display: inline-flex; align-items: center; height: 1.4rem; padding: 0 .6rem;
+    border-radius: 9999px; border: 1px solid currentColor;
+    font-family: 'Outfit', sans-serif; font-weight: 500; font-size: .7rem; letter-spacing: .02em;
+  }
+  /* Liquid glass — Seed's frosted panel: a clear, neutral pane. No colour tint;
+     the photo behind supplies the colour through heavy blur + saturation.
+     A light smoky base keeps white text readable; inner top highlight and a
+     hairline rim give the glassy edge. */
+  .liquid-glass {
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 45%, rgba(20, 16, 24, 0.22) 100%),
+      rgba(20, 16, 24, 0.18);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+      inset 0 -40px 80px -50px rgba(0, 0, 0, 0.35),
+      0 40px 90px -40px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+  }
+  /* Browsers without backdrop-filter: a neutral smoky fallback so text stays legible */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .liquid-glass { background: rgba(28, 24, 30, 0.82); }
+  }
+
+  /* Sandal product plate — Seed's soft tinted product stage */
+  .plate-sandal { background: radial-gradient(120% 90% at 50% 20%, #FBF5EA 0%, #EFE2CA 100%); }
+
+  /* Underlined text link with arrow — "Shop now →" */
+  .link-arrow {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-family: 'Outfit', sans-serif; font-weight: 600; font-size: .9rem; color: var(--ink);
+    border-bottom: 1px solid currentColor; padding-bottom: 2px;
+    transition: color .2s ease, gap .25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-arrow:hover { color: var(--berry); gap: .65rem; }
+  .link-arrow-light { color: #FFFDF9; }
+  .link-arrow-light:hover { color: var(--gold-light); }
+
   /* ── Controls ───────────────────────────────────────────── */
   .btn-berry {
-    background: linear-gradient(120deg, var(--berry), var(--berry-bright));
-    color: #fff; box-shadow: var(--shadow-berry);
-    transition: filter .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .25s ease;
+    background: var(--mulberry);
+    color: #fff;
+    transition: background-color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-berry:hover { filter: brightness(1.07); transform: translateY(-2px); }
+  .btn-berry:hover { background: var(--mulberry-deep); }
   .btn-berry:active { transform: translateY(0); }
 
   .btn-glass {
@@ -128,7 +270,7 @@
     color: var(--ink);
     transition: border-color .25s ease, color .25s ease, transform .25s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .btn-glass:hover { border-color: rgba(165, 13, 90, .45); color: var(--berry); transform: translateY(-2px); }
+  .btn-glass:hover { border-color: rgba(176,18,143, .45); color: var(--berry); transform: translateY(-2px); }
 
   .pill-glass {
     background: var(--glass-strong);
@@ -136,8 +278,8 @@
     border: 1px solid var(--glass-border); color: var(--ink-soft);
   }
   .pill-berry-soft {
-    background: rgba(165, 13, 90, .10); color: var(--berry-deep);
-    border: 1px solid rgba(165, 13, 90, .16);
+    background: rgba(176,18,143, .10); color: var(--berry-deep);
+    border: 1px solid rgba(176,18,143, .16);
   }
   .pill-leaf {
     background: rgba(46, 125, 81, .13); color: var(--leaf);
@@ -156,12 +298,12 @@
   .ico-chip-gold { color: var(--gold); }
 
   /* Tinted product-image plate that stands in for photography */
-  .plate-berry { background: linear-gradient(160deg, rgba(251, 237, 244, .75), rgba(249, 241, 225, .5)); }
+  .plate-berry { background: linear-gradient(160deg, rgba(251,233,245, .75), rgba(249, 241, 225, .5)); }
   .plate-gold  { background: linear-gradient(160deg, rgba(249, 241, 225, .75), rgba(255, 255, 255, .4)); }
 
   /* Loading skeleton */
   .skeleton {
-    background: linear-gradient(90deg, rgba(34,27,31,.055), rgba(34,27,31,.10), rgba(34,27,31,.055));
+    background: linear-gradient(90deg, rgba(31,23,38,.055), rgba(31,23,38,.10), rgba(31,23,38,.055));
     background-size: 200% 100%;
     animation: shimmer 1.8s linear infinite;
   }
@@ -189,6 +331,16 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes beeWing {
+  from { transform: rotate(-6deg) scaleY(1); }
+  to   { transform: rotate(8deg) scaleY(0.82); }
+}
+
+@keyframes soundbar {
+  0%, 100% { transform: scaleY(.35); }
+  50% { transform: scaleY(1); }
 }
 
 @keyframes marquee {
@@ -321,7 +473,7 @@ p, li, h1, h2, h3, h4, a, span {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #FDFBF7;
+  background: #FAF5EA;
 }
 ::-webkit-scrollbar-thumb {
   background: #E5E7EB;
@@ -368,7 +520,7 @@ html.dark .dark-theme {
 }
 
 .dark-theme aside nav a:hover svg {
-  color: #F472B6 !important;
+  color: #E58FC8 !important;
 }
 
 .dark-theme .lg\:hidden.fixed {
@@ -384,7 +536,7 @@ html.dark .dark-theme {
 }
 
 .dark-theme .bg-\[\#FAFAFA\],
-.dark-theme .bg-\[\#FDFBF7\] {
+.dark-theme .bg-\[\#FAF5EA\] {
   background-color: #0F0913 !important;
 }
 
@@ -740,4 +892,98 @@ html.dark .sidebar-logout-btn,
 /* Dashed borders in dark */
 .dark-theme .border-dashed {
   border-color: rgba(255, 255, 255, 0.15) !important;
+}
+/* ══════════════════════════════════════════════════════════════════════
+   Ops theme — Admin & Staff portals in the storefront's editorial voice.
+   The portal pages are written with Tailwind's neutral gray palette; this
+   layer (light mode only — dark mode keeps the .dark-theme rules above)
+   remaps those utilities onto the landing page tokens: cream field, ink
+   text, sandal hairlines, mulberry buttons, Outfit headlines, no italics.
+   Scoped to .ops-theme (set on AdminLayout / StaffLayout roots).
+   ══════════════════════════════════════════════════════════════════════ */
+.ops-theme:not(.dark-theme) { background-color: var(--cream); color: var(--ink); }
+
+/* Type — Seed headline voice; drop the shouty italics */
+.ops-theme:not(.dark-theme) main h1 {
+  font-family: 'Outfit', sans-serif; font-weight: 400; font-style: normal;
+  letter-spacing: -.035em; line-height: 1.06; color: var(--ink);
+}
+.ops-theme:not(.dark-theme) main h2,
+.ops-theme:not(.dark-theme) main h3 { font-family: 'Outfit', sans-serif; letter-spacing: -.01em; }
+.ops-theme:not(.dark-theme) .italic { font-style: normal; }
+.ops-theme:not(.dark-theme) .font-black { font-weight: 700; }
+
+/* Text */
+.ops-theme:not(.dark-theme) .text-gray-900,
+.ops-theme:not(.dark-theme) .text-gray-800 { color: var(--ink); }
+.ops-theme:not(.dark-theme) .text-gray-700,
+.ops-theme:not(.dark-theme) .text-gray-600,
+.ops-theme:not(.dark-theme) .text-gray-500 { color: var(--ink-soft); }
+.ops-theme:not(.dark-theme) .text-gray-400,
+.ops-theme:not(.dark-theme) .text-gray-300 { color: var(--ink-muted); }
+.ops-theme:not(.dark-theme) .hover\:text-black:hover,
+.ops-theme:not(.dark-theme) .hover\:text-gray-900:hover { color: var(--ink); }
+
+/* Surfaces */
+.ops-theme:not(.dark-theme) .bg-\[\#FAFAFA\] { background-color: var(--cream); }
+.ops-theme:not(.dark-theme) .bg-gray-50,
+.ops-theme:not(.dark-theme) .bg-gray-50\/50,
+.ops-theme:not(.dark-theme) .bg-gray-50\/70 { background-color: #FBF7EF; }
+.ops-theme:not(.dark-theme) .bg-gray-100 { background-color: #F3EBDC; }
+.ops-theme:not(.dark-theme) .hover\:bg-gray-50:hover,
+.ops-theme:not(.dark-theme) .hover\:bg-gray-50\/50:hover { background-color: #FBF7EF; }
+.ops-theme:not(.dark-theme) .hover\:bg-gray-100:hover { background-color: #F3EBDC; }
+
+/* Hairlines — the product card's sandal border */
+.ops-theme:not(.dark-theme) .border-gray-50,
+.ops-theme:not(.dark-theme) .border-gray-100,
+.ops-theme:not(.dark-theme) .border-gray-200,
+.ops-theme:not(.dark-theme) .border-gray-200\/50,
+.ops-theme:not(.dark-theme) .border-gray-200\/60,
+.ops-theme:not(.dark-theme) .divide-gray-50 > * + *,
+.ops-theme:not(.dark-theme) .divide-gray-100 > * + * { border-color: #ECE6DA; }
+.ops-theme:not(.dark-theme) .shadow-sm { box-shadow: 0 1px 2px rgba(43, 11, 51, 0.04); }
+
+/* Cards & controls — landing radii (22px cards, 14px controls) */
+.ops-theme:not(.dark-theme) main .rounded-2xl,
+.ops-theme:not(.dark-theme) main .rounded-3xl,
+.ops-theme:not(.dark-theme) main .rounded-\[2rem\],
+.ops-theme:not(.dark-theme) main .rounded-\[2\.5rem\] { border-radius: 22px; }
+.ops-theme:not(.dark-theme) main .rounded-xl { border-radius: 14px; }
+
+/* Primary buttons — flat mulberry like the landing CTAs */
+.ops-theme:not(.dark-theme) .bg-black,
+.ops-theme:not(.dark-theme) .bg-\[\#1F1726\],
+.ops-theme:not(.dark-theme) .bg-gray-900 { background-color: var(--mulberry); }
+.ops-theme:not(.dark-theme) .hover\:bg-black:hover,
+.ops-theme:not(.dark-theme) .hover\:bg-zinc-800:hover,
+.ops-theme:not(.dark-theme) .hover\:bg-gray-800:hover { background-color: var(--mulberry-deep); }
+.ops-theme:not(.dark-theme) .bg-\[\#B0128F\],
+.ops-theme:not(.dark-theme) .bg-\[\#920075\] { background-color: var(--mulberry); }
+.ops-theme:not(.dark-theme) .from-\[\#B0128F\].to-\[\#E83D6E\] { background-image: none; background-color: var(--mulberry); }
+
+/* Fields */
+.ops-theme:not(.dark-theme) main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):focus,
+.ops-theme:not(.dark-theme) main select:focus,
+.ops-theme:not(.dark-theme) main textarea:focus { border-color: rgba(176, 18, 143, 0.45); }
+
+/* Ops shell in dark mode — active nav pill and sidebar hairlines */
+.dark-theme .ops-nav-pill { background-color: rgba(212, 20, 143, 0.22) !important; }
+.dark-theme aside nav a.ops-nav-active span,
+.dark-theme aside nav a.ops-nav-active svg { color: #F7B6E0 !important; }
+.dark-theme aside .border-\[\#ECE6DA\] { border-color: rgba(255, 255, 255, 0.1) !important; }
+.dark-theme aside .text-ink,
+.dark-theme aside .text-ink-soft { color: #E5E7EB; }
+.dark-theme .border-\[\#ECE6DA\].bg-white { border-color: rgba(255, 255, 255, 0.1) !important; }
+
+/* Dark admin: loading shimmers and glass skeleton cards follow the theme */
+.dark-theme .skeleton,
+html.dark .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,.05), rgba(255,255,255,.10), rgba(255,255,255,.05));
+  background-size: 200% 100%;
+}
+.dark-theme .glass,
+html.dark .ops-theme .glass {
+  background: rgba(36, 22, 46, .6);
+  border-color: rgba(255, 255, 255, .08);
 }

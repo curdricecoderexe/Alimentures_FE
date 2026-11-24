@@ -65,7 +65,7 @@ export default function NotificationCenter() {
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-gray-900 tracking-tight text-sm sm:text-base">Notifications</h3>
                   {unreadCount > 0 && (
-                    <span className="text-[10px] font-bold text-[#E83D6E] bg-pink-50 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-[#E83D6E] bg-violet-50 px-2 py-0.5 rounded-full">
                       {unreadCount} New
                     </span>
                   )}

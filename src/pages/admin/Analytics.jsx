@@ -138,12 +138,12 @@ export default function AdminAnalytics() {
       initial="hidden"
       animate="visible"
       id="analytics-report"
-      className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen space-y-6 sm:space-y-10 max-w-full overflow-hidden"
+      className="bg-transparent min-h-screen space-y-6 sm:space-y-10 max-w-full overflow-hidden"
     >
       {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <motion.div variants={itemVariants}>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Insights.</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Insights</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Real-time performance and growth metrics</p>
         </motion.div>
         <Button 
@@ -192,8 +192,8 @@ export default function AdminAnalytics() {
               <AreaChart data={stats.revenueGrowth} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C41E6B" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#C41E6B" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#B0128F" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#B0128F" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0F0F0" />
@@ -201,7 +201,7 @@ export default function AdminAnalytics() {
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontWeight: 'bold', fontSize: 10}} width={40} tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val} />
                 <Tooltip contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }} />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '8px', fontSize: '12px' }} />
-                <Area type="monotone" dataKey="revenue" stroke="#C41E6B" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue (₹)" />
+                <Area type="monotone" dataKey="revenue" stroke="#B0128F" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue (₹)" />
                 <Area type="monotone" dataKey="orders" stroke="#FFA500" strokeWidth={3} fillOpacity={0.1} fill="#FFA500" name="Orders" />
               </AreaChart>
             </ResponsiveContainer>
@@ -219,7 +219,7 @@ export default function AdminAnalytics() {
                   <XAxis type="number" hide />
                   <YAxis dataKey="category" type="category" axisLine={false} tickLine={false} tick={{fontWeight: 'bold', fontSize: 11, fill: '#4B5563'}} width={75} />
                   <Tooltip cursor={{fill: '#F9FAFB'}} contentStyle={{borderRadius: '15px'}} />
-                  <Bar dataKey="sales" fill="#C41E6B" radius={[0, 8, 8, 0]} barSize={18} />
+                  <Bar dataKey="sales" fill="#B0128F" radius={[0, 8, 8, 0]} barSize={18} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -237,7 +237,7 @@ export default function AdminAnalytics() {
                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontWeight: 'bold', fontSize: 10}} width={35} />
                   <Tooltip contentStyle={{borderRadius: '15px'}} />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: '8px', fontSize: '12px' }} />
-                  <Line type="monotone" dataKey="new" stroke="#C41E6B" strokeWidth={3} dot={{r: 4, fill: '#C41E6B', strokeWidth: 1.5, stroke: '#fff'}} activeDot={{r: 6}} name="New Leads" />
+                  <Line type="monotone" dataKey="new" stroke="#B0128F" strokeWidth={3} dot={{r: 4, fill: '#B0128F', strokeWidth: 1.5, stroke: '#fff'}} activeDot={{r: 6}} name="New Leads" />
                   <Line type="monotone" dataKey="returning" stroke="#FFA500" strokeWidth={3} dot={{r: 4, fill: '#FFA500', strokeWidth: 1.5, stroke: '#fff'}} activeDot={{r: 6}} name="Repeat Users" />
                 </LineChart>
               </ResponsiveContainer>

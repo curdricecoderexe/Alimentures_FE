@@ -256,7 +256,7 @@ export default function ChatWidget() {
           onClick={() => setIsOpen(!isOpen)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-berry text-white shadow-[0_8px_24px_rgba(190,18,60,0.35)] hover:shadow-[0_12px_32px_rgba(190,18,60,0.45)] flex items-center justify-center cursor-pointer transition-all duration-300 relative outline-none"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-mulberry text-white shadow-[0_8px_24px_rgba(190,18,60,0.35)] hover:shadow-[0_12px_32px_rgba(190,18,60,0.45)] flex items-center justify-center cursor-pointer transition-all duration-300 relative outline-none"
           aria-label="Toggle support chat"
         >
           <AnimatePresence mode="wait">
@@ -289,7 +289,7 @@ export default function ChatWidget() {
             className="w-[calc(100vw-2rem)] sm:w-[380px] max-h-[calc(100vh-190px)] lg:max-h-[calc(100vh-110px)] bg-white rounded-[1.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-hairline flex flex-col overflow-hidden fixed bottom-[calc(11rem+env(safe-area-inset-bottom))] right-4 sm:right-6 lg:bottom-24 z-[9999]"
           >
             {/* — HEADER — */}
-            <div className="bg-[#221B1F] text-white px-4 py-3.5 flex items-center justify-between relative overflow-hidden shrink-0">
+            <div className="bg-[#1F1726] text-white px-4 py-3.5 flex items-center justify-between relative overflow-hidden shrink-0">
               <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-berry opacity-20 blur-3xl pointer-events-none" />
               <div className="flex items-center gap-3 relative z-10 min-w-0">
                 {inLive ? (
@@ -358,7 +358,7 @@ export default function ChatWidget() {
                       <div className="flex items-end gap-2">
                         {m.from === 'bot' && <BotAvatar className="w-7 h-7 shrink-0" title="" />}
                         <div className={`px-3.5 py-2.5 rounded-[1.1rem] text-[13px] leading-relaxed font-medium whitespace-pre-line ${
-                          m.from === 'user' ? 'bg-berry text-white rounded-br-sm' : 'bg-cream border border-hairline text-ink rounded-bl-sm'
+                          m.from === 'user' ? 'bg-mulberry text-white rounded-br-sm' : 'bg-cream border border-hairline text-ink rounded-bl-sm'
                         }`}>
                           {m.text}
                         </div>
@@ -403,7 +403,7 @@ export default function ChatWidget() {
                       {m.handoff && (
                         <button
                           onClick={goLive}
-                          className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#221B1F] text-white text-[10.5px] font-bold uppercase tracking-wider hover:bg-black transition-colors"
+                          className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#1F1726] text-white text-[10.5px] font-bold uppercase tracking-wider hover:bg-black transition-colors"
                         >
                           <Headphones className="w-3.5 h-3.5" /> Talk to a specialist
                         </button>
@@ -448,7 +448,7 @@ export default function ChatWidget() {
                   {myChats.map((c) => {
                     const meta = STATUS_META[c.status] || STATUS_META.pending;
                     return (
-                      <button key={c.id} onClick={() => resumeChat(c.id)} className="text-left p-3 rounded-2xl border border-hairline hover:border-rose-200 hover:bg-cream transition-all">
+                      <button key={c.id} onClick={() => resumeChat(c.id)} className="text-left p-3 rounded-2xl border border-hairline hover:border-violet-200 hover:bg-cream transition-all">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-bold text-ink truncate">{TYPE_LABEL[c.type] || 'General Query'}</span>
                           <span className="text-[10.5px] font-bold text-ink-muted shrink-0">{fmtDate(c.updatedAt || c.createdAt)}</span>
@@ -480,7 +480,7 @@ export default function ChatWidget() {
                     <div className="flex flex-col items-center gap-3 py-4 text-center">
                       <ShieldCheck className="w-8 h-8 text-berry" />
                       <p className="text-xs text-ink-soft font-medium leading-snug">Please sign in to chat with our support team.</p>
-                      <Button type="button" onClick={() => { window.location.href = '/login'; }} className="w-full h-11 rounded-full bg-berry hover:bg-berry-deep text-white font-bold text-xs uppercase tracking-wider">
+                      <Button type="button" onClick={() => { window.location.href = '/login'; }} className="w-full h-11 rounded-full bg-berry hover:bg-mulberry-deep text-white font-bold text-xs uppercase tracking-wider">
                         Sign In
                       </Button>
                     </div>
@@ -498,17 +498,17 @@ export default function ChatWidget() {
                               key={item.id}
                               type="button"
                               onClick={() => setType(item.id)}
-                              className={`px-3 h-10 rounded-xl text-left border transition-all flex items-center gap-2 ${isSelected ? 'bg-berry-tint border-rose-200' : 'bg-white border-hairline hover:bg-cream'}`}
+                              className={`px-3 h-10 rounded-xl text-left border transition-all flex items-center gap-2 ${isSelected ? 'bg-berry-tint border-violet-200' : 'bg-white border-hairline hover:bg-cream'}`}
                             >
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-berry text-white' : 'bg-cream-deep text-ink-muted'}`}>
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-mulberry text-white' : 'bg-cream-deep text-ink-muted'}`}>
                                 <IconComp className="w-3 h-3" />
                               </div>
-                              <span className={`font-bold text-[10px] leading-tight truncate ${isSelected ? 'text-rose-900' : 'text-ink-soft'}`}>{item.label}</span>
+                              <span className={`font-bold text-[10px] leading-tight truncate ${isSelected ? 'text-violet-900' : 'text-ink-soft'}`}>{item.label}</span>
                             </button>
                           );
                         })}
                       </div>
-                      <Button type="submit" disabled={loading} className="w-full h-12 rounded-full bg-berry hover:bg-berry-deep text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                      <Button type="submit" disabled={loading} className="w-full h-12 rounded-full bg-berry hover:bg-mulberry-deep text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2">
                         {loading ? <><RefreshCw className="w-4 h-4 animate-spin" /> Starting…</> : <>Start Support Session <ArrowRight className="w-4 h-4" /></>}
                       </Button>
                     </form>
@@ -539,7 +539,7 @@ export default function ChatWidget() {
                         <span className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-1 px-1">
                           {msg.senderName || (isUser ? 'You' : 'Support')}
                         </span>
-                        <div className={`px-4 py-3 rounded-[1.25rem] font-medium text-[13px] leading-relaxed shadow-sm ${isUser ? 'bg-berry text-white rounded-br-sm' : 'bg-cream-deep text-ink rounded-bl-sm'}`}>
+                        <div className={`px-4 py-3 rounded-[1.25rem] font-medium text-[13px] leading-relaxed shadow-sm ${isUser ? 'bg-mulberry text-white rounded-br-sm' : 'bg-cream-deep text-ink rounded-bl-sm'}`}>
                           {msg.text}
                         </div>
                       </motion.div>
@@ -561,7 +561,7 @@ export default function ChatWidget() {
                     maxLength={500}
                     className="flex-1 h-11 rounded-full bg-cream border border-hairline focus:bg-white focus:border-berry-tint focus:ring-4 focus:ring-berry-tint font-medium text-[13px] px-4"
                   />
-                  <Button type="submit" size="icon" disabled={botTyping} aria-label="Send" className="h-11 w-11 rounded-full bg-berry hover:bg-berry-deep text-white shrink-0">
+                  <Button type="submit" size="icon" disabled={botTyping} aria-label="Send" className="h-11 w-11 rounded-full bg-berry hover:bg-mulberry-deep text-white shrink-0">
                     <Send className="w-4 h-4 ml-0.5" />
                   </Button>
                 </form>
@@ -578,7 +578,7 @@ export default function ChatWidget() {
                     placeholder="Type your message…"
                     className="flex-1 h-11 rounded-full bg-cream border border-hairline focus:bg-white focus:border-berry-tint focus:ring-4 focus:ring-berry-tint font-medium text-[13px] px-4"
                   />
-                  <Button type="submit" size="icon" aria-label="Send" className="h-11 w-11 rounded-full bg-berry hover:bg-berry-deep text-white shrink-0">
+                  <Button type="submit" size="icon" aria-label="Send" className="h-11 w-11 rounded-full bg-berry hover:bg-mulberry-deep text-white shrink-0">
                     <Send className="w-4 h-4 ml-0.5" />
                   </Button>
                 </form>

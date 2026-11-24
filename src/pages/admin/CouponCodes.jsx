@@ -166,8 +166,8 @@ export default function CouponCodes() {
       <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <motion.div variants={fadeUp}>
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#C41E6B]/10 to-[#E83D6E]/10 border border-[#C41E6B]/15">
-              <Tag className="w-5 h-5 text-[#C41E6B]" />
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#B0128F]/10 to-[#E83D6E]/10 border border-[#B0128F]/15">
+              <Tag className="w-5 h-5 text-[#B0128F]" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Coupon Codes</h1>
           </div>
@@ -176,13 +176,13 @@ export default function CouponCodes() {
         <motion.div variants={fadeUp} className="flex items-center gap-3">
           <button
             onClick={fetchCoupons}
-            className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#C41E6B] hover:border-[#C41E6B]/30 transition-all shadow-sm"
+            className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#B0128F] hover:border-[#B0128F]/30 transition-all shadow-sm"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowForm(s => !s)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 hover:shadow-xl hover:shadow-[#C41E6B]/35 transition-all active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 hover:shadow-xl hover:shadow-[#B0128F]/35 transition-all active:scale-95"
           >
             {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {showForm ? 'Cancel' : 'New Coupon'}
@@ -193,7 +193,7 @@ export default function CouponCodes() {
       {/* Stats Row */}
       <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Total Coupons', value: coupons.length, icon: Tag, color: '#C41E6B' },
+          { label: 'Total Coupons', value: coupons.length, icon: Tag, color: '#B0128F' },
           { label: 'Active', value: activeCoupons, icon: Zap, color: '#10b981' },
           { label: 'Inactive', value: coupons.length - activeCoupons, icon: ToggleLeft, color: '#6b7280' },
           { label: 'Total Redeemed', value: totalUsage, icon: Users, color: '#D4AF37' },
@@ -225,8 +225,8 @@ export default function CouponCodes() {
           >
             <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-[#C41E6B]/10 to-[#E83D6E]/10">
-                  <TicketPercent className="w-4 h-4 text-[#C41E6B]" />
+                <div className="p-2 rounded-xl bg-gradient-to-br from-[#B0128F]/10 to-[#E83D6E]/10">
+                  <TicketPercent className="w-4 h-4 text-[#B0128F]" />
                 </div>
                 <h2 className="font-bold text-gray-900">Generate New Coupon</h2>
               </div>
@@ -247,7 +247,7 @@ export default function CouponCodes() {
                           onClick={() => setForm(f => ({ ...f, discountType: opt.value }))}
                           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm border-2 transition-all ${
                             form.discountType === opt.value
-                              ? 'border-[#C41E6B] bg-[#C41E6B]/5 text-[#C41E6B]'
+                              ? 'border-[#B0128F] bg-[#B0128F]/5 text-[#B0128F]'
                               : 'border-gray-100 text-gray-400 hover:border-gray-200 bg-white'
                           }`}
                         >
@@ -275,7 +275,7 @@ export default function CouponCodes() {
                       onChange={e => setForm(f => ({ ...f, discountValue: e.target.value }))}
                       placeholder={form.discountType === 'percentage' ? '10' : '100'}
                       required
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all"
                     />
                   </div>
                 </div>
@@ -291,7 +291,7 @@ export default function CouponCodes() {
                       value={form.minOrderValue}
                       onChange={e => setForm(f => ({ ...f, minOrderValue: e.target.value }))}
                       placeholder="0"
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all"
                     />
                   </div>
                 </div>
@@ -305,7 +305,7 @@ export default function CouponCodes() {
                     value={form.maxUsage}
                     onChange={e => setForm(f => ({ ...f, maxUsage: e.target.value }))}
                     placeholder="1"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -317,7 +317,7 @@ export default function CouponCodes() {
                     value={form.expiresAt}
                     onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -329,7 +329,7 @@ export default function CouponCodes() {
                     value={form.customCode}
                     onChange={e => setForm(f => ({ ...f, customCode: e.target.value.toUpperCase() }))}
                     placeholder="e.g. WELCOME20 (auto-generated if blank)"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all uppercase placeholder:normal-case placeholder:font-normal"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all uppercase placeholder:normal-case placeholder:font-normal"
                   />
                 </div>
 
@@ -342,7 +342,7 @@ export default function CouponCodes() {
                     onChange={e => setForm(f => ({ ...f, prefix: e.target.value.toUpperCase() }))}
                     placeholder="ALIM"
                     maxLength={6}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all uppercase"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all uppercase"
                   />
                 </div>
 
@@ -354,7 +354,7 @@ export default function CouponCodes() {
                     value={form.description}
                     onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                     placeholder="e.g. Welcome discount for new customers"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50/50 text-gray-900 font-bold text-sm focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export default function CouponCodes() {
                   <button
                     type="submit"
                     disabled={generating}
-                    className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 hover:shadow-xl hover:shadow-[#C41E6B]/35 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 hover:shadow-xl hover:shadow-[#B0128F]/35 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {generating ? (
                       <><RefreshCw className="w-4 h-4 animate-spin" /> Generating...</>
@@ -387,7 +387,7 @@ export default function CouponCodes() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search coupon codes or descriptions..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 bg-white text-sm text-gray-900 font-medium focus:outline-none focus:border-[#C41E6B]/40 transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 bg-white text-sm text-gray-900 font-medium focus:outline-none focus:border-[#B0128F]/40 transition-all shadow-sm"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -397,7 +397,7 @@ export default function CouponCodes() {
               onClick={() => setFilterStatus(status)}
               className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 filterStatus === status
-                  ? 'bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white shadow-md shadow-[#C41E6B]/20'
+                  ? 'bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white shadow-md shadow-[#B0128F]/20'
                   : 'bg-white border border-gray-100 text-gray-400 hover:border-gray-200'
               }`}
             >
@@ -440,12 +440,12 @@ export default function CouponCodes() {
                 key={coupon.id}
                 variants={fadeUp}
                 className={`relative bg-white rounded-3xl border shadow-sm hover:shadow-md transition-all overflow-hidden group ${
-                  !coupon.isActive || expired ? 'border-gray-100 opacity-70' : 'border-[#C41E6B]/10 hover:border-[#C41E6B]/20'
+                  !coupon.isActive || expired ? 'border-gray-100 opacity-70' : 'border-[#B0128F]/10 hover:border-[#B0128F]/20'
                 }`}
               >
                 {/* Top accent */}
                 {coupon.isActive && !expired && (
-                  <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-[#C41E6B] to-[#E83D6E]" />
+                  <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-[#B0128F] to-[#E83D6E]" />
                 )}
 
                 <div className="p-6">
@@ -456,7 +456,7 @@ export default function CouponCodes() {
                         <span className="font-mono font-bold text-lg text-gray-900 tracking-wider">{coupon.code}</span>
                         <button
                           onClick={() => handleCopy(coupon.code, coupon.id)}
-                          className="p-1 rounded-lg hover:bg-[#C41E6B]/5 text-gray-400 hover:text-[#C41E6B] transition-all"
+                          className="p-1 rounded-lg hover:bg-[#B0128F]/5 text-gray-400 hover:text-[#B0128F] transition-all"
                         >
                           {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
@@ -470,7 +470,7 @@ export default function CouponCodes() {
                           {expired ? 'Expired' : coupon.isActive ? 'Active' : 'Inactive'}
                         </span>
                         <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
-                          coupon.discountType === 'percentage' ? 'bg-[#C41E6B]/5 text-[#C41E6B]' : 'bg-amber-50 text-amber-600'
+                          coupon.discountType === 'percentage' ? 'bg-[#B0128F]/5 text-[#B0128F]' : 'bg-amber-50 text-amber-600'
                         }`}>
                           {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`}
                         </span>
@@ -481,7 +481,7 @@ export default function CouponCodes() {
                     <button
                       onClick={() => handleToggle(coupon.id)}
                       title={coupon.isActive ? 'Deactivate' : 'Activate'}
-                      className="mt-0.5 text-gray-400 hover:text-[#C41E6B] transition-all"
+                      className="mt-0.5 text-gray-400 hover:text-[#B0128F] transition-all"
                     >
                       {coupon.isActive
                         ? <ToggleRight className="w-7 h-7 text-emerald-500" />
@@ -527,7 +527,7 @@ export default function CouponCodes() {
                   <div className="mb-4">
                     <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
                       <div
-                        className={`h-full rounded-full transition-all duration-700 ${usagePct >= 100 ? 'bg-red-400' : usagePct >= 70 ? 'bg-amber-400' : 'bg-gradient-to-r from-[#C41E6B] to-[#E83D6E]'}`}
+                        className={`h-full rounded-full transition-all duration-700 ${usagePct >= 100 ? 'bg-red-400' : usagePct >= 70 ? 'bg-amber-400' : 'bg-gradient-to-r from-[#B0128F] to-[#E83D6E]'}`}
                         style={{ width: `${usagePct}%` }}
                       />
                     </div>

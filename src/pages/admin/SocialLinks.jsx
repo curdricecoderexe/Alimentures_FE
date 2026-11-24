@@ -79,7 +79,7 @@ export default function AdminSocialLinks() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-            <span className="w-11 h-11 rounded-2xl bg-pink-50 text-[#C41E6B] flex items-center justify-center"><Share2 className="w-5 h-5" /></span>
+            <span className="w-11 h-11 rounded-2xl bg-violet-50 text-[#B0128F] flex items-center justify-center"><Share2 className="w-5 h-5" /></span>
             Social Links
           </h1>
           <p className="text-sm text-gray-500 mt-2">Choose which social profiles appear in the website footer, their links and their order.</p>
@@ -94,7 +94,7 @@ export default function AdminSocialLinks() {
           <button
             onClick={save}
             disabled={saving || !dirty}
-            className="h-11 px-5 rounded-xl bg-[#C41E6B] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#A3155A] disabled:opacity-50 inline-flex items-center gap-2"
+            className="h-11 px-5 rounded-xl bg-[#B0128F] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#A3155A] disabled:opacity-50 inline-flex items-center gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save changes
           </button>
@@ -129,7 +129,7 @@ export default function AdminSocialLinks() {
                 <select
                   value={l.platform}
                   onChange={(e) => patch(i, { platform: e.target.value })}
-                  className="flex-1 h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-100"
+                  className="flex-1 h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-violet-100"
                   aria-label="Platform"
                 >
                   {SOCIAL_PLATFORM_IDS.map((p) => <option key={p} value={p}>{SOCIAL_PLATFORMS[p].label}</option>)}
@@ -142,7 +142,7 @@ export default function AdminSocialLinks() {
                   placeholder={meta?.placeholder}
                   maxLength={500}
                   aria-label="Profile link"
-                  className={`w-full h-10 rounded-xl border px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 ${bad ? 'border-red-300 focus:ring-red-100' : 'border-gray-200 focus:ring-pink-100'}`}
+                  className={`w-full h-10 rounded-xl border px-3 text-sm text-gray-800 focus:outline-none focus:ring-2 ${bad ? 'border-red-300 focus:ring-red-100' : 'border-gray-200 focus:ring-violet-100'}`}
                 />
                 {bad && <p className="text-[11px] text-red-500 mt-1">Enter a full link starting with https://</p>}
               </div>
@@ -165,7 +165,7 @@ export default function AdminSocialLinks() {
         })}
         {!loading && links.length < MAX_LINKS && (
           <div className="p-4 sm:p-5">
-            <button onClick={add} className="h-10 px-4 rounded-xl border border-dashed border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-wider hover:border-[#C41E6B] hover:text-[#C41E6B] inline-flex items-center gap-2">
+            <button onClick={add} className="h-10 px-4 rounded-xl border border-dashed border-gray-300 text-gray-600 text-xs font-bold uppercase tracking-wider hover:border-[#B0128F] hover:text-[#B0128F] inline-flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add social link
             </button>
           </div>

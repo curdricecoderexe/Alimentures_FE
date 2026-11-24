@@ -291,7 +291,7 @@ export default function AdminChats() {
   const previousOrders = customerOrders.filter((o) => !ONGOING_STATUSES.includes((o.status || '').toLowerCase()));
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Support Inbox</h1>
@@ -313,7 +313,7 @@ export default function AdminChats() {
           <CardContent className="p-0 overflow-y-auto flex-1 divide-y divide-gray-50 no-scrollbar">
             {loading ? (
               <div className="flex flex-col items-center justify-center h-40 space-y-3">
-                <div className="animate-spin h-5 w-5 border-2 border-rose-500 border-t-transparent rounded-full" />
+                <div className="animate-spin h-5 w-5 border-2 border-violet-500 border-t-transparent rounded-full" />
                 <p className="text-xs font-semibold text-gray-400">Loading inbox...</p>
               </div>
             ) : chats.length === 0 ? (
@@ -330,13 +330,13 @@ export default function AdminChats() {
                     onClick={() => viewChat(chat)} 
                     className={`p-4 cursor-pointer transition-all border-l-4 ${
                       isSelected 
-                        ? 'border-rose-500 bg-rose-50/30' 
+                        ? 'border-violet-500 bg-violet-50/30' 
                         : 'border-transparent hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex gap-3 items-start">
                       <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-xs font-bold shadow-sm border ${
-                        isSelected ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-gray-600 border-gray-200'
+                        isSelected ? 'bg-violet-100 text-violet-700 border-violet-200' : 'bg-white text-gray-600 border-gray-200'
                       }`}>
                         {initials(chat.guestName)}
                       </div>
@@ -378,7 +378,7 @@ export default function AdminChats() {
               {/* Thread Header */}
               <div className="p-5 border-b border-gray-100 bg-white flex justify-between items-center z-10 shadow-sm">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 shrink-0 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-700 text-xs font-bold">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-violet-100 border border-violet-200 flex items-center justify-center text-violet-700 text-xs font-bold">
                     {initials(selectedChat.guestName)}
                   </div>
                   <div className="min-w-0">
@@ -526,7 +526,7 @@ export default function AdminChats() {
           <div className="p-6 space-y-6 overflow-y-auto">
             {customerLoading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-300">
-                <div className="animate-spin h-5 w-5 border-2 border-rose-500 border-t-transparent rounded-full" />
+                <div className="animate-spin h-5 w-5 border-2 border-violet-500 border-t-transparent rounded-full" />
                 <p className="text-xs font-bold text-gray-400">Loading customer context...</p>
               </div>
             ) : (

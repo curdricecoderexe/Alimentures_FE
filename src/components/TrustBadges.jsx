@@ -5,7 +5,7 @@ import { cachedFetch, API_BASE } from '../lib/api';
 
 /* Partner logos live in /public. Each sits on a same-size white tile. */
 const Tile = ({ src, alt, logoClass = 'h-5' }) => (
-  <span className="h-10 w-[104px] shrink-0 rounded-lg bg-white flex items-center justify-center px-3">
+  <span className="h-10 w-[104px] shrink-0 rounded-lg bg-white/95 flex items-center justify-center px-3">
     <img src={src} alt={alt} className={`${logoClass} w-auto max-w-full object-contain select-none`} loading="lazy" decoding="async" draggable="false" />
   </span>
 );
@@ -17,7 +17,7 @@ const Item = ({ children, className = '' }) => (
 const Caption = ({ label, value }) => (
   <span className="leading-tight">
     <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">{label}</span>
-    <span className="block text-[12.5px] font-semibold text-white/90">{value}</span>
+    <span className="block text-[12.5px] font-medium text-white/75">{value}</span>
   </span>
 );
 
@@ -42,10 +42,10 @@ export default function TrustBadges() {
   return (
     <section
       aria-label="Trusted and certified"
-      className="mb-8 py-5 border-y border-white/15 flex flex-col lg:flex-row items-center gap-4 lg:gap-10"
+      className="mb-0 py-5 border-y border-white/[0.08] flex flex-col lg:flex-row items-center gap-4 lg:gap-10"
     >
-      <p className="shrink-0 text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-[#D7A94E]">
-        Trusted &amp; Certified
+      <p className="shrink-0 text-[12px] font-semibold text-white/50">
+        Trusted &amp; certified
       </p>
 
       <div className="flex-1 w-full flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-center lg:justify-between gap-4 sm:gap-x-8 max-w-xs sm:max-w-none mx-auto lg:mx-0">
@@ -57,19 +57,19 @@ export default function TrustBadges() {
         <div className="flex items-center gap-3 text-left">
           <Tile src="/fssai.png" alt="FSSAI" logoClass="h-7" />
           <span className="leading-tight">
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">
+            <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/45">
               FSSAI Licence{fssai?.registrationNo && <> · <span className="font-mono tracking-wide normal-case">{fssai.registrationNo}</span></>}
             </span>
             {fssai?.available ? (
               <button
                 type="button"
                 onClick={() => setDialogOpen(true)}
-                className="py-2 -my-1.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-[#F1D58F] hover:text-white underline underline-offset-4 decoration-[#F1D58F]/40 hover:decoration-white/60 transition-colors"
+                className="py-2 -my-1.5 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-white/85 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white/60 transition-colors"
               >
                 <Download className="h-3.5 w-3.5" /> Download certificate
               </button>
             ) : (
-              <span className="block text-[12.5px] font-semibold text-white/90">Registered food business</span>
+              <span className="block text-[12.5px] font-medium text-white/75">Registered food business</span>
             )}
           </span>
         </div>

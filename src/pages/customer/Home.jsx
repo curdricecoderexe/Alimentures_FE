@@ -1,36 +1,22 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Heart, Check, ArrowRight, Wheat, Cookie, Star, HeartHandshake, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
+import { ShoppingCart, Heart, Check, ArrowRight, Wheat, Cookie, Star, Shield, Leaf, Zap, HelpCircle, Minus, Plus, ShieldCheck, Sprout, Activity, Award, CheckCircle2, Quote, Globe, Users, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Loader from '../../components/ui/loader';
-import { Field, ORB_BERRY, ORB_GOLD } from '../../components/ui/motion';
 import { useAppearance } from '../../lib/appearance';
 import { cachedFetch } from '../../lib/api';
-import BrandFilm from '../../components/home/BrandFilm';
 import CatalogueDownload from '../../components/home/CatalogueDownload';
+import { BenefitBand, CraftSpotlight, CategoryRows } from '../../components/home/SeedSections';
 import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
+import ProductCardSkeleton from '../../components/skeletons/ProductCardSkeleton';
+import { Reveal } from '../../components/ui/motion';
 import MobileSliderControls from '../../components/ui/MobileSliderControls';
 import womenImage from '../../assets/cas/women.webp';
-import nammalvarImage from '../../assets/nammalvar.jpg';
-import craftingBgDefault from '../../assets/Munnar.jpg';
-import commitmentBgDefault from '../../assets/bg-1.webp';
-import superGrainsBgDefault from '../../assets/bf.webp';
 import featuredBgDefault from '../../assets/feature-bg.webp';
 
-import fingerMilletImg from '../../assets/fav/finger.webp';
-import foxtailMilletImg from '../../assets/fav/foxtail.webp';
-import pearlMilletImg from '../../assets/fav/pearl.webp';
-import sorghumImg from '../../assets/fav/sorghum.webp';
-import sorghumRedImg from '../../assets/fav/sorghum-red.webp';
-import kodoMilletImg from '../../assets/fav/kodo.webp';
-import karuppuKavaniImg from '../../assets/fav/karuppu_kavani.webp';
-import kattuYaanamImg from '../../assets/fav/kattu-yaanam.webp';
-import karunguruvaiImg from '../../assets/fav/karunguruvai.webp';
-import mappillaiSambaImg from '../../assets/fav/mappillai_samba.webp';
 
 import redMilletsMateImg from '../../assets/fav/red_millets_mate.webp';
 import pentaBiteImg from '../../assets/fav/penta_bite.webp';
@@ -39,238 +25,30 @@ import classicCocletsImg from '../../assets/fav/classic_coclets.webp';
 import { productPath, HOME_SEO, organizationJsonLd, websiteJsonLd } from '../../lib/seo';
 import SEO from '../../components/SEO';
 import { SUPPORT_CONTACT } from '../../data/policies';
-import { useDeliverySummary } from '../../lib/delivery';
 import { useCategories } from '../../lib/categories';
+import useMediaQuery from '../../hooks/useMediaQuery';
+import { Snowfall, HangingOrnaments, ChristmasBand } from '../../components/home/Festive';
+import { isChristmasSeason } from '../../data/seasonal';
+import { useStorefrontSettings, hampersVisibleIn } from '../../lib/storefrontSettings';
 
 gsap.registerPlugin(ScrollTrigger);
 
 // Gradients & Glass Styles
 const GRADIENT_PURPLE_GOLD = 'bg-gradient-to-br from-berry via-berry-bright to-gold-light';
 const TEXT_GRADIENT = 'bg-gradient-to-r from-berry-deep to-orange-600 bg-clip-text text-transparent drop-shadow-sm';
-const GLASS_CARD = 'glass border border-white/40 shadow-xl shadow-rose-900/5 hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500';
-const GLASS_DRAWER = 'bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl shadow-rose-900/10';
-
-// "No Maida • No White Sugar • No Refined Oil" is stated ONCE, in the
-// "Why Families Choose Alimenture" pillars — don't repeat it elsewhere.
-const forbiddenIngredients = [
-  'No Preservatives',
-  'No Harmful Additives',
-  'No Artificial Colors'
-];
-
-const milletsBenefitList = [
-  { name: 'Finger Millet', local: 'Ragi', benefit: 'Naturally rich in calcium and fiber, supporting stronger nutrition.', image: fingerMilletImg },
-  { name: 'Foxtail Millet', local: 'Thinai', benefit: 'Known for balanced nutrition and sustained energy release.', image: foxtailMilletImg },
-  { name: 'Pearl Millet', local: 'Kambu', benefit: 'A traditional powerhouse grain rich in natural nutrients.', image: pearlMilletImg },
-  { name: 'Sorghum', local: 'Cholam', benefit: 'Supports digestive health and wholesome nourishment.', image: sorghumImg },
-  { name: 'Sorghum Red', local: 'Sivappu Cholam', benefit: 'A nutrient-rich red grain packed with traditional wellness benefits.', image: sorghumRedImg },
-  { name: 'Kodo Millet', local: 'Varagu', benefit: 'Naturally wholesome and widely appreciated for healthy dietary support.', image: kodoMilletImg },
-  { name: 'Karuppu Kavani', local: 'Heritage Rice', benefit: 'A traditional heritage rice celebrated for its nutritional richness.', image: karuppuKavaniImg },
-  { name: 'Kattu Yaanam', local: 'Heritage Rice', benefit: 'An ancient rice variety associated with authentic traditional nourishment.', image: kattuYaanamImg },
-  { name: 'Karunguruvai', local: 'Heritage Rice', benefit: 'Known for its deep nutritional profile and natural wellness benefits.', image: karunguruvaiImg },
-  { name: 'Mappillai Samba', local: 'Heritage Rice', benefit: 'A heritage rice variety traditionally valued for strength and stamina.', image: mappillaiSambaImg }
-];
-
-const trustPillars = [
-  { icon: <ShieldCheck className="h-6 w-6 stroke-[2.2px]" />, title: 'Purity', desc: 'Preserving the natural integrity of every ingredient without harmful chemicals or artificial additives.' },
-  { icon: <Sprout className="h-6 w-6 stroke-[2.2px]" />, title: 'Sustainability', desc: 'Consciously sourcing ingredients to protect our ecosystems, farming communities, and the planet.' },
-  { icon: <Activity className="h-6 w-6 stroke-[2.2px]" />, title: 'Wellness', desc: 'Crafting wholesome snacks that actively support a balanced, vibrant, and genuinely healthy lifestyle.' },
-  { icon: <Award className="h-6 w-6 stroke-[2.2px]" />, title: 'Authentic Nourishment', desc: 'Reviving traditional nutritional wisdom for modern, fast-paced generations.' },
-];
-
-/* Ornamental divider that sits between the catalog category bands. */
-/** Clean Snack Lineup photo — admin slots lineupImage1-3, crossfading with a slow zoom when more than one is set. */
-function LineupSlides({ images, active }) {
-  return (
-    <div className="absolute inset-0">
-      {images.map((src, i) => (
-        <motion.img
-          key={src}
-          src={src}
-          alt="Healthy & Mindful Living"
-          initial={{ opacity: i === active ? 1 : 0, scale: 1 }}
-          animate={{ opacity: i === active ? 1 : 0, scale: i === active ? 1.08 : 1 }}
-          transition={{ opacity: { duration: 1.2, ease: 'easeInOut' }, scale: { duration: 7, ease: 'easeOut' } }}
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="lazy"
-          decoding="async"
-        />
-      ))}
-    </div>
-  );
-}
-
-const LINEUP_SLIDE_MS = 5500;
-const LINEUP_WITHOUT = ['Preservatives', 'Artificial colours', 'Artificial flavours'];
-
-/** Arch-framed, layered artwork for the Alchemi's / Clean Snack Lineup block. */
-function LineupArtwork({ images }) {
-  const [active, setActive] = useState(0);
-  useEffect(() => {
-    if (images.length < 2) return undefined;
-    const id = setInterval(() => setActive((i) => (i + 1) % images.length), LINEUP_SLIDE_MS);
-    return () => clearInterval(id);
-  }, [images.length]);
-  const current = active % images.length;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="relative mx-auto w-full max-w-[460px] lg:max-w-[500px] group"
-    >
-      {/* dotted grain texture */}
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-8 -right-6 sm:-right-10 w-32 h-32 sm:w-40 sm:h-40 opacity-60 pointer-events-none"
-        style={{ backgroundImage: 'radial-gradient(#D7A94E 1.6px, transparent 1.6px)', backgroundSize: '13px 13px' }}
-      />
-
-      {/* tilted colour plate + gold outline arch */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 translate-x-3 translate-y-3 sm:translate-x-5 sm:translate-y-5 rotate-[3deg] rounded-t-[999px] rounded-b-[2.5rem] bg-gradient-to-br from-berry-deep via-berry to-gold-light group-hover:rotate-[5deg] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -inset-2.5 sm:-inset-4 -rotate-[2.5deg] rounded-t-[999px] rounded-b-[3rem] border-[1.5px] border-gold-light/60 pointer-events-none group-hover:-rotate-[4deg] transition-transform duration-700"
-      />
-
-      {/* the arch */}
-      <div className="relative aspect-[4/5] rounded-t-[999px] rounded-b-[2.5rem] overflow-hidden bg-cream-deep ring-[6px] ring-white shadow-[0_40px_80px_-30px_rgba(121,8,63,0.45)]">
-        <LineupSlides images={images} active={current} />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1A0F14]/70 via-[#1A0F14]/5 to-transparent pointer-events-none" />
-        <div
-          className="absolute inset-0 pointer-events-none mix-blend-soft-light"
-          style={{ background: 'radial-gradient(90% 60% at 50% 0%, rgba(215,169,78,0.45), transparent 70%)' }}
-        />
-
-        {/* bottom chips + slide progress */}
-        <div className="absolute inset-x-0 bottom-0 p-3.5 sm:p-7 flex flex-col items-center gap-3.5">
-          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
-            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
-              <Leaf className="h-3.5 w-3.5 text-[#9BE28F]" /> 100% Native Base
-            </span>
-            <span className="inline-flex items-center gap-1.5 h-7 sm:h-8 px-2.5 sm:px-3.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] sm:text-[10px] font-bold uppercase tracking-[0.1em] sm:tracking-[0.14em] whitespace-nowrap">
-              <Wheat className="h-3.5 w-3.5 text-gold-light" /> Honest Baking
-            </span>
-          </div>
-          {images.length > 1 && (
-            <div className="flex gap-1.5">
-              {images.map((src, i) => (
-                <button
-                  key={src}
-                  onClick={() => setActive(i)}
-                  aria-label={`Show image ${i + 1}`}
-                  className="relative h-1 w-8 sm:w-10 rounded-full bg-white/30 overflow-hidden"
-                >
-                  {i === current && (
-                    <motion.span
-                      key={`${current}-${src}`}
-                      className="absolute inset-y-0 left-0 bg-white rounded-full"
-                      initial={{ width: '0%' }}
-                      animate={{ width: '100%' }}
-                      transition={{ duration: LINEUP_SLIDE_MS / 1000, ease: 'linear' }}
-                    />
-                  )}
-                  {i < current && <span className="absolute inset-0 bg-white/80" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* rotating seal */}
-      <div className="absolute -top-3 -right-1 sm:-top-5 sm:-right-6 z-30 h-24 w-24 sm:h-32 sm:w-32 pointer-events-none">
-        <div className="absolute inset-0 rounded-full bg-[#FFFDF8]/95 backdrop-blur-md border border-gold-light/40 shadow-[0_18px_40px_-12px_rgba(178,123,38,0.45)]" />
-        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[spin_24s_linear_infinite]" aria-hidden="true">
-          <defs>
-            <path id="lineup-seal-path" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0" />
-          </defs>
-          <text fill="#B27B26" style={{ fontSize: '8.4px', letterSpacing: '2.4px', fontWeight: 800, fontFamily: 'Outfit, sans-serif' }}>
-            <textPath href="#lineup-seal-path">ALIMENTURE • CERTIFIED PURE • </textPath>
-          </text>
-        </svg>
-        <div className="absolute inset-0 m-auto h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-berry to-berry-bright text-white flex items-center justify-center shadow-berry">
-          <Sprout className="h-5 w-5 sm:h-6 sm:w-6" />
-        </div>
-      </div>
-
-      {/* floating "baked without" card */}
-      <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-        className="hidden sm:block absolute -left-12 bottom-[28%] z-30 rounded-2xl bg-white/90 backdrop-blur-xl border border-white shadow-[0_24px_50px_-18px_rgba(121,8,63,0.35)] p-3.5 sm:p-4 pr-5 sm:pr-6"
-      >
-        <p className="text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-[0.2em] text-ink-muted">Baked without</p>
-        <ul className="mt-2 space-y-1.5">
-          {LINEUP_WITHOUT.map((item) => (
-            <li key={item} className="flex items-center gap-2 text-[11.5px] sm:text-[12.5px] font-bold text-[#221B1F]">
-              <span className="inline-flex items-center justify-center h-5 min-w-[30px] px-1.5 rounded-full bg-berry/10 text-berry text-[10.5px] font-extrabold">0%</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-function CatalogDivider() {
-  return (
-    <div className="relative flex items-center justify-center py-7 sm:py-11 overflow-visible" aria-hidden="true">
-      {/* drifting particles */}
-      <span className="absolute left-[calc(50%-150px)] -top-1 h-1 w-1 rounded-full bg-gold-light/60 animate-float" />
-      <span className="absolute left-[calc(50%+120px)] top-3 h-1.5 w-1.5 rounded-full bg-berry/35 animate-float-slow" style={{ animationDelay: '.7s' }} />
-      <span className="absolute left-[calc(50%-80px)] bottom-1 h-1 w-1 rounded-full bg-berry/30 animate-float" style={{ animationDelay: '1.2s' }} />
-      <span className="absolute left-[calc(50%+175px)] -top-2 h-1 w-1 rounded-full bg-gold-light/50 animate-float-slow" style={{ animationDelay: '.35s' }} />
-      <span className="absolute left-[calc(50%-195px)] top-4 h-[3px] w-[3px] rounded-full bg-berry/25 animate-float" style={{ animationDelay: '.9s' }} />
-
-      {/* left rail */}
-      <span className="hidden sm:block h-1 w-1 rounded-full bg-berry/25" />
-      <span className="h-px flex-1 max-w-[70px] sm:max-w-[170px] bg-gradient-to-r from-transparent via-berry/15 to-berry/30" />
-      <span className="h-[3px] w-[3px] rounded-full bg-gold-light/70 mx-1.5" />
-      <span className="h-1.5 w-1.5 rounded-full bg-berry/35 mx-1.5" />
-      <span className="h-px w-5 sm:w-9 bg-berry/25" />
-
-      {/* centre medallion */}
-      <span className="relative mx-3 sm:mx-4 shrink-0">
-        <svg className="absolute -inset-[7px] sm:-inset-2 animate-spin-slow text-gold-light/45" viewBox="0 0 56 56" fill="none">
-          <circle cx="28" cy="28" r="26" stroke="currentColor" strokeWidth="1" strokeDasharray="3 6" />
-        </svg>
-        <span className="absolute inset-0 -m-3 rounded-full bg-gradient-to-br from-berry/12 to-gold-light/12 blur-md" />
-        <span className="relative block rounded-full p-[2px] bg-gradient-to-br from-berry via-gold-light to-berry shadow-[0_10px_28px_-10px_rgba(121,8,63,0.45)]">
-          <span className="flex h-9 w-9 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white">
-            <Sprout className="h-4 w-4 sm:h-[19px] sm:w-[19px] text-berry" />
-          </span>
-        </span>
-      </span>
-
-      {/* right rail (mirror) */}
-      <span className="h-px w-5 sm:w-9 bg-berry/25" />
-      <span className="h-1.5 w-1.5 rounded-full bg-berry/35 mx-1.5" />
-      <span className="h-[3px] w-[3px] rounded-full bg-gold-light/70 mx-1.5" />
-      <span className="h-px flex-1 max-w-[70px] sm:max-w-[170px] bg-gradient-to-l from-transparent via-berry/15 to-berry/30" />
-      <span className="hidden sm:block h-1 w-1 rounded-full bg-berry/25" />
-    </div>
-  );
-}
+const GLASS_CARD = 'glass border border-white/40 shadow-xl shadow-violet-900/5 hover:shadow-2xl hover:shadow-violet-900/10 transition-all duration-500';
+const GLASS_DRAWER = 'bg-white/90 backdrop-blur-3xl border border-white/50 shadow-2xl shadow-violet-900/10';
 
 export default function Home() {
+  const festive = isChristmasSeason();
+  const { settings: storefront, loaded: storefrontLoaded } = useStorefrontSettings();
+  const hampersOn = storefrontLoaded && hampersVisibleIn(storefront);
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
   const navigate = useNavigate();
 
   // Admin-customisable section backgrounds (fall back to the bundled defaults).
   const appearance = useAppearance();
   const featuredBg = appearance.featuredBg || featuredBgDefault;
-  const superGrainsBg = appearance.superGrainsBg || superGrainsBgDefault;
-  const craftingBg = appearance.craftingBg || craftingBgDefault;
-  const commitmentBg = appearance.commitmentBg || commitmentBgDefault;
-  const lineupCustom = [appearance.lineupImage1, appearance.lineupImage2, appearance.lineupImage3].filter(Boolean);
-  const lineupImages = lineupCustom.length ? lineupCustom : [womenImage];
   const CATALOG_BG_KEY = {
     'Cookies': 'catalogCookiesBg',
     'Health Mixtures': 'catalogHealthMixturesBg',
@@ -306,16 +84,26 @@ export default function Home() {
   }, []);
 
   // Preload all banner slide images into browser memory to prevent transition lag
+  // (phones preload their portrait variant when the slide has one)
+  const preloadPhone = typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
   useEffect(() => {
     activeSlides.forEach(slide => {
-      if (slide?.src) {
+      const src = preloadPhone && slide?.mobileSrc ? slide.mobileSrc : slide?.src;
+      if (src) {
         const img = new Image();
-        img.src = slide.src;
+        img.src = src;
       }
     });
-  }, [activeSlides]);
+  }, [activeSlides, preloadPhone]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Phones get the admin's portrait banner when there is one; otherwise the wide
+  // banner is shown whole ("fit") rather than cropped to a tall frame.
+  const isPhone = useMediaQuery('(max-width: 639px)');
+  const heroSlide = activeSlides[currentSlide];
+  const heroFit = isPhone && activeSlides.length > 0 && !heroSlide?.mobileSrc;
+  const heroSrc = isPhone && heroSlide?.mobileSrc ? heroSlide.mobileSrc : heroSlide?.src;
 
   // DOM References for GSAP
   const heroRef = useRef(null);
@@ -329,33 +117,17 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
+  const CATALOG_PAGE = 8;
+  // 2 / 3 / 4 cards per row (widths match the gap), centred so short last rows sit in the middle
+  const CATALOG_CELL = 'w-[calc(50%-6px)] sm:w-[calc(50%-10px)] md:w-[calc((100%-40px)/3)] lg:w-[calc(25%-15px)]';
+  const [catalogLimit, setCatalogLimit] = useState(CATALOG_PAGE);
   const [categories, setCategories] = useState([]);
   const managedCategories = useCategories(); // Admin → Categories (name, order, visible)
   const [featuredProducts, setFeaturedProducts] = useState([]);
-  const delivery = useDeliverySummary();
-  const [storyOpen, setStoryOpen] = useState(false);
-  const [superGrains, setSuperGrains] = useState([]);
 
-  // Category Bar & Row Scroll Refs & Functions
-  const categoryBarRef = useRef(null);
-  const categoryRowRefs = useRef({});
+  // Featured row (phones swipe through it one card at a time)
   const featuredRowRef = useRef(null);
   const getFeaturedRow = useCallback(() => featuredRowRef.current, []);
-
-  const scrollCategoryBar = (direction) => {
-    if (categoryBarRef.current) {
-      const amount = direction === 'left' ? -280 : 280;
-      categoryBarRef.current.scrollBy({ left: amount, behavior: 'smooth' });
-    }
-  };
-
-  const scrollCategoryRow = (catName, direction) => {
-    const container = categoryRowRefs.current[catName];
-    if (container) {
-      const amount = direction === 'left' ? -340 : 340;
-      container.scrollBy({ left: amount, behavior: 'smooth' });
-    }
-  };
 
   const DEFAULT_CATEGORIES = ['Cookies', 'Health Mixtures', 'Honey', 'Jaggery'];
   // 'biscuit' (and uncategorised products) are folded into Cookies, so they never get their own section.
@@ -390,22 +162,6 @@ export default function Home() {
     if (activeCategoryGone) setActiveCategory('All');
   }, [activeCategoryGone]);
 
-  const getCategoryMeta = (catName) => {
-    const c = catName.toLowerCase();
-    if (c.includes('cookie') || c.includes('biscuit')) {
-      return { desc: 'Crispy ancient millet biscuits baked slowly with pure country butter', icon: Cookie };
-    }
-    if (c.includes('health') || c.includes('mixture') || c.includes('mix')) {
-      return { desc: 'Nutrient-rich multigrain porridge and natural vitality mixes', icon: Sprout };
-    }
-    if (c.includes('honey')) {
-      return { desc: '100% pure wild forest raw honey harvested naturally', icon: Droplet };
-    }
-    if (c.includes('jaggery') || c.includes('sugar')) {
-      return { desc: 'Unrefined traditional palm jaggery and organic country sugar', icon: Leaf };
-    }
-    return { desc: 'Traditional clean food treats crafted for daily nourishment', icon: Award };
-  };
 
   useEffect(() => {
     const fallbackFeatured = [
@@ -467,34 +223,8 @@ export default function Home() {
       setFeaturedProducts(fallbackFeatured);
     };
 
-    // Admin-managed grains (Admin → Super Grains). The last good list is kept
-    // locally so a slow or unreachable API shows the real grains, not the
-    // built-in defaults; those only appear if nothing was ever loaded.
-    const GRAINS_CACHE = 'alim_super_grains_v1';
-    const fetchGrains = async () => {
-      let cached = null;
-      try { cached = JSON.parse(localStorage.getItem(GRAINS_CACHE)); } catch { /* ignore */ }
-      if (Array.isArray(cached) && cached.length) setSuperGrains(cached);
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/super-grains`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            setSuperGrains(data.data);
-            try { localStorage.setItem(GRAINS_CACHE, JSON.stringify(data.data)); } catch { /* quota — fine */ }
-            return;
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch super grains", err);
-      }
-      if (!(Array.isArray(cached) && cached.length)) setSuperGrains(milletsBenefitList);
-    };
-
     fetchFeatured();
-    fetchGrains();
   }, []);
-
 
   // Carousel Slider State
   const [_slideDirection, setSlideDirection] = useState(1);
@@ -634,17 +364,6 @@ export default function Home() {
 
   const closeQuickAdd = () => setQuickAddItem(null);
 
-  // Hero trust chips — each one is a fact stated elsewhere on the site.
-  const heroTrust = [
-    { Icon: ShieldCheck, label: 'FSSAI registered' },
-    { Icon: Leaf, label: 'Baked in Chennai' },
-    delivery?.freeDeliveryEnabled && delivery.freeDeliveryThreshold
-      ? { Icon: Award, label: `Free delivery over ₹${delivery.freeDeliveryThreshold}` }
-      : null,
-  ].filter(Boolean);
-
-  const scrollToFilm = () => document.getElementById('brand-film')?.scrollIntoView({ behavior: 'smooth' });
-
   const confirmQuickAdd = () => {
     if (!quickAddItem) return;
     const name = quickAddItem.name || quickAddItem.title;
@@ -663,7 +382,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-brand-dark relative">
+    <div className="min-h-screen bg-cream text-ink relative">
       <SEO
         title={HOME_SEO.title}
         description={HOME_SEO.description}
@@ -671,286 +390,112 @@ export default function Home() {
         jsonLd={[organizationJsonLd({ email: SUPPORT_CONTACT.email, phones: SUPPORT_CONTACT.phones }), websiteJsonLd()]}
       />
 
-      {/* ——— AMBIENT GLASS PINK/YELLOW BACKGROUND BLOBS ——— */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div ref={el => backgroundBlobsRef.current[0] = el}
-          className="absolute w-[450px] h-[450px] rounded-full blur-[110px] opacity-[0.14] top-[5%] left-[2%]"
-          style={{ background: 'radial-gradient(circle, #C21A75 0%, rgba(255,255,255,0) 70%)' }} />
-
-        <div ref={el => backgroundBlobsRef.current[1] = el}
-          className="absolute w-[380px] h-[380px] rounded-full blur-[100px] opacity-[0.12] top-[20%] right-[10%]"
-          style={{ background: 'radial-gradient(circle, #FDE047 0%, rgba(255,255,255,0) 70%)' }} />
-
-        <div ref={el => backgroundBlobsRef.current[2] = el}
-          className="absolute w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.11] top-[45%] left-[15%]"
-          style={{ background: 'radial-gradient(circle, #FEF08A 0%, rgba(255,255,255,0) 70%)' }} />
-
-        <div ref={el => backgroundBlobsRef.current[3] = el}
-          className="absolute w-[420px] h-[420px] rounded-full blur-[110px] opacity-[0.13] top-[75%] right-[5%]"
-          style={{ background: 'radial-gradient(circle, #C21A75 0%, rgba(255,255,255,0) 70%)' }} />
-      </div>
-
-      {/* Grid overlay accent */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none z-0"
-        style={{ backgroundImage: 'linear-gradient(#C21A75 1.5px,transparent 1.5px),linear-gradient(90deg,#C21A75 1.5px,transparent 1.5px)', backgroundSize: '70px 70px' }} />
-
-      {/* ⸻ HERO SECTION (DEDICATED LIGHT MOBILE COMPOSITION + DESKTOP SLIDESHOW) ⸻ */}
-      <section ref={heroRef} className="relative w-full bg-[#FBF7EF] overflow-hidden select-none z-10 font-sans">
+      {/* ⸻ HERO — Seed pattern: full-bleed image only, flush to the top, curved bottom edge ⸻ */}
+      <section ref={heroRef} className="relative z-10 font-sans select-none">
         <h1 className="sr-only">Alimenture — millet cookies, ghee, honey and healthy bakes from Chennai</h1>
+        <div
+          ref={imageCardRef}
+          className={`relative overflow-hidden rounded-b-[28px] sm:rounded-b-hero bg-night ${
+            heroFit
+              ? 'pt-[84px] pb-4' // phone + wide banner: show it whole, below the floating nav
+              : 'h-[78svh] min-h-[520px] max-h-[860px] sm:h-[100svh] sm:min-h-[560px] sm:max-h-[920px] 2xl:max-h-[1080px] [@media(max-height:500px)]:!min-h-[340px]'
+          }`}
+        >
+          {heroFit && (
+            // soft, blurred copy of the banner fills the frame around the uncropped image
+            <img src={heroSlide?.src} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover scale-125 blur-2xl opacity-60" />
+          )}
 
-        {/* ── 1. LIGHT THEME MOBILE HERO VIEW (< 640px) ── */}
-        <div className="sm:hidden pt-[88px] pb-8 px-4 flex flex-col gap-4 relative z-10 bg-[#FBF7EF] text-[#221B1F]">
-          {/* Animated Ambient Light Background Glows */}
-          <div className="absolute top-12 right-0 w-72 h-72 bg-berry/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-12 left-0 w-72 h-72 bg-gold-light/10 rounded-full blur-[100px] pointer-events-none" />
-
-          {/* Center Banner Artwork — Frameless natural fit */}
-          <div className="my-3 relative z-10">
-            {activeSlides.length > 0 && (
-              <div className="relative aspect-[16/9] w-full flex items-center justify-center">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={currentSlide}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.02 }}
-                    transition={{ duration: 0.4 }}
-                    src={activeSlides[currentSlide]?.src}
-                    alt={activeSlides[currentSlide]?.title || `Banner ${currentSlide + 1}`}
-                    className="w-full h-full object-contain rounded-2xl drop-shadow-md"
-                    loading="eager"
-                  />
-                </AnimatePresence>
-
-                {/* Corner slide count badge */}
-                {activeSlides.length > 1 && <div className="absolute top-2 right-2 glass-sm border border-hairline/80 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-widest text-berry shadow-xs">
-                  0{currentSlide + 1} / 0{activeSlides.length}
-                </div>}
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Light Glass Progress Bar & Controls */}
-          <div className="relative z-10 pt-1">
-            {activeSlides.length > 1 && (
-              <div className="flex items-center justify-between glass-sm px-4 py-2 rounded-full border border-hairline/80 shadow-sm max-w-xs mx-auto">
-                <button
-                  onClick={handlePrevSlide}
-                  className="p-1 text-ink-soft hover:text-berry transition-colors"
-                  aria-label="Previous Banner"
-                >
-                  <ChevronLeft className="h-4.5 w-4.5" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                  {activeSlides.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSlideDirection(idx > currentSlide ? 1 : -1);
-                        setCurrentSlide(idx);
-                      }}
-                      className="group relative flex items-center outline-none py-1"
-                      aria-label={`Go to slide ${idx + 1}`}
-                    >
-                      <div
-                        className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-6 bg-berry' : 'w-2 bg-gray-300'
-                          }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleNextSlide}
-                  className="p-1 text-ink-soft hover:text-berry transition-colors"
-                  aria-label="Next Banner"
-                >
-                  <ChevronRight className="h-4.5 w-4.5" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Primary actions */}
-          <div className="relative z-10 grid grid-cols-2 gap-2.5 pt-1">
-            <Link
-              to="/shop"
-              className="btn-berry h-12 rounded-2xl inline-flex items-center justify-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em]"
-            >
-              <ShoppingCart className="h-4 w-4" /> Shop now
-            </Link>
-            <button
-              type="button"
-              onClick={scrollToFilm}
-              className="h-12 rounded-2xl bg-white border border-hairline text-ink inline-flex items-center justify-center gap-2 text-[11.5px] font-extrabold uppercase tracking-[0.12em] shadow-sm active:scale-[0.98] transition-transform"
-            >
-              <Sprout className="h-4 w-4 text-berry" /> Our story
-            </button>
-          </div>
-
-          {/* Trust chips */}
-          <ul className="relative z-10 flex flex-wrap justify-center gap-x-4 gap-y-2 pt-1">
-            {heroTrust.map(({ Icon, label }) => (
-              <li key={label} className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-ink-soft">
-                <Icon className="h-3.5 w-3.5 text-leaf" /> {label}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* ── 2. DESKTOP HERO VIEW (>= 640px) ── */}
-        <div className="hidden sm:flex relative w-full aspect-video max-h-[100svh] min-h-[380px] items-center justify-center overflow-hidden">
-          {activeSlides.length > 0 ? (
-            <>
+          <div className={heroFit ? 'relative mx-3 aspect-[16/9] overflow-hidden rounded-[18px] shadow-[0_18px_40px_-20px_rgba(0,0,0,0.6)]' : 'absolute inset-0'}>
+            {activeSlides.length > 0 ? (
               <AnimatePresence>
-                <motion.div
-                  key={currentSlide}
-                  initial={{ opacity: 0, scale: 1.03 }}
+                <motion.img
+                  key={`${currentSlide}-${heroSrc}`}
+                  src={heroSrc}
+                  alt={heroSlide?.title || `Alimenture banner ${currentSlide + 1}`}
+                  initial={{ opacity: 0, scale: 1.06 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute inset-0 w-full h-full flex items-center justify-center"
-                >
-                  <img
-                    src={activeSlides[currentSlide]?.src}
-                    alt={activeSlides[currentSlide]?.title || `Slide ${currentSlide + 1}`}
-                    className="w-full h-full object-cover object-center"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="sync"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
-                </motion.div>
+                  transition={{ opacity: { duration: 0.9 }, scale: { duration: 6, ease: 'easeOut' } }}
+                  // ultra-wide screens crop banners vertically — anchor to the top, where the artwork's lettering sits
+                  className="absolute inset-0 h-full w-full object-cover object-center min-[1700px]:object-top"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
               </AnimatePresence>
+            ) : (
+              <img src={womenImage} alt="Alimenture heritage-grain snacks" className="absolute inset-0 h-full w-full object-cover object-[70%_center]" loading="eager" fetchPriority="high" />
+            )}
+          </div>
 
-              {/* Desktop Side Arrow Controls */}
-              {activeSlides.length > 1 && (
-                <div className="absolute inset-x-4 sm:inset-x-8 top-1/2 -translate-y-1/2 flex items-center justify-between z-20 pointer-events-none">
-                  <button
-                    onClick={handlePrevSlide}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/75 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg pointer-events-auto opacity-80 hover:opacity-100 group"
-                    aria-label="Previous Banner"
-                  >
-                    <ArrowRight className="h-5 w-5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-                  </button>
-                  <button
-                    onClick={handleNextSlide}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-black/40 hover:bg-black/75 text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-lg pointer-events-auto opacity-80 hover:opacity-100 group"
-                    aria-label="Next Banner"
-                  >
-                    <ArrowRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-              )}
+          {/* Christmas: soft snowfall + hanging ornaments over the banner (src/data/seasonal.js) */}
+          {festive && <Snowfall />}
+          {festive && !heroFit && <HangingOrnaments />}
 
-              {/* Desktop Bottom Progress Bar */}
-              {activeSlides.length > 1 && (
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 shadow-xl">
-                  {activeSlides.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSlideDirection(idx > currentSlide ? 1 : -1);
-                        setCurrentSlide(idx);
-                      }}
-                      className="group relative flex items-center outline-none py-1"
-                      aria-label={`Go to slide ${idx + 1}`}
-                    >
-                      <div
-                        className={`h-1.5 rounded-full transition-all duration-500 ease-out ${currentSlide === idx ? 'w-10 bg-[#D7A94E]' : 'w-2.5 bg-white/40 group-hover:bg-white/70 group-hover:scale-110'
-                          }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#221B1F] via-[#1a140c] to-[#221B1F] animate-pulse flex items-center justify-center" />
+          {/* slide controls — overlaid on the photo, or in a row under the uncropped banner */}
+          {activeSlides.length > 1 && (
+            <div className={`flex items-center justify-between sm:justify-end gap-3 ${
+              heroFit ? 'relative mx-3 mt-3' : 'absolute inset-x-4 bottom-5 sm:inset-x-auto sm:right-8 sm:bottom-8'
+            }`}>
+              <div className="flex items-center rounded-full bg-night/45 backdrop-blur-md px-1.5 ring-1 ring-white/15">
+                {activeSlides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => { setSlideDirection(idx > currentSlide ? 1 : -1); setCurrentSlide(idx); }}
+                    className="h-10 min-w-[22px] px-1.5 flex items-center justify-center" // 40px-tall hit area around a small dot
+                    aria-label={`Go to slide ${idx + 1}`}
+                    aria-current={currentSlide === idx ? 'true' : undefined}
+                  >
+                    <span className={`block h-1.5 rounded-full transition-all duration-500 ${currentSlide === idx ? 'w-7 bg-mulberry' : 'w-1.5 bg-white/50 hover:bg-white/80'}`} />
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button type="button" onClick={handlePrevSlide} aria-label="Previous banner" className="h-11 w-11 sm:h-10 sm:w-10 rounded-full bg-white/90 text-night flex items-center justify-center hover:bg-mulberry hover:text-white transition-colors">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={handleNextSlide} aria-label="Next banner" className="h-11 w-11 sm:h-10 sm:w-10 rounded-full bg-white/90 text-night flex items-center justify-center hover:bg-mulberry hover:text-white transition-colors">
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           )}
         </div>
-
-        {/* ── LOW-CONTRAST DUAL-DIRECTIONAL MIST FLOW (LEFT & RIGHT TO CENTER) ── */}
-        <div className="absolute bottom-0 left-0 right-0 h-28 sm:h-36 md:h-48 pointer-events-none z-15 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FBF7EF] via-[#FBF7EF]/35 to-transparent" />
-          <motion.div
-            animate={{
-              x: ['-25%', '15%', '-25%'],
-              opacity: [0.15, 0.35, 0.15]
-            }}
-            transition={{
-              duration: 18,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute -bottom-8 left-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tr from-[#FBF7EF]/80 via-white/30 to-transparent blur-3xl"
-          />
-          <motion.div
-            animate={{
-              x: ['25%', '-15%', '25%'],
-              opacity: [0.15, 0.35, 0.15]
-            }}
-            transition={{
-              duration: 18,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="absolute -bottom-8 right-[-15%] w-[80%] h-36 rounded-[100%] bg-gradient-to-tl from-[#FBF7EF]/80 via-white/30 to-transparent blur-3xl"
-          />
-        </div>
       </section>
 
-      {/* ⸻ PREMIUM MARQUEE — Clean ingredient promise strip ⸻ */}
-      <section ref={registerSectionRef} className="py-3.5 sm:py-5 border-y border-hairline/50 bg-[#FBF7EF] relative z-10 overflow-hidden">
-        <div className="overflow-hidden whitespace-nowrap w-full">
-          <div className="inline-flex gap-5 sm:gap-8 animate-marquee">
-            {/* even number of copies → the -50% loop is seamless and fills wide screens */}
-            {Array.from({ length: 8 }).flatMap(() => forbiddenIngredients).map((item, idx) => (
-              <span key={idx} className="inline-flex items-center gap-2 text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.22em] text-ink-muted shrink-0">
-                <span className="w-1 h-1 rounded-full bg-berry/50 inline-block" />{item}<span className="w-1 h-1 rounded-full bg-gold/50 inline-block" />
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {festive && (
+        <ChristmasBand
+          to={hampersOn ? '/hampers' : '/shop'}
+          cta={hampersOn ? 'Explore Christmas hampers' : 'Shop Christmas gifts'}
+        />
+      )}
+
+      {/* ⸻ BENEFIT BAND — Seed's "benefits you can feel in…" row ⸻ */}
+      <BenefitBand />
 
       {/* ⸻ 2. FEATURED PRODUCTS ⸻ */}
-      <section id="signature-spotlight" className="relative z-10 overflow-hidden py-12 sm:py-24 font-sans">
-        {/* photo backdrop with a warm cream wash */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={featuredBg}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/92 via-[#FDF9F2]/84 to-[#FBF7EF]/94" />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'radial-gradient(80% 55% at 50% 0%, transparent 42%, rgba(121,8,63,0.09) 100%)' }}
-          />
-        </div>
-        <Field orbs={[{ size: 540, color: ORB_BERRY, top: -160, right: -150 }, { size: 460, color: ORB_GOLD, bottom: -180, left: -150 }]} />
+      <section id="signature-spotlight" className="relative z-10 overflow-hidden bg-cream py-12 sm:py-24 font-sans">
+        {featuredBg && (
+          <div className="absolute inset-0 -z-10">
+            <img src={featuredBg} alt="" aria-hidden="true" className="w-full h-full object-cover object-center" loading="lazy" decoding="async" />
+          </div>
+        )}
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1240px] relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1240px] 2xl:max-w-[1400px] relative z-10">
           {/* centered header */}
           <div className="flex flex-col items-center text-center gap-3 sm:gap-4 max-w-2xl mx-auto mb-8 sm:mb-14">
-            <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
-              <Wheat className="h-3.5 w-3.5" /> Signature Blends
-            </span>
-            <h2 className="font-display font-bold text-[2.2rem] sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
+            <span className="eyebrow">Signature Blends</span>
+            <h2 className="headline text-[2.4rem] sm:text-6xl lg:text-[4.25rem]">
               Featured <span className="accent-text">products</span>
             </h2>
-            <span className="rule-berry" />
             <p className="text-ink-soft text-[14px] sm:text-[15px] leading-relaxed font-medium">
               Our most-loved bakes and pantry staples — slow-baked with heritage grains, butter and country sugar.
             </p>
             <Link
               to="/shop"
-              className="btn-glass mt-1 inline-flex items-center gap-2 h-11 px-5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em]"
+              className="btn-outline mt-2"
             >
               View all <ArrowRight className="h-4 w-4" />
             </Link>
@@ -1002,7 +547,7 @@ export default function Home() {
 
                     <div className="flex flex-col flex-1 gap-2.5 p-5">
                       <div>
-                        <h3 className="display-md text-[16.5px] text-[#221B1F] leading-snug">{item.name}</h3>
+                        <h3 className="display-md text-[16.5px] text-[#1F1726] leading-snug">{item.name}</h3>
                       </div>
                       <p className="text-ink-soft text-[12.5px] leading-relaxed line-clamp-2 font-medium flex-1">{item.desc}</p>
 
@@ -1030,755 +575,156 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ⸻ TRADITIONAL NOURISHMENT CATALOG ⸻ */}
+      {/* ⸻ SHOP BY NEED — Seed-style category rows ⸻ */}
+      <CategoryRows
+        rows={catalogCategories.map((name) => ({ name, items: products.filter((p) => productInCategory(p, name)) }))}
+      />
+
+      {/* ⸻ CRAFT SPOTLIGHT — Seed's "ViaCap® Technology" glass panel ⸻ */}
+      <CraftSpotlight bgImage={appearance.craftSpotlightBg} productImage={appearance.craftSpotlightImage} />
+
+      {/* ⸻ TRADITIONAL NOURISHMENT CATALOG — wrapped tabs + responsive grids (no sideways scrolling) ⸻ */}
       <section
         id="products"
         ref={registerSectionRef}
-        className={`py-14 sm:py-28 relative z-10 font-sans overflow-hidden bg-center bg-cover ${appearance.catalogAllBg ? '' : 'bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF]'}`}
+        className={`relative z-10 overflow-clip py-16 sm:py-28 font-sans bg-center bg-cover ${appearance.catalogAllBg ? '' : 'bg-cream'}`}
         style={appearance.catalogAllBg ? { backgroundImage: `url(${appearance.catalogAllBg})` } : undefined}
       >
-
-        {/* ── Floating particles ── */}
-        <Field orbs={[{ size: 560, color: ORB_BERRY, top: -140, left: -140 }, { size: 480, color: ORB_GOLD, bottom: -160, right: -140 }]} />
-
-        {/* ── BG LAYER 1: Subtle luxury ambient glows ── */}
-        <div className="absolute top-0 left-[5%] w-[600px] h-[600px] rounded-full bg-berry/[0.05] blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[10%] right-[5%] w-[550px] h-[550px] rounded-full bg-gold-light/[0.07] blur-[130px] pointer-events-none" />
-        <div className="absolute top-[50%] left-[20%] w-[400px] h-[400px] rounded-full bg-[#D7A94E]/[0.05] blur-[120px] pointer-events-none" />
-
-        {/* ── BG LAYER 2: Delicate ring outlines ── */}
-        <div className="absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full border border-berry/10 pointer-events-none" />
-        <div className="absolute bottom-[-50px] right-[-50px] w-[380px] h-[380px] rounded-full border border-[#D7A94E]/12 pointer-events-none" />
-
-        <div className="container mx-auto px-4 sm:px-8 lg:px-10 max-w-[1600px] w-full">
-          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 border border-berry/20 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs backdrop-blur-md">
-              Organic Treats
-            </span>
-            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
-              Traditional <span className="accent-text">Nourishment Catalog</span>
+        <div className="relative mx-auto max-w-[1240px] 2xl:max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          {/* header */}
+          <div className="text-center max-w-2xl mx-auto space-y-3 sm:space-y-4">
+            <span className="eyebrow">Organic treats</span>
+            <h2 className="headline text-[2.1rem] sm:text-5xl lg:text-[3.6rem]">
+              Traditional <em>nourishment catalog</em>
             </h2>
-            <p className="text-ink-soft text-xs sm:text-base max-w-xl mx-auto leading-relaxed font-medium px-2">
-              Delicious, clean snacks thoughtfully crafted for your mindful wellness lifestyle.
+            <p className="text-ink-soft text-[14px] sm:text-base leading-relaxed">
+              Clean snacks and pantry staples, crafted for a mindful everyday.
             </p>
           </div>
 
-          {/* Category Filter Bar (Touch horizontal scroll on mobile, arrow buttons on desktop) */}
-          <div className="relative max-w-4xl mx-auto mb-10 sm:mb-16 sm:px-12">
-            {/* Desktop Left Scroll Arrow */}
-            <button
-              onClick={() => scrollCategoryBar('left')}
-              className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass-sm border border-hairline shadow-md items-center justify-center text-berry hover:bg-berry hover:text-white hover:border-berry transition-all cursor-pointer"
-              aria-label="Scroll categories left"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
-            <div
-              ref={categoryBarRef}
-              className="flex overflow-x-auto scrollbar-none py-2 px-1 sm:px-2 scroll-smooth snap-x"
-            >
-              <div className="flex items-center gap-2 sm:gap-3 mx-auto">
-              {allCategoryTabs.map((category) => {
-                const isAll = category === 'All Products' || category === 'All';
-                const isSelected = (activeCategory === 'All' && isAll) || activeCategory === category;
-                return (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(isAll ? 'All' : category)}
-                    className={`shrink-0 px-4 py-2 sm:px-6 sm:py-2.5 rounded-full text-[10.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.18em] sm:tracking-[0.22em] transition-all duration-300 border backdrop-blur-md cursor-pointer snap-start ${isSelected
-                      ? 'bg-berry border-berry text-white shadow-[0_6px_20px_rgba(146,0,117,0.3)] scale-[1.02]'
-                      : 'bg-white/90 border-hairline/80 text-ink-soft hover:bg-white hover:border-berry/40 hover:text-berry shadow-2xs'
-                      }`}
-                  >
-                    {category}
-                    {products.length > 0 && (
-                      <span className={`ml-1.5 tracking-normal ${isSelected ? 'text-white/75' : 'text-ink-muted'}`}>{tabCount(category)}</span>
-                    )}
-                  </button>
-                );
-              })}
-              </div>
-            </div>
-
-            {/* Desktop Right Scroll Arrow */}
-            <button
-              onClick={() => scrollCategoryBar('right')}
-              className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass-sm border border-hairline shadow-md items-center justify-center text-berry hover:bg-berry hover:text-white hover:border-berry transition-all cursor-pointer"
-              aria-label="Scroll categories right"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+          {/* category tabs — wrap onto new lines instead of scrolling sideways */}
+          <div role="tablist" aria-label="Product categories" className="mt-8 sm:mt-12 flex flex-wrap justify-center gap-2">
+            {allCategoryTabs.map((category) => {
+              const isAll = category === 'All Products';
+              const isSelected = (activeCategory === 'All' && isAll) || activeCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => { setActiveCategory(isAll ? 'All' : category); setCatalogLimit(CATALOG_PAGE); }}
+                  className={`inline-flex items-center gap-2 h-10 px-4 sm:px-5 rounded-full border text-[13.5px] sm:text-[14px] font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-ink border-ink text-white'
+                      : 'bg-white/80 border-[#E2DCD0] text-ink-soft hover:border-ink/40 hover:text-ink'
+                  }`}
+                >
+                  {isAll ? 'All' : category}
+                  {products.length > 0 && (
+                    <span className={`text-[12px] tabular-nums ${isSelected ? 'text-white/70' : 'text-ink-muted'}`}>{tabCount(category)}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {loading ? (
-            <div className="py-12">
-              <Loader fullScreen={false} text="Loading pure treats" />
-            </div>
-          ) : activeCategory === 'All' ? (
-            <div className="space-y-8 sm:space-y-10">
-              {catalogCategories
-                .map((catName) => ({
-                  catName,
-                  catProducts: products.filter(p => productInCategory(p, catName))
-                }))
-                .filter(({ catProducts }) => catProducts.length > 0)
-                .map(({ catName, catProducts }, catIdx, visibleCategories) => {
-                const displayProducts = catProducts;
-                const meta = getCategoryMeta(catName);
-                const IconComp = meta.icon;
-                const catBg = appearance[CATALOG_BG_KEY[catName]];
-
-                return (
-                  <Fragment key={catName}>
-                  <div
-                    className={`relative group/catBox ${catBg
-                      ? 'rounded-[2.5rem] sm:rounded-[3.25rem] overflow-hidden p-6 sm:p-12 lg:p-16 xl:p-20 -mx-4 sm:-mx-8 lg:-mx-10 xl:-mx-20 2xl:-mx-32 ring-1 ring-black/5 shadow-[0_45px_100px_-45px_rgba(121,8,63,0.42)]'
-                      : ''}`}
-                  >
-                    {catBg && (
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 bg-cover bg-center blur-[7px] scale-[1.18] pointer-events-none"
-                        style={{ backgroundImage: `url(${catBg})` }}
-                      />
-                    )}
-
-                    {/* ── Editorial Section Header ── */}
-                    <div className="flex items-end justify-between mb-6 sm:mb-10 pb-4 sm:pb-5 border-b border-gray-900/10 relative">
-
-                      {/* Accent line on top of the border */}
-                      <div className="absolute bottom-[-1px] left-0 w-12 sm:w-20 h-[2px] bg-gradient-to-r from-berry to-gold-light rounded-full" />
-
-                      {/* Left: Large editorial label */}
-                      <div className="flex flex-col gap-1.5 min-w-0">
-                        <p className="text-[10px] sm:text-[10.5px] font-bold uppercase tracking-[0.28em] text-berry flex items-center gap-1.5">
-                          <IconComp className="w-3 h-3" /> {meta.desc.split(' ').slice(0, 4).join(' ')}
-                        </p>
-                        <div className="flex items-baseline gap-2 sm:gap-4 flex-wrap">
-                          <h3 className="font-display font-bold text-3xl sm:text-5xl md:text-6xl text-[#221B1F] tracking-tight leading-none">
-                            {catName}
-                          </h3>
-                          <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-widest text-ink-muted self-end mb-0.5 sm:mb-1">
-                            {displayProducts.length} {displayProducts.length === 1 ? 'item' : 'items'}
-                          </span>
+          <div className="mt-10 sm:mt-14">
+            {loading ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                {Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+              </div>
+            ) : activeCategory === 'All' ? (
+              /* All: one block per category — header + a short grid, "View all" for the rest */
+              <div className="space-y-12 sm:space-y-16">
+                {catalogCategories
+                  .map((catName) => ({ catName, catProducts: products.filter((p) => productInCategory(p, catName)) }))
+                  .filter(({ catProducts }) => catProducts.length > 0)
+                  .map(({ catName, catProducts }) => {
+                    const catBg = appearance[CATALOG_BG_KEY[catName]];
+                    return (
+                      <div key={catName}>
+                        <div
+                          className={`flex items-end justify-between gap-4 pb-4 mb-5 sm:mb-6 border-b border-ink/10 ${catBg ? 'relative overflow-hidden rounded-[22px] border-b-0 px-5 sm:px-7 pt-10 sm:pt-14 text-white' : ''}`}
+                        >
+                          {catBg && (
+                            <>
+                              <span aria-hidden="true" className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${catBg})` }} />
+                              <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                            </>
+                          )}
+                          <div className="relative min-w-0">
+                            <h3 className={`headline text-[1.7rem] sm:text-[2.4rem] ${catBg ? 'headline-on-dark' : ''}`}>{catName}</h3>
+                            <p className={`mt-1 text-[13px] ${catBg ? 'text-white/80' : 'text-ink-muted'}`}>
+                              {catProducts.length} product{catProducts.length === 1 ? '' : 's'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap justify-start lg:justify-center gap-3 sm:gap-5">
+                          {catProducts.map((item, i) => (
+                            <Reveal key={item.id || item._id} delay={(i % 4) * 0.08} className={`flex ${CATALOG_CELL}`}>
+                              <ProductCard
+                                product={item}
+                                onAdd={(p) => openQuickAdd(p, 'cart')}
+                                onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
+                              />
+                            </Reveal>
+                          ))}
                         </div>
                       </div>
-
-                      {/* Right: Controls */}
-                      <div className="flex items-center gap-2 shrink-0 pb-0.5">
-                        <button
-                          onClick={() => scrollCategoryRow(catName, 'left')}
-                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-hairline items-center justify-center text-ink-muted hover:bg-[#221B1F] hover:text-white hover:border-[#221B1F] transition-all duration-200 cursor-pointer shadow-sm"
-                          aria-label={`Scroll ${catName} left`}
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => scrollCategoryRow(catName, 'right')}
-                          className="hidden sm:flex w-9 h-9 rounded-full bg-white border border-hairline items-center justify-center text-ink-muted hover:bg-[#221B1F] hover:text-white hover:border-[#221B1F] transition-all duration-200 cursor-pointer shadow-sm"
-                          aria-label={`Scroll ${catName} right`}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-
-                      </div>
-                    </div>
-
-                    {/* One-by-One Touch Carousel (w-full on mobile for 100% non-clipped fit) */}
-                    <div className="relative w-full overflow-hidden">
-                      <div
-                        ref={el => categoryRowRefs.current[catName] = el}
-                        className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-1 sm:py-3 px-0.5 sm:px-2 scroll-smooth snap-x snap-mandatory sm:pr-24 w-full"
-                      >
-                        {displayProducts.map((item) => (
-                          <div key={item.id || item._id} className="w-full sm:w-[calc(25%-16px)] sm:min-w-[245px] sm:max-w-[290px] shrink-0 flex snap-start snap-always">
-                            <ProductCard
-                              product={item}
-                              addLabel="Add"
-                              onAdd={(p) => openQuickAdd(p, 'cart')}
-                              onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <MobileSliderControls getEl={() => categoryRowRefs.current[catName]} count={displayProducts.length} label={`${catName} product`} />
+                    );
+                  })}
+              </div>
+            ) : (
+              /* One category: full grid, revealed 8 at a time */
+              <div>
+                <div className="flex items-end justify-between gap-4 pb-4 mb-5 sm:mb-6 border-b border-ink/10">
+                  <div>
+                    <h3 className="headline text-[1.7rem] sm:text-[2.4rem]">{activeCategory}</h3>
+                    <p className="mt-1 text-[13px] text-ink-muted">
+                      Showing {Math.min(catalogLimit, filteredProducts.length)} of {filteredProducts.length}
+                    </p>
                   </div>
-
-                  {catIdx < visibleCategories.length - 1 && <CatalogDivider />}
-                  </Fragment>
-                );
-              })}
-            </div>
-          ) : (
-            /* SINGLE CATEGORY GRID VIEW */
-            <div className="space-y-8">
-              <div className="flex items-center justify-between pb-4 border-b border-hairline/60">
-                <div>
-                  <h3 className="font-display font-bold text-3xl text-[#221B1F] tracking-tight">{activeCategory}</h3>
-                  <p className="text-xs text-ink-muted font-medium mt-1">Showing all products in {activeCategory}</p>
+                  <button type="button" onClick={() => setActiveCategory('All')} className="link-arrow shrink-0 text-[13.5px]">
+                    All categories
+                  </button>
                 </div>
-                <button
-                  onClick={() => setActiveCategory('All')}
-                  className="px-5 py-2.5 rounded-full bg-white border border-hairline text-xs font-bold text-berry hover:bg-berry hover:text-white transition-all cursor-pointer shadow-xs"
-                >
-                  ← Show All Categories
-                </button>
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-6">
-                {filteredProducts.map((item) => (
-                  <div key={item.id || item._id} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-[320px] min-w-[220px]">
-                    <ProductCard
-                      product={item}
-                      addLabel="Add"
-                      onAdd={(p) => openQuickAdd(p, 'cart')}
-                      onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
-                    />
+                <div className="flex flex-wrap justify-start lg:justify-center gap-3 sm:gap-5">
+                  {filteredProducts.slice(0, catalogLimit).map((item, i) => (
+                    <Reveal key={item.id || item._id} delay={(i % 4) * 0.08} className={`flex ${CATALOG_CELL}`}>
+                      <ProductCard
+                        product={item}
+                        onAdd={(p) => openQuickAdd(p, 'cart')}
+                        onWishlist={(p) => (isInWishlist(p.id || p._id) ? toggleWishlist(p) : openQuickAdd(p, 'wishlist'))}
+                      />
+                    </Reveal>
+                  ))}
+                </div>
+                {filteredProducts.length > catalogLimit && (
+                  <div className="mt-8 flex justify-center">
+                    <button type="button" onClick={() => setCatalogLimit((n) => n + CATALOG_PAGE)} className="btn-outline">
+                      Show more <span className="text-ink-muted">({filteredProducts.length - catalogLimit})</span>
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Full catalog CTA */}
-          <div className="mt-16 sm:mt-24 flex flex-col items-center gap-4 text-center">
-            <p className="text-ink-soft text-sm font-medium">Looking for something specific? Browse the complete range.</p>
-            <Link
-              to="/shop"
-              className="inline-flex items-center gap-2.5 h-12 px-8 rounded-full bg-berry text-white text-[11px] font-bold uppercase tracking-[0.16em] shadow-[0_10px_30px_-8px_rgba(146,0,117,0.45)] hover:bg-berry-deep hover:-translate-y-0.5 transition-all"
-            >
+          {/* full catalogue CTA */}
+          <div className="mt-14 sm:mt-20 flex flex-col items-center gap-4 text-center">
+            <p className="text-ink-soft text-sm">Looking for something specific? Browse the complete range.</p>
+            <Link to="/shop" className="btn-pill">
               Shop all products <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ⸻ 3. WHY CHOOSE ALIMENTURE (Trust Pillars Checklist Cards) ⸻ */}
       {/* ⸻ CATALOGUE DOWNLOAD — lead-gated PDF (Admin → Catalogue) ⸻ */}
       <CatalogueDownload />
 
-      <section id="trust-pillars" className="py-14 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative border-b border-hairline/60 overflow-hidden font-sans">
-        {/* ── Floating particles ── */}
-        <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12 relative z-10">
-          <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-gold-light bg-gold-light/10 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block border border-gold-light/20 shadow-xs backdrop-blur-md">
-              Trust Pillars
-            </span>
-            <h2 className="font-display font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl text-[#221B1F] tracking-tight leading-tight">
-              Why Families Choose <span className="accent-text">Alimenture</span>
-            </h2>
-          </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {[
-              {
-                Icon: Leaf,
-                title: '100% Natural Ingredients',
-                desc: 'Made with carefully selected ingredients sourced directly from nature.'
-              },
-              {
-                Icon: ShieldCheck,
-                title: 'No Maida • No White Sugar • No Refined Oil',
-                desc: 'Pure, clean-label recipes made only with wholesome ingredients.'
-              },
-              {
-                Icon: Globe,
-                title: 'Sustainable Practices',
-                desc: 'Eco-friendly packaging and responsible sourcing reducing environmental impact.'
-              },
-              {
-                Icon: Users,
-                title: 'Farmer Empowerment',
-                desc: 'Ethical partnerships with farming communities encouraging natural agriculture.'
-              }
-            ].map(({ Icon, ...item }) => (
-              <div
-                key={item.title}
-                className="relative p-4 sm:p-7 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[1.4rem] sm:rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(146,0,117,0.10)] hover:border-berry/30 hover:-translate-y-1.5 transition-all duration-300 space-y-3 sm:space-y-4 group overflow-hidden"
-              >
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-berry/10 to-gold-light/15 text-berry border border-berry/15 flex items-center justify-center shrink-0 group-hover:scale-110 transition-all duration-300">
-                  <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="space-y-1.5 sm:space-y-2">
-                  <h4 className="font-display font-bold text-[14px] sm:text-lg text-[#221B1F] group-hover:text-berry transition-colors leading-snug">
-                    {item.title}
-                  </h4>
-                  <p className="text-[11.5px] sm:text-xs text-ink-soft font-medium leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ BRAND FILM — admin-managed video (Admin → Templates) ⸻ */}
-      <BrandFilm />
-
-      {/* ⸻ 4. HEALTHY SNACKING FOR MODERN LIVING ⸻ */}
-      <section id="company" ref={registerSectionRef} className="py-16 sm:py-28 relative z-10 bg-[#FBF7EF] border-t border-hairline/60 overflow-hidden font-sans">
-        {/* ── Floating particles ── */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="container mx-auto px-6 lg:px-12 max-w-[1400px] space-y-28 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center">
-            <div className="lg:col-span-6 relative px-4 sm:px-10 lg:px-6 pt-4">
-              <LineupArtwork images={lineupImages} />
-            </div>
-
-            <div className="lg:col-span-6 space-y-6 sm:space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left z-10 pt-4 lg:pt-0">
-              <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry border-2 border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-xs text-center">
-                Clean Snack Lineup
-              </span>
-
-              <h3 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#221B1F] leading-[1.1] tracking-tight text-center lg:text-left">
-                <span className="accent-text">Alchemi's</span>
-              </h3>
-
-              <div className="h-1 w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto lg:mx-0" />
-
-              <div className="space-y-6 text-[#5A4F55] text-base md:text-lg leading-relaxed">
-                <p className="font-bold text-[#221B1F]">
-                  A line of healthy, clean-label cookies made from wholesome grains.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 w-full text-left">
-                {[
-                  {
-                    title: 'Sustained Low-GI Energy',
-                    desc: 'Slow release, no glycemic crash',
-                    accent: '#A50D5A'
-                  },
-                  {
-                    title: 'Prebiotic Gut Support',
-                    desc: 'Rich in prebiotic ancient fibers',
-                    accent: '#D7A94E'
-                  },
-                  {
-                    title: '10 Heritage Super Grains',
-                    desc: 'Pure native millets & raw seeds',
-                    accent: '#D7A94E'
-                  },
-                  {
-                    title: '0% Processed Sugar',
-                    desc: 'Naturally sweetened with palm sugar',
-                    accent: '#A50D5A'
-                  }
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-4 p-4 sm:p-5 bg-white border border-hairline rounded-[1.75rem] shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:border-berry/35 hover:shadow-[0_12px_30px_rgba(146,0,117,0.1)] hover:-translate-y-1 transition-all duration-300 group/pill"
-                  >
-                    <div className={`h-10 w-10 rounded-2xl ${item.accent === '#A50D5A' ? 'bg-berry/10 text-berry border border-berry/20 group-hover/pill:bg-berry' : 'bg-gold-light/10 text-[#B27B26] border border-gold-light/20 group-hover/pill:bg-gold-light'} flex items-center justify-center shrink-0 font-bold group-hover/pill:text-white transition-all duration-300 shadow-xs`}>
-                      <Check className="h-4 w-4 stroke-[3px]" />
-                    </div>
-                    <div>
-                      <span className="text-xs sm:text-sm font-bold text-[#221B1F] tracking-wide block group-hover/pill:text-berry transition-colors">
-                        {item.title}
-                      </span>
-                      <span className="text-[10px] sm:text-xs text-ink-muted font-medium mt-0.5 block">
-                        {item.desc}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 sm:gap-12 pt-4">
-            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-berry/10 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(146,0,117,0.1)] hover:border-berry/25 hover:-translate-y-1 transition-all duration-500">
-              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center text-berry shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:rotate-6 transition-all duration-500">
-                <Heart className="h-7 w-7 sm:h-10 sm:w-10" />
-              </div>
-              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-berry transition-colors tracking-tight leading-snug text-center">Why Alchemi's Matters</h4>
-              <p className="text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium">
-                Modern snacks are often loaded with processed ingredients that provide taste without nourishment. Alchemi's was created to change that. Our products combine traditional nutrition wisdom with premium food innovation to create snacks that genuinely support healthier lifestyles. Every ingredient is intentionally selected to deliver better nutritional value, cleaner ingredients, traditional wellness benefits, and everyday healthy snacking.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center text-center space-y-4 sm:space-y-6 group cursor-default bg-white p-6 sm:p-10 md:p-12 rounded-[2rem] sm:rounded-[3rem] border border-[#D7A94E]/15 shadow-[0_15px_40px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_rgba(212,175,55,0.06)] hover:border-[#D7A94E]/30 hover:-translate-y-1 transition-all duration-500">
-              <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-[#D7A94E]/25 flex items-center justify-center text-[#D7A94E] shadow-xs group-hover:scale-110 group-hover:bg-white/95 group-hover:border-[#D7A94E]/50 group-hover:rotate-6 transition-all duration-500">
-                <Zap className="h-7 w-7 sm:h-10 sm:w-10" />
-              </div>
-              <h4 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-[#221B1F] group-hover:text-[#D7A94E] transition-colors tracking-tight leading-snug text-center">Healthy Snacking for Modern Living</h4>
-              <p className="text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium">
-                Whether you are a fitness enthusiast, working professional, parent, or health-conscious consumer, Alchemi's is designed to become part of your daily wellness lifestyle. Perfect for morning nutrition, evening snacks, fitness-friendly diets, clean eating habits, and family wellness routines.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 5. POWERED BY ANCIENT SUPER GRAINS ⸻ */}
-      <section id="sustainability" ref={registerSectionRef} className="py-16 sm:py-28 border-t border-hairline/60 relative z-10 overflow-hidden font-sans">
-        {/* heritage-grain photo backdrop with a warm cream wash */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={superGrainsBg}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#FBF7EF]/90 via-[#F9F1E1]/80 to-[#FBF7EF]/94" />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'radial-gradient(80% 55% at 50% 0%, transparent 40%, rgba(121,8,63,0.10) 100%)' }}
-          />
-        </div>
-
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-20 space-y-3 sm:space-y-4">
-            <span className="text-[10.5px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/5 border border-berry/15 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full inline-block shadow-xs">
-              Nutritional Blueprint
-            </span>
-            <h2 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-tight tracking-tight">
-              Powered by Ancient Super Grains
-            </h2>
-            <div className="h-1 w-20 sm:w-24 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full mx-auto" />
-            <p className="text-ink-soft text-xs sm:text-base leading-relaxed text-center px-2 font-medium text-pretty">
-              Our cookies are enriched with ancient grains and traditional rice varieties that have been trusted for generations for their nutritional richness and wellness benefits. These grains naturally provide fiber-rich nourishment, essential minerals, long-lasting energy, better digestion support, and wholesome nutrition.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-5 sm:gap-6">
-            {superGrains.map((millet, idx) => (
-              <div key={idx}
-                className="group relative glass foil-top rounded-panel overflow-hidden flex flex-col w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)] min-w-[240px] max-w-[300px] hover:-translate-y-1.5 transition-transform duration-400"
-              >
-                <div className="relative aspect-square w-full overflow-hidden bg-cream">
-                  {millet.image && (
-                    <img
-                      src={millet.image}
-                      alt={millet.name}
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/45 via-transparent to-transparent pointer-events-none" />
-
-                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                    <span className="h-7 w-7 rounded-lg bg-white/85 backdrop-blur-md border border-white/70 flex items-center justify-center text-[10px] font-extrabold text-berry">
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-                    {millet.local && (
-                      <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-berry bg-white/85 backdrop-blur-md border border-white/70 px-2.5 py-1 rounded-full">
-                        {millet.local}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-center text-center gap-3 p-5">
-                  <h3 className="font-display font-bold text-xl text-[#221B1F] leading-tight group-hover:text-berry transition-colors">
-                    {millet.name}
-                  </h3>
-                  <span className="h-[2px] w-10 bg-gradient-to-r from-berry to-gold-light rounded-full group-hover:w-16 transition-all duration-500" />
-                  <p className="text-[12.5px] text-ink-soft leading-relaxed font-medium">
-                    {millet.benefit}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 6. OUR PURPOSE ⸻ */}
-      <section id="about" ref={registerSectionRef} className="py-14 sm:py-24 px-4 sm:px-6 bg-white relative font-sans">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-berry bg-berry/10 px-4 py-1.5 rounded-full inline-block border border-berry/20">
-              Our Purpose
-            </span>
-            <h2 className="font-display font-bold text-3xl sm:text-5xl text-[#221B1F] tracking-tight text-balance">
-              Why We Started
-            </h2>
-            <p className="text-base text-[#221B1F]/80 leading-relaxed font-medium max-w-2xl mx-auto">
-              At Alimenture, every decision begins with a simple belief—food should nourish lives, empower communities, and protect nature.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-5 relative group">
-              <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl z-10">
-                <img
-                  src={nammalvarImage}
-                  alt="Nammalvar — the green crusader who inspired Alimenture"
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-[420px] object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-              </div>
-
-              <div className="absolute -bottom-12 -right-4 sm:-right-6 bg-gradient-to-br from-white/90 via-violet-50/60 to-white/80 backdrop-blur-2xl border border-violet-200/50 rounded-2xl p-6 shadow-[0_20px_50px_rgba(109,40,217,0.12),inset_0_1px_0_rgba(255,255,255,0.9)] max-w-xs z-20">
-                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-violet-400/50 to-transparent rounded-t-3xl" />
-                <Quote className="h-7 w-7 text-violet-500 mb-2 opacity-80" />
-                <p className="font-display font-bold text-sm text-[#221B1F] leading-snug italic">
-                  "Food should nourish people without adding preservatives."
-                </p>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7 space-y-6">
-              <p className="text-base sm:text-lg text-[#221B1F]/90 leading-relaxed font-medium">
-                Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition.
-              </p>
-              <p className="text-sm sm:text-base text-[#221B1F]/80 leading-relaxed font-medium">
-                More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 7. WHO WE ARE ⸻ */}
-      <section id="story" className="py-16 sm:py-28 relative z-10 bg-[#FBF7EF] overflow-hidden font-sans">
-        <div className="absolute right-0 top-10 w-96 h-96 bg-[#D7A94E]/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute left-0 bottom-10 w-96 h-96 bg-berry/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-20 items-center">
-            <div className="space-y-6 sm:space-y-10 lg:pr-6 flex flex-col items-center text-center lg:items-start lg:text-left">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-berry border border-berry/20 bg-berry/5 px-5 py-2 rounded-full inline-block shadow-sm">
-                Our Story
-              </span>
-              <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-[#221B1F] leading-[1.05] tracking-tight text-balance">
-                Built on a Mission.<br /><span className="accent-text">Not a Trend.</span>
-              </h2>
-              <div className="h-1 w-28 bg-gradient-to-r from-berry via-gold-light to-transparent rounded-full" />
-
-              <div className="space-y-6 pt-2 w-full">
-                <p className="text-[#221B1F] leading-relaxed text-base sm:text-lg font-medium">
-                  Alimenture Industries Private Limited was incorporated in Chennai in December 2023 by visionary entrepreneurs Pavin Saminathan and Magesh Mohan.
-                </p>
-                <p className={`text-[#5A4F55] leading-relaxed text-sm sm:text-base font-medium ${storyOpen ? '' : 'line-clamp-4 sm:line-clamp-none'}`}>
-                  Driven by the vision of building a self-reliant economy through sustainable food systems, Alimenture was founded with a mission to redefine healthy living through natural, toxin-free nutrition. More than a food manufacturing company, Alimenture is a movement dedicated to creating healthier communities by reconnecting people with authentic, wholesome food. Inspired by the philosophy of the legendary green crusader Nammalvar, we believe that food should nourish people without adding preservatives. Every product we create reflects our commitment to purity, sustainability, and the well-being of future generations.
-                </p>
-                {!storyOpen && (
-                  <button type="button" onClick={() => setStoryOpen(true)} className="sm:hidden py-2.5 -my-2.5 text-[12px] font-extrabold uppercase tracking-[0.14em] text-berry">
-                    Read more
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:gap-8">
-              {trustPillars.map((pillar, idx) => (
-                <div key={idx}
-                  className="group relative bg-gradient-to-br from-white to-gray-50/50 border border-hairline/60 rounded-2xl p-4 sm:p-8 space-y-3 sm:space-y-6 shadow-sm hover:shadow-xl hover:shadow-rose-900/8 hover:border-berry/20 transition-all duration-400 hover:-translate-y-2 overflow-hidden">
-                  {/* Liquid sheen top */}
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry-bright/30 to-transparent" />
-                  <div className="absolute -top-12 -right-12 w-28 h-28 bg-gradient-to-br from-berry-tint/10 to-gold/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500 pointer-events-none" />
-
-                  <div className="h-11 w-11 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-white/80 backdrop-blur-md border border-hairline/60 flex items-center justify-center text-berry group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/30 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] group-hover:rotate-6 transition-all duration-500 shadow-sm shrink-0 relative z-10">
-                    {pillar.icon}
-                  </div>
-
-                  <div className="space-y-2 relative z-10">
-                    <h3 className="font-display font-bold text-[#221B1F] text-[14px] sm:text-xl leading-tight tracking-wide group-hover:text-berry transition-colors">{pillar.title}</h3>
-                    <p className="text-[11.5px] sm:text-sm text-ink-soft leading-relaxed font-medium">{pillar.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 8. THE 3S PHILOSOPHY OF ALIMENTURE ⸻ */}
-      <section id="philosophy-3s" className="pt-8 pb-16 sm:pb-28 px-4 sm:px-6 bg-gradient-to-b from-[#FBF7EF] via-[#F9F1E1] to-[#FBF7EF] relative font-sans border-t border-hairline/60 overflow-hidden">
-        {/* ── Floating particles removed for performance ── */}
-        <div className="max-w-7xl mx-auto space-y-20 relative z-10">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-berry bg-berry/10 px-5 py-2 rounded-full inline-block border border-berry/20 shadow-xs backdrop-blur-md">
-              Foundational Pillars
-            </span>
-            <h2 className="font-display font-bold text-4xl sm:text-6xl text-[#221B1F] tracking-tight">
-              The 3S Philosophy of <span className="accent-text">Alimenture</span>
-            </h2>
-          </div>
-
-          <div className="-mx-4 px-4 scroll-px-4 md:mx-0 md:px-0 md:scroll-px-0 flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-none pb-2">
-            {[
-              {
-                icon: <Sprout className="h-7 w-7 text-berry" />,
-                title: 'Sustenance',
-                desc: 'Creating wholesome foods that support everyday health, energy, and overall well-being through natural ingredients and traditional nutrition.'
-              },
-              {
-                icon: <Globe className="h-7 w-7 text-gold-light" />,
-                title: 'Sustainability',
-                desc: 'Promoting farming and food production methods that protect the environment, preserve biodiversity, and ensure a healthier planet for future generations.'
-              },
-              {
-                icon: <Users className="h-7 w-7 text-berry" />,
-                title: 'Self-Reliance',
-                desc: 'Building a stronger and more sustainable economy by empowering local farmers, encouraging natural cultivation, and delivering toxin-free nourishment.'
-              }
-            ].map(card => (
-              <div
-                key={card.title}
-                className="w-[82%] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-start relative p-6 sm:p-10 bg-white/90 backdrop-blur-xl border border-hairline/80 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_10px_35px_rgba(0,0,0,0.03)] hover:shadow-[0_25px_50px_rgba(146,0,117,0.12)] hover:border-berry/30 hover:-translate-y-2 transition-all duration-500 space-y-5 group overflow-hidden flex flex-col items-center sm:items-start text-center sm:text-left"
-              >
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-berry/40 via-[#D7A94E]/50 to-transparent" />
-                <div className="h-16 w-16 rounded-2xl bg-white/80 backdrop-blur-md border border-berry/20 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 group-hover:bg-white/95 group-hover:border-berry/40 group-hover:shadow-[0_12px_28px_rgba(146,0,117,0.2)] transition-all duration-500 mx-auto sm:mx-0">
-                  {card.icon}
-                </div>
-                <div className="space-y-3 w-full">
-                  <h4 className="font-display font-bold text-xl sm:text-2xl text-[#221B1F] group-hover:text-berry transition-colors leading-tight text-center sm:text-left tracking-tight">
-                    {card.title}
-                  </h4>
-                  <p className="text-[13px] sm:text-sm text-ink-soft leading-relaxed font-medium">
-                    {card.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 9. CRAFTING GRAINS INTO GOLD ⸻ */}
-      <section id="philosophy" ref={registerSectionRef} className="relative z-10 overflow-hidden font-sans py-16 sm:py-28">
-        {/* photo backdrop with warm cream wash */}
-        <div className="absolute inset-0 -z-10">
-          <img
-            src={craftingBg}
-            alt=""
-            aria-hidden="true"
-            className="w-full h-full object-cover object-center"
-            loading="lazy"
-            decoding="async"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#FBF7EF]/85 via-[#F9F1E1]/72 to-[#FBF7EF]/92" />
-          <div
-            className="absolute inset-0"
-            style={{ background: 'radial-gradient(85% 55% at 50% 0%, transparent 35%, rgba(121,8,63,0.12) 100%)' }}
-          />
-        </div>
-
-        <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-          {/* headline */}
-          <div className="text-center max-w-3xl mx-auto flex flex-col items-center gap-5">
-            <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
-              <Wheat className="h-3.5 w-3.5" /> Alchemi&rsquo;s Grainlets
-            </span>
-            <h2 className="font-display font-bold text-[2.6rem] sm:text-6xl lg:text-[4.1rem] leading-[1.02] tracking-tight text-[#221B1F] text-balance">
-              Crafting grains <span className="accent-text">into gold</span>
-            </h2>
-            <p className="text-[15px] sm:text-lg text-ink-soft font-medium leading-relaxed max-w-xl">
-              We don&rsquo;t bake compromises. Every recipe is thoughtfully crafted with superior ingredients, exceptional taste, and honest goodness.
-            </p>
-          </div>
-
-          {/* two pillars */}
-          <div className="mt-14 sm:mt-20 grid md:grid-cols-2 gap-5">
-            <div className="relative glass foil-top rounded-panel p-7 sm:p-9 flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
-              <span className="ico-chip h-12 w-12 rounded-2xl"><Leaf className="h-5 w-5" /></span>
-              <h3 className="display-md text-xl sm:text-2xl text-[#221B1F]">Building a sustainable food future</h3>
-              <p className="text-[13px] sm:text-[14px] text-ink-soft leading-relaxed font-medium">
-                Healthy food should serve people and the planet alike. We back sustainable food systems, farmer-friendly ecosystems and traditional agriculture — from sourcing to plate.
-              </p>
-            </div>
-
-            <div className="relative glass foil-top rounded-panel p-7 sm:p-9 flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
-              <span className="ico-chip ico-chip-gold h-12 w-12 rounded-2xl"><Shield className="h-5 w-5" /></span>
-              <h3 className="display-md text-xl sm:text-2xl text-[#221B1F]">Food you can trust</h3>
-              <p className="text-[13px] sm:text-[14px] text-ink-soft leading-relaxed font-medium">
-                Every product is made with transparency and care — honest ingredients, real nutrition and cleaner choices, with nothing to hide on the label.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ⸻ 10. OUR COMMITMENT ⸻ */}
-      <section id="commitment" className="py-14 sm:py-28 px-4 sm:px-6 bg-[#FBF7EF] relative font-sans">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden shadow-[0_45px_110px_-35px_rgba(121,8,63,0.55)] bg-[#1E0518]">
-            {/* layered background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#37062A] via-[#5C0A3B] to-[#1C0416]" />
-            <img
-              src={commitmentBg}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover opacity-[0.12] mix-blend-soft-light pointer-events-none"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="absolute -top-24 -right-16 w-[26rem] h-[26rem] bg-berry/30 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute -bottom-24 -left-16 w-[24rem] h-[24rem] bg-gold-light/20 rounded-full blur-[120px] pointer-events-none" />
-            {/* gold foil hairline */}
-            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-[#D7A94E] to-transparent" />
-
-            <div className="relative z-10 p-8 sm:p-14 lg:p-16">
-              <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-12 lg:gap-16 items-start">
-                {/* statement */}
-                <div className="space-y-7 text-center lg:text-left flex flex-col items-center lg:items-start">
-                  <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.35em] text-[#E9C877] bg-white/[0.06] px-4 py-2 rounded-full border border-white/15">
-                    <HeartHandshake className="h-3.5 w-3.5" /> Our Commitment
-                  </span>
-                  <h2 className="font-display font-bold text-3xl sm:text-5xl lg:text-[3.4rem] text-white leading-[1.08] tracking-tight text-balance">
-                    Every product we craft is a step toward a{' '}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F6B5D6] via-[#E9C877] to-[#D7A94E]">healthier India</span>.
-                  </h2>
-                  <p className="text-sm sm:text-[15px] text-white/75 leading-relaxed font-medium max-w-xl text-pretty">
-                    From responsibly sourced ingredients to the farming communities behind them, every decision reflects our dedication to nutrition that is toxin-free, deeply rooted in tradition, and built to last.
-                  </p>
-                  <Link
-                    to="/about"
-                    className="group inline-flex items-center gap-2 text-sm font-bold text-white border-b-2 border-[#D7A94E]/50 pb-1 hover:border-[#D7A94E] transition-colors"
-                  >
-                    Explore our story
-                    <ArrowRight className="h-4 w-4 text-[#D7A94E] group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-
-                {/* pillars */}
-                <div className="space-y-3.5 w-full">
-                  {[
-                    { icon: Sprout,      title: 'Nutrient-rich by design', desc: 'Whole grains and clean recipes, built around real nutrition.' },
-                    { icon: ShieldCheck, title: 'Toxin-free, always',       desc: 'Honest ingredients and transparent sourcing you can actually verify.' },
-                    { icon: Users,       title: 'Farmer-first ecosystems',  desc: 'Traditional agriculture and fair partnerships that strengthen local communities.' },
-                  ].map((p, i) => (
-                    <div
-                      key={i}
-                      className="group flex items-start gap-4 p-5 rounded-2xl bg-white/[0.05] border border-white/10 backdrop-blur-md hover:bg-white/[0.09] hover:border-[#D7A94E]/30 transition-all duration-300"
-                    >
-                      <span className="h-11 w-11 shrink-0 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-[#E9C877] group-hover:scale-110 transition-transform duration-300">
-                        <p.icon className="h-5 w-5" />
-                      </span>
-                      <div className="space-y-1 text-left">
-                        <h3 className="font-display font-bold text-white text-base tracking-tight">{p.title}</h3>
-                        <p className="text-[12.5px] text-white/60 leading-relaxed font-medium">{p.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* pull quote */}
-              <div className="mt-12 sm:mt-14 pt-10 border-t border-white/10 flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-                <Quote className="h-8 w-8 text-[#D7A94E]/70 shrink-0" />
-                <p className="font-display font-semibold text-lg sm:text-2xl text-white/95 leading-snug tracking-tight max-w-4xl">
-                  We don&rsquo;t just produce food — we cultivate healthier lifestyles, stronger communities, and a future where{' '}
-                  <span className="text-[#E9C877]">nutrition, nature, and responsibility</span> grow together.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
 
 
@@ -1829,7 +775,7 @@ export default function Home() {
                 onClick={e => e.stopPropagation()}
               >
                 {/* Modal Hero: Product Image + Title */}
-                <div className="relative h-44 w-full overflow-hidden bg-[#FBF7EF]">
+                <div className="relative h-44 w-full overflow-hidden bg-[#F7F0E3]">
                   {item.image && (
                     <img src={item.image} alt={name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                   )}
@@ -1849,7 +795,7 @@ export default function Home() {
                   <div className="absolute bottom-4 left-5 right-5">
                     <h3 className="font-display font-bold text-white text-xl leading-tight">{name}</h3>
                     {item.category && (
-                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#D7A94E] mt-0.5 block">{item.category}</span>
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#F8A830] mt-0.5 block">{item.category}</span>
                     )}
                   </div>
                 </div>
@@ -1871,7 +817,7 @@ export default function Home() {
                               className={`relative px-4 py-2.5 rounded-2xl font-bold text-xs transition-all border-2 ${sold
                                 ? 'border-hairline text-ink-muted cursor-not-allowed bg-cream line-through'
                                 : active
-                                  ? 'border-berry bg-berry/6 text-berry shadow-[0_4px_12px_rgba(146,0,117,0.15)]'
+                                  ? 'border-berry bg-berry/6 text-berry shadow-[0_4px_12px_rgba(176,18,143,0.15)]'
                                   : 'border-hairline text-ink-soft hover:border-berry/40 hover:bg-berry/3 bg-white'
                                 }`}
                             >
@@ -1910,7 +856,7 @@ export default function Home() {
                               const val = parseInt(e.target.value, 10);
                               setQaQty(isNaN(val) ? 1 : Math.max(1, Math.min(maxQty, val)));
                             }}
-                            className="w-12 text-center text-sm font-bold text-[#221B1F] bg-transparent border-none outline-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            className="w-12 text-center text-sm font-bold text-[#1F1726] bg-transparent border-none outline-none focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button
                             onClick={() => setQaQty(q => Math.min(maxQty, q + 1))}
@@ -1924,7 +870,7 @@ export default function Home() {
                       {totalPrice && (
                         <div className="text-right">
                           <p className="text-[10.5px] font-bold text-ink-muted uppercase tracking-widest mb-1">Total</p>
-                          <span className="text-2xl font-bold text-[#221B1F]">₹{totalPrice}</span>
+                          <span className="text-2xl font-bold text-[#1F1726]">₹{totalPrice}</span>
                         </div>
                       )}
                     </div>
@@ -1951,8 +897,8 @@ export default function Home() {
                       className={`flex-1 h-12 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 ${isOutOfStock
                         ? 'bg-cream-deep text-ink-muted cursor-not-allowed'
                         : quickAddMode === 'cart'
-                          ? 'bg-gradient-to-r from-berry to-berry-bright text-white shadow-[0_8px_24px_rgba(146,0,117,0.3)] hover:shadow-[0_12px_32px_rgba(146,0,117,0.45)] hover:opacity-95'
-                          : 'bg-gradient-to-r from-berry-bright to-berry text-white shadow-[0_8px_24px_rgba(233,30,140,0.3)] hover:opacity-95'
+                          ? 'bg-gradient-to-r from-berry to-berry-bright text-white shadow-[0_8px_24px_rgba(176,18,143,0.3)] hover:shadow-[0_12px_32px_rgba(176,18,143,0.45)] hover:opacity-95'
+                          : 'bg-gradient-to-r from-berry-bright to-berry text-white shadow-[0_8px_24px_rgba(212,20,143,0.3)] hover:opacity-95'
                         }`}
                     >
                       {quickAddMode === 'cart' ? <ShoppingCart className="h-4 w-4" /> : <Heart className="h-4 w-4" />}

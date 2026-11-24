@@ -110,31 +110,19 @@ export function Field({ orbs = [], grain = true, className = '' }) {
 }
 
 /* Preset orb palettes so sections stay consistent */
-export const ORB_BERRY = 'rgba(165,13,90,.15)';
-export const ORB_BERRY_STRONG = 'rgba(165,13,90,.22)';
-export const ORB_GOLD = 'rgba(215,169,78,.18)';
-export const ORB_GOLD_STRONG = 'rgba(215,169,78,.26)';
+export const ORB_BERRY = 'rgba(176,18,143,.15)';
+export const ORB_BERRY_STRONG = 'rgba(176,18,143,.22)';
+export const ORB_GOLD = 'rgba(214,170,80,.18)';
+export const ORB_GOLD_STRONG = 'rgba(214,170,80,.26)';
 
 /* ── PageBackdrop ──────────────────────────────────────────────────────
-   The ONE ambient background shared by every customer route. Fixed to the
-   viewport so the treatment is identical on every page: a solid cream base,
-   a berry→gold wash anchored to the very top (it sits *behind* the floating
-   navbar, so the colour reads from the very top edge) and a few blurred
-   colour orbs. Rendered once in CustomerLayout — pages keep transparent
-   roots and never add their own <Field>.                                */
+   The ONE background shared by every customer route: a plain cream field,
+   fixed to the viewport. Rendered once in CustomerLayout — pages keep
+   transparent roots.                                                     */
 export function PageBackdrop() {
-  return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-cream" aria-hidden="true">
-      <div className="absolute inset-x-0 top-0 h-[460px] bg-gradient-to-b from-berry-tint/70 via-gold-tint/25 to-transparent" />
-      <Field
-        orbs={[
-          { size: 600, color: ORB_BERRY, top: -200, left: -190 },
-          { size: 520, color: ORB_GOLD, top: 110, right: -210 },
-          { size: 480, color: ORB_BERRY, bottom: -240, left: -150 },
-        ]}
-      />
-    </div>
-  );
+  // Plain cream page field. (The pink top wash and glow orbs that used to sit
+  // here tinted the top of every page; removed for a cleaner, calmer look.)
+  return <div className="fixed inset-0 -z-10 pointer-events-none bg-cream" aria-hidden="true" />;
 }
 
 /* ── SectionHead ───────────────────────────────────────────────────────

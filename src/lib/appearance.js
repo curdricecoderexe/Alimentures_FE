@@ -55,3 +55,39 @@ export function useAppearance() {
   }, []);
   return map;
 }
+
+/**
+ * Page-specific image slots (GET /api/appearance?page=…), e.g. the Gift Hampers
+ * page's banner and product photos. Kept out of the site-wide map so other
+ * pages don't download them. Memory-cached for the session.
+ */
+const _pageMem = new Map();
+
+export async function fetchPageAppearance(page) {
+  try {
+    const res = await fetch(`${API_BASE}/appearance?page=${encodeURIComponent(page)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data && typeof json.data === 'object') {
+        _pageMem.set(page, json.data);
+        return json.data;
+      }
+    }
+  } catch { /* offline — keep what we have */ }
+  return _pageMem.get(page) || {};
+}
+
+export function clearPageAppearanceCache(page) {
+  if (page) _pageMem.delete(page);
+  else _pageMem.clear();
+}
+
+export function usePageAppearance(page) {
+  const [map, setMap] = useState(() => _pageMem.get(page) || {});
+  useEffect(() => {
+    let alive = true;
+    fetchPageAppearance(page).then((next) => { if (alive) setMap(next || {}); });
+    return () => { alive = false; };
+  }, [page]);
+  return map;
+}

@@ -166,16 +166,16 @@ export default function StaffOrders() {
   });
 
   if (isLoading) {
-    if (showSkeleton) return <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen"><TableSkeleton /></div>;
+    if (showSkeleton) return <div className="bg-transparent min-h-screen"><TableSkeleton /></div>;
     return <div className="min-h-screen bg-transparent"></div>;
   }
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Orders.</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Orders</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Update fulfillment status and review customer details</p>
         </div>
       </div>

@@ -288,9 +288,9 @@ export default function StaffChats() {
   const previousOrders = customerOrders.filter((o) => !ONGOING_STATUSES.includes((o.status || '').toLowerCase()));
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen space-y-6 sm:space-y-8">
+    <div className="bg-transparent min-h-screen space-y-6 sm:space-y-8">
       <div>
-        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Support Desk.</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Support Desk</h1>
         <p className="text-xs sm:text-sm text-gray-500 font-medium">Live conversations with customers</p>
       </div>
 
@@ -343,7 +343,7 @@ export default function StaffChats() {
               ) : (
                 myChats.map(chat => (
                   <div key={chat.id} onClick={() => selectChat(chat)}
-                       className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${selectedChat?.id === chat.id ? 'border-[#E83D6E] bg-rose-50/40' : 'border-gray-100 hover:bg-gray-50/60'}`}>
+                       className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${selectedChat?.id === chat.id ? 'border-[#E83D6E] bg-violet-50/40' : 'border-gray-100 hover:bg-gray-50/60'}`}>
                     <div className="flex items-center gap-3">
                       <div className="relative shrink-0">
                         <div className="h-9 w-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-[11px] font-bold text-gray-600">
@@ -374,7 +374,7 @@ export default function StaffChats() {
               {/* Thread header */}
               <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between gap-3 bg-white z-10">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 text-xs font-bold shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-violet-50 border border-violet-100 flex items-center justify-center text-violet-600 text-xs font-bold shrink-0">
                     {initials(selectedChat.guestName)}
                   </div>
                   <div className="min-w-0">

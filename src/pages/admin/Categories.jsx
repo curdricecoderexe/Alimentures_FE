@@ -51,7 +51,7 @@ function CategoryRow({ cat, index, total, busy, onRename, onToggle, onMove, onDe
       }`}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <span className="w-8 h-8 rounded-xl bg-[#C41E6B]/10 text-[#C41E6B] text-xs font-bold flex items-center justify-center shrink-0">
+        <span className="w-8 h-8 rounded-xl bg-[#B0128F]/10 text-[#B0128F] text-xs font-bold flex items-center justify-center shrink-0">
           {index + 1}
         </span>
 
@@ -66,9 +66,9 @@ function CategoryRow({ cat, index, total, busy, onRename, onToggle, onMove, onDe
                 if (e.key === 'Enter') save();
                 if (e.key === 'Escape') { setEditing(false); setName(cat.name); }
               }}
-              className="flex-1 min-w-0 h-9 px-3 rounded-xl border border-[#C41E6B]/40 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#C41E6B]/20"
+              className="flex-1 min-w-0 h-9 px-3 rounded-xl border border-[#B0128F]/40 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#B0128F]/20"
             />
-            <button onClick={save} disabled={busy} aria-label="Save name" className="h-9 w-9 rounded-xl bg-[#C41E6B] text-white flex items-center justify-center shrink-0 disabled:opacity-50">
+            <button onClick={save} disabled={busy} aria-label="Save name" className="h-9 w-9 rounded-xl bg-[#B0128F] text-white flex items-center justify-center shrink-0 disabled:opacity-50">
               <Check className="w-4 h-4" />
             </button>
             <button onClick={() => { setEditing(false); setName(cat.name); }} aria-label="Cancel" className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center shrink-0">
@@ -93,19 +93,19 @@ function CategoryRow({ cat, index, total, busy, onRename, onToggle, onMove, onDe
       {!editing && (
         <div className="flex items-center gap-1.5 self-end sm:self-auto">
           <button onClick={() => { setName(cat.name); setEditing(true); }} disabled={busy} aria-label={`Rename ${cat.name}`} title="Rename"
-            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-40">
+            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-40">
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onToggle(cat)} disabled={busy} aria-label={cat.visible ? `Hide ${cat.name}` : `Show ${cat.name}`} title={cat.visible ? 'Hide from shop' : 'Show in shop'}
-            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-40">
+            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-40">
             {cat.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
           </button>
           <button onClick={() => onMove(index, -1)} disabled={busy || index === 0} aria-label="Move up" title="Move up"
-            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-30">
+            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-30">
             <ArrowUp className="w-3.5 h-3.5" />
           </button>
           <button onClick={() => onMove(index, 1)} disabled={busy || index === total - 1} aria-label="Move down" title="Move down"
-            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors disabled:opacity-30">
+            className="h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center hover:border-[#B0128F] hover:text-[#B0128F] transition-colors disabled:opacity-30">
             <ArrowDown className="w-3.5 h-3.5" />
           </button>
           {confirmDelete ? (
@@ -212,11 +212,11 @@ export default function AdminCategories() {
   const visibleCount = categories.filter((c) => c.visible).length;
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans max-w-4xl">
+    <div className="space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans max-w-4xl">
       {/* header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <span className="w-11 h-11 rounded-2xl bg-[#C41E6B]/10 flex items-center justify-center text-[#C41E6B] shrink-0">
+          <span className="w-11 h-11 rounded-2xl bg-[#B0128F]/10 flex items-center justify-center text-[#B0128F] shrink-0">
             <Layers className="w-5 h-5" />
           </span>
           <div>
@@ -241,12 +241,12 @@ export default function AdminCategories() {
           maxLength={40}
           onChange={(e) => setNewName(e.target.value)}
           placeholder="New category name, e.g. Millet Flakes"
-          className="flex-1 min-w-0 h-11 px-4 rounded-xl bg-gray-50 border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#C41E6B] focus:bg-white"
+          className="flex-1 min-w-0 h-11 px-4 rounded-xl bg-gray-50 border border-gray-200 text-sm font-bold focus:outline-none focus:border-[#B0128F] focus:bg-white"
         />
         <button
           type="submit"
           disabled={busy || !newName.trim()}
-          className="h-11 px-5 rounded-xl bg-[#C41E6B] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 hover:brightness-110 transition disabled:opacity-50"
+          className="h-11 px-5 rounded-xl bg-[#B0128F] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 hover:brightness-110 transition disabled:opacity-50"
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />} Add category
         </button>
@@ -299,7 +299,7 @@ export default function AdminCategories() {
         </div>
       )}
 
-      <div className="rounded-2xl bg-[#C41E6B]/[0.04] border border-[#C41E6B]/15 px-4 py-3 text-[12px] text-gray-600 leading-relaxed">
+      <div className="rounded-2xl bg-[#B0128F]/[0.04] border border-[#B0128F]/15 px-4 py-3 text-[12px] text-gray-600 leading-relaxed">
         Renaming a category also moves every product in it to the new name. Hidden categories stay on their
         products but disappear from the shop filter. A category can only be deleted once no products use it.
       </div>

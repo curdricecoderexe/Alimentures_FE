@@ -45,12 +45,15 @@ const seo = await import('../src/lib/seo.js');
 const { CATEGORY_CONTENT, genericCategoryContent } = await import('../src/data/categoryContent.js');
 const { CHENNAI_PAGE } = await import('../src/data/localSeo.js');
 const { POLICIES, SUPPORT_CONTACT } = await import('../src/data/policies.js');
+const { BLOG_POSTS: STARTER_POSTS } = await import('../src/data/blog.js');
+const { parseContent } = await import('../src/lib/blogContent.js');
+const { HAMPERS } = await import('../src/data/hampers.js');
 
 const {
   SITE_URL, BRAND, LOCALE, DEFAULT_IMAGE, absoluteUrl, slugify, productPath, categoryPath,
   displayName, productTitle, productDescription, productJsonLd, breadcrumbJsonLd,
   productBreadcrumbs, organizationJsonLd, websiteJsonLd, publicImages, productImagePath,
-  dataUriExt, offerSummary, packSizes, keyIngredients, HOME_SEO, SHOP_SEO,
+  dataUriExt, offerSummary, packSizes, keyIngredients, HOME_SEO, SHOP_SEO, ABOUT_SEO, WHY_CHOOSE_SEO, BLOG_SEO, HAMPERS_SEO, articleJsonLd,
 } = seo;
 
 const API = (process.env.VITE_API_URL || '').replace(/\/+$/, '');
@@ -80,6 +83,7 @@ async function getJson(url, attempts = 6) {
 
 let products;
 let categories;
+let hampersVisible = true;
 try {
   const list = await getJson(`${API}/products?limit=100`);
   if (!list?.success) throw new Error('product list request failed');
@@ -90,6 +94,8 @@ try {
     return { ...p, ...(full?.data || {}) };
   }));
   categories = (await getJson(`${API}/categories`))?.data || [];
+  // Admin → Gift Hampers can switch the page off; leave it out of the build then.
+  hampersVisible = (await getJson(`${API}/settings`, 3))?.data?.hampersVisible !== false;
 } catch (err) {
   fail(`could not load catalogue from ${API} — ${err.message}`);
 }
@@ -164,7 +170,7 @@ function writePage(pathname, meta, body) {
 const link = (href, text) => `<a href="${esc(href)}">${esc(text)}</a>`;
 const crumbsHtml = (items) => `<nav aria-label="Breadcrumb">${items.map((c, i) => (i === items.length - 1 ? esc(c.name) : link(c.path, c.name))).join(' / ')}</nav>`;
 const navHtml = () => `<nav aria-label="Categories"><ul>${[
-  `<li>${link('/', 'Home')}</li>`, `<li>${link('/shop', 'Shop all products')}</li>`,
+  `<li>${link('/', 'Home')}</li>`, `<li>${link('/shop', 'Shop all products')}</li>`, `<li>${link('/about', 'About us')}</li>`, `<li>${link('/why-choose-us', 'Why choose us')}</li>`, ...(hampersVisible ? [`<li>${link('/hampers', 'Gift hampers')}</li>`] : []), `<li>${link('/blog', 'Blog')}</li>`,
   ...visibleCategories.map((c) => `<li>${link(categoryPath(c.name), c.name)}</li>`),
 ].join('')}</ul></nav>`;
 const productListHtml = (items) => `<ul>${items.map((p) => {
@@ -202,6 +208,56 @@ sitemap.push({ loc: '/', lastmod: isoDate(newest) });
 writePage('/shop', { title: SHOP_SEO.title, description: SHOP_SEO.description, pathname: '/shop' },
   `<main><h1>Shop all products</h1><p>${esc(SHOP_SEO.description)}</p>${navHtml()}${productListHtml(products)}</main>`);
 sitemap.push({ loc: '/shop', lastmod: isoDate(newest) });
+
+// About us
+writePage('/about', { title: ABOUT_SEO.title, description: ABOUT_SEO.description, pathname: '/about' },
+  `<main><h1>About ${esc(BRAND)} — rooted in nature, created with purpose</h1><p>${esc(ABOUT_SEO.description)}</p>${navHtml()}</main>`);
+sitemap.push({ loc: '/about', lastmod: isoDate(newest) });
+
+writePage('/why-choose-us', { title: WHY_CHOOSE_SEO.title, description: WHY_CHOOSE_SEO.description, pathname: '/why-choose-us' },
+  `<main><h1>Why choose ${esc(BRAND)}</h1><p>${esc(WHY_CHOOSE_SEO.description)}</p>${navHtml()}</main>`);
+sitemap.push({ loc: '/why-choose-us', lastmod: isoDate(newest) });
+
+// Gift hampers (skipped while an admin has the page switched off)
+if (hampersVisible) writePage('/hampers', { title: HAMPERS_SEO.title, description: HAMPERS_SEO.description, pathname: '/hampers' },
+  `<main><h1>Gift hampers</h1><p>${esc(HAMPERS_SEO.description)}</p><ul>${HAMPERS.map((h) => `<li><h2>${esc(h.name)}</h2><p>${esc(h.tagline)}</p><p>${esc(h.contents.join(', '))}</p></li>`).join('')}</ul>${navHtml()}</main>`);
+if (hampersVisible) sitemap.push({ loc: '/hampers', lastmod: isoDate(newest) });
+
+// Blog — listing + one page per post. Articles come from the API (written by
+// admin/staff); until one is published there, the built-in starters are used.
+let BLOG_POSTS = STARTER_POSTS;
+try {
+  const list = (await getJson(`${API}/blog`, 3))?.data || [];
+  if (list.length) {
+    BLOG_POSTS = (await Promise.all(list.map(async (p) => {
+      const full = (await getJson(`${API}/blog/${encodeURIComponent(p.slug)}`, 3))?.data;
+      return full ? { ...full, body: parseContent(full.content) } : null;
+    }))).filter(Boolean);
+  }
+} catch (err) {
+  console.warn(`⚠ prerender: could not load blog articles (${err.message}); using the built-in starters.`);
+}
+writePage('/blog', { title: BLOG_SEO.title, description: BLOG_SEO.description, pathname: '/blog' },
+  `<main><h1>The Grain Journal</h1><p>${esc(BLOG_SEO.description)}</p><ul>${BLOG_POSTS.map((p) => `<li>${link(`/blog/${p.slug}`, p.title)} — ${esc(p.excerpt)}</li>`).join('')}</ul>${navHtml()}</main>`);
+sitemap.push({ loc: '/blog', lastmod: BLOG_POSTS[0]?.date || isoDate(newest) });
+for (const post of BLOG_POSTS) {
+  const pathname = `/blog/${post.slug}`;
+  const crumbs = [{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: post.title, path: pathname }];
+  const bodyHtml = post.body.map((b) => {
+    if (b.h2) return `<h2>${esc(b.h2)}</h2>`;
+    if (b.list) return `<ul>${b.list.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
+    if (b.quote) return `<blockquote>${esc(b.quote)}</blockquote>`;
+    return `<p>${esc(b.p || b.tip || '')}</p>`;
+  }).join('');
+  writePage(pathname, {
+    title: `${post.title} | ${BRAND}`,
+    description: post.excerpt,
+    pathname,
+    type: 'article',
+    jsonLd: [articleJsonLd(post), breadcrumbJsonLd(crumbs)],
+  }, `<main>${crumbsHtml(crumbs)}<article><h1>${esc(post.title)}</h1><p>${esc(post.excerpt)}</p>${bodyHtml}</article>${navHtml()}</main>`);
+  sitemap.push({ loc: pathname, lastmod: post.date });
+}
 
 // Categories (only those with products — empty ones 404 via _redirects)
 for (const c of visibleCategories) {

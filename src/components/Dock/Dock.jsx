@@ -67,25 +67,25 @@ const THEMES = {
   // Alimenture light-glass: white glass panel, cream tiles, berry ink, gold dots.
   brand: {
     '--dock-panel': 'rgba(255, 255, 255, 0.82)',
-    '--dock-panel-edge': 'rgba(165, 13, 90, 0.10)',
+    '--dock-panel-edge': 'rgba(176,18,143, 0.10)',
     '--dock-panel-highlight': 'rgba(255, 255, 255, 0.9)',
-    '--dock-panel-shadow': '0 22px 44px -20px rgba(120, 10, 64, 0.34), 0 6px 16px -10px rgba(34, 27, 31, 0.14)',
-    '--dock-tile': 'linear-gradient(180deg, #FFFFFF 0%, #FBF7EF 100%)',
-    '--dock-tile-edge': 'rgba(178, 123, 38, 0.16)',
+    '--dock-panel-shadow': '0 22px 44px -20px rgba(106,26,138, 0.34), 0 6px 16px -10px rgba(31,23,38, 0.14)',
+    '--dock-tile': 'linear-gradient(180deg, #FFFFFF 0%, #F7F0E3 100%)',
+    '--dock-tile-edge': 'rgba(199,128,26, 0.16)',
     '--dock-tile-highlight': 'rgba(255, 255, 255, 1)',
-    '--dock-tile-shadow': '0 4px 10px -5px rgba(120, 10, 64, 0.28)',
-    '--dock-ink': '#A50D5A',
-    '--dock-label': '#79083F',
+    '--dock-tile-shadow': '0 4px 10px -5px rgba(106,26,138, 0.28)',
+    '--dock-ink': '#B0128F',
+    '--dock-label': '#6A1A8A',
     '--dock-label-ink': '#FFFFFF',
-    '--dock-dot': '#B27B26',
-    '--dock-separator': '#EEE6D6',
+    '--dock-dot': '#C7801A',
+    '--dock-separator': '#E6D8BF',
     '--dock-press': 'brightness(0.92)',
     '--dock-menu': 'rgba(255, 255, 255, 0.94)',
-    '--dock-menu-edge': 'rgba(165, 13, 90, 0.14)',
-    '--dock-menu-ink': '#221B1F',
-    '--dock-menu-muted': '#8E848B',
-    '--dock-menu-separator': '#EEE6D6',
-    '--dock-menu-shadow': '0 18px 40px -14px rgba(120, 10, 64, 0.32), 0 3px 10px rgba(34, 27, 31, 0.08)'
+    '--dock-menu-edge': 'rgba(176,18,143, 0.14)',
+    '--dock-menu-ink': '#1F1726',
+    '--dock-menu-muted': '#8A8193',
+    '--dock-menu-separator': '#E6D8BF',
+    '--dock-menu-shadow': '0 18px 40px -14px rgba(106,26,138, 0.32), 0 3px 10px rgba(31,23,38, 0.08)'
   }
 };
 

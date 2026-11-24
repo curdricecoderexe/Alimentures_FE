@@ -15,8 +15,8 @@ const authHeaders = () => ({ 'Content-Type': 'application/json', Authorization: 
 const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
 const stagger = { visible: { transition: { staggerChildren: 0.05 } } };
 
-const adminSelectCls = '!h-11 !rounded-xl !bg-gray-50/60 !border-gray-100 !text-sm focus:!ring-2 focus:!ring-[#C41E6B]/20 focus:!border-[#C41E6B]/40';
-const inputCls = 'w-full h-11 px-3.5 rounded-xl border border-gray-100 bg-gray-50/60 text-sm text-gray-900 font-medium focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all';
+const adminSelectCls = '!h-11 !rounded-xl !bg-gray-50/60 !border-gray-100 !text-sm focus:!ring-2 focus:!ring-[#B0128F]/20 focus:!border-[#B0128F]/40';
+const inputCls = 'w-full h-11 px-3.5 rounded-xl border border-gray-100 bg-gray-50/60 text-sm text-gray-900 font-medium focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all';
 const labelCls = 'block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5';
 
 const EMPTY_FORM = {
@@ -134,7 +134,7 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
                   {[['shiprocket', 'Shiprocket couriers'], ['local', 'Our local partner']].map(([v, l]) => (
                     <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, deliveryPartner: v }))}
                       className={`h-9 rounded-lg text-xs font-bold transition-all ${
-                        form.deliveryPartner === v ? 'bg-white text-[#C41E6B] shadow-sm border border-[#C41E6B]/20' : 'text-gray-400 hover:text-gray-600'}`}>
+                        form.deliveryPartner === v ? 'bg-white text-[#B0128F] shadow-sm border border-[#B0128F]/20' : 'text-gray-400 hover:text-gray-600'}`}>
                       {l}
                     </button>
                   ))}
@@ -155,7 +155,7 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
                   ].map(([v, l]) => (
                     <button key={v} type="button" onClick={() => setForm((f) => ({ ...f, standardFeeType: v }))}
                       className={`h-9 rounded-lg text-xs font-bold transition-all ${
-                        form.standardFeeType === v ? 'bg-white text-[#C41E6B] shadow-sm border border-[#C41E6B]/20' : 'text-gray-400 hover:text-gray-600'}`}>
+                        form.standardFeeType === v ? 'bg-white text-[#B0128F] shadow-sm border border-[#B0128F]/20' : 'text-gray-400 hover:text-gray-600'}`}>
                       {l}
                     </button>
                   ))}
@@ -182,8 +182,8 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
               <div className="col-span-2 border-t border-gray-100 pt-4">
                 <button type="button" onClick={() => setForm((f) => ({ ...f, fastestDeliveryAvailable: !f.fastestDeliveryAvailable }))}
                   className="flex items-center gap-2 text-sm font-bold">
-                  {form.fastestDeliveryAvailable ? <ToggleRight className="w-8 h-8 text-[#C41E6B]" /> : <ToggleLeft className="w-8 h-8 text-gray-300" />}
-                  <span className={form.fastestDeliveryAvailable ? 'text-[#C41E6B]' : 'text-gray-400'}>
+                  {form.fastestDeliveryAvailable ? <ToggleRight className="w-8 h-8 text-[#B0128F]" /> : <ToggleLeft className="w-8 h-8 text-gray-300" />}
+                  <span className={form.fastestDeliveryAvailable ? 'text-[#B0128F]' : 'text-gray-400'}>
                     <Rocket className="w-3.5 h-3.5 inline mr-1" />Fastest delivery {form.fastestDeliveryAvailable ? 'enabled' : 'disabled'}
                   </span>
                 </button>
@@ -213,7 +213,7 @@ function PincodeModal({ open, editing, defaultFee, onClose, onSaved }) {
             <div className="flex justify-end gap-3 mt-7">
               <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-400 hover:bg-gray-50">Cancel</button>
               <button type="submit" disabled={saving}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 disabled:opacity-60 flex items-center gap-2">
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 disabled:opacity-60 flex items-center gap-2">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}{editing ? 'Save changes' : 'Add PIN code'}
               </button>
             </div>
@@ -317,7 +317,7 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
               ))}
               {(form.courierFeeBands || []).length < 20 && (
                 <button type="button" onClick={() => set('courierFeeBands', [...(form.courierFeeBands || []), { maxRate: '', fee: '' }])}
-                  className="text-xs font-bold text-[#C41E6B] flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add band</button>
+                  className="text-xs font-bold text-[#B0128F] flex items-center gap-1"><Plus className="w-3.5 h-3.5" />Add band</button>
               )}
             </div>
           )}
@@ -334,7 +334,7 @@ function SettingsPanel({ tab, settings, onSave, saving }) {
       )}
       <div className="flex justify-end mt-6">
         <button onClick={save} disabled={saving}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 disabled:opacity-60 flex items-center gap-2">
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 disabled:opacity-60 flex items-center gap-2">
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}Save settings
         </button>
       </div>
@@ -465,7 +465,7 @@ export default function PincodeDelivery() {
   };
 
   const cards = useMemo(() => ([
-    { label: 'Total PIN codes', value: summary?.total ?? '—', icon: MapPin, color: '#C41E6B' },
+    { label: 'Total PIN codes', value: summary?.total ?? '—', icon: MapPin, color: '#B0128F' },
     { label: 'Deliverable', value: summary?.deliverable ?? '—', icon: PackageCheck, color: '#10b981' },
     { label: 'Unavailable', value: summary?.unavailable ?? '—', icon: PackageX, color: '#6b7280' },
     { label: 'Fastest enabled', value: summary?.fastest ?? '—', icon: Rocket, color: '#D4AF37' },
@@ -473,7 +473,7 @@ export default function PincodeDelivery() {
 
   const SortHead = ({ k, children }) => (
     <button onClick={() => toggleSort(k)} className="inline-flex items-center gap-1 hover:text-gray-700">
-      {children}<ArrowUpDown className={`w-3 h-3 ${sort === k ? 'text-[#C41E6B]' : 'text-gray-300'}`} />
+      {children}<ArrowUpDown className={`w-3 h-3 ${sort === k ? 'text-[#B0128F]' : 'text-gray-300'}`} />
     </button>
   );
 
@@ -483,19 +483,19 @@ export default function PincodeDelivery() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#C41E6B]/10 to-[#E83D6E]/10 border border-[#C41E6B]/15">
-              <MapPin className="w-5 h-5 text-[#C41E6B]" />
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#B0128F]/10 to-[#E83D6E]/10 border border-[#B0128F]/15">
+              <MapPin className="w-5 h-5 text-[#B0128F]" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">PIN Code Delivery</h1>
           </div>
           <p className="text-sm text-gray-400 font-medium ml-1">Serviceability, delivery fees and fastest-delivery rules by PIN code</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={refreshAll} className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#C41E6B] hover:border-[#C41E6B]/30 shadow-sm">
+          <button onClick={refreshAll} className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#B0128F] hover:border-[#B0128F]/30 shadow-sm">
             <RefreshCw className="w-4 h-4" />
           </button>
           <button onClick={() => setModal({ open: true, editing: null })}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 active:scale-95">
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 active:scale-95">
             <Plus className="w-4 h-4" /> Add PIN code
           </button>
         </div>
@@ -524,7 +524,7 @@ export default function PincodeDelivery() {
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 -mb-px transition-colors ${
-              tab === id ? 'border-[#C41E6B] text-[#C41E6B]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+              tab === id ? 'border-[#B0128F] text-[#B0128F]' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
             <Icon className="w-4 h-4" /> {label}
           </button>
         ))}
@@ -548,7 +548,7 @@ export default function PincodeDelivery() {
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search PIN code or city…"
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-gray-100 bg-white text-sm text-gray-900 font-medium focus:outline-none focus:border-[#C41E6B]/40 shadow-sm" />
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-gray-100 bg-white text-sm text-gray-900 font-medium focus:outline-none focus:border-[#B0128F]/40 shadow-sm" />
             </div>
             <div className="flex flex-wrap gap-2">
               <div className="w-44">
@@ -567,10 +567,10 @@ export default function PincodeDelivery() {
                   {f.opts.map(([val, lbl]) => <option key={val} value={val}>{lbl}</option>)}
                 </select>
               ))}
-              <button onClick={exportCsv} className="h-11 px-3.5 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:text-[#C41E6B] shadow-sm flex items-center gap-1.5">
+              <button onClick={exportCsv} className="h-11 px-3.5 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:text-[#B0128F] shadow-sm flex items-center gap-1.5">
                 <Download className="w-4 h-4" /> Export
               </button>
-              <button onClick={() => fileRef.current?.click()} className="h-11 px-3.5 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:text-[#C41E6B] shadow-sm flex items-center gap-1.5">
+              <button onClick={() => fileRef.current?.click()} className="h-11 px-3.5 rounded-xl border border-gray-100 bg-white text-sm font-bold text-gray-500 hover:text-[#B0128F] shadow-sm flex items-center gap-1.5">
                 <Upload className="w-4 h-4" /> Import CSV
               </button>
               <input ref={fileRef} type="file" accept=".csv,text/csv" hidden onChange={importCsv} />
@@ -581,10 +581,10 @@ export default function PincodeDelivery() {
           <AnimatePresence>
             {selected.size > 0 && (
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-2xl bg-[#C41E6B]/5 border border-[#C41E6B]/15">
-                <span className="text-sm font-bold text-[#C41E6B]">{selected.size} selected</span>
+                className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-2xl bg-[#B0128F]/5 border border-[#B0128F]/15">
+                <span className="text-sm font-bold text-[#B0128F]">{selected.size} selected</span>
                 {[['enable', 'Enable'], ['disable', 'Disable'], ['enableFastest', 'Enable fastest'], ['disableFastest', 'Disable fastest']].map(([a, l]) => (
-                  <button key={a} onClick={() => bulk(a)} className="text-xs font-bold text-gray-600 hover:text-[#C41E6B] px-2 py-1 rounded-lg hover:bg-white">{l}</button>
+                  <button key={a} onClick={() => bulk(a)} className="text-xs font-bold text-gray-600 hover:text-[#B0128F] px-2 py-1 rounded-lg hover:bg-white">{l}</button>
                 ))}
                 <button onClick={() => bulk('delete')} className="text-xs font-bold text-red-500 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-white">Delete</button>
                 <button onClick={() => setSelected(new Set())} className="ml-auto text-xs font-bold text-gray-400">Clear</button>
@@ -598,7 +598,7 @@ export default function PincodeDelivery() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50/70 text-[11px] uppercase tracking-wider text-gray-400 font-bold">
                   <tr>
-                    <th className="p-4 w-10"><input type="checkbox" checked={allOnPage} onChange={toggleAll} className="accent-[#C41E6B]" /></th>
+                    <th className="p-4 w-10"><input type="checkbox" checked={allOnPage} onChange={toggleAll} className="accent-[#B0128F]" /></th>
                     <th className="p-4 text-left"><SortHead k="pincode">PIN</SortHead></th>
                     <th className="p-4 text-left"><SortHead k="city">City</SortHead></th>
                     <th className="p-4 text-left"><SortHead k="state">State</SortHead></th>
@@ -626,7 +626,7 @@ export default function PincodeDelivery() {
                       const inactive = r.isActive === false;
                       return (
                         <tr key={r.pincode} className={`border-t border-gray-50 hover:bg-gray-50/40 ${inactive ? 'opacity-50' : ''}`}>
-                          <td className="p-4"><input type="checkbox" checked={selected.has(r.pincode)} onChange={() => toggleRow(r.pincode)} className="accent-[#C41E6B]" /></td>
+                          <td className="p-4"><input type="checkbox" checked={selected.has(r.pincode)} onChange={() => toggleRow(r.pincode)} className="accent-[#B0128F]" /></td>
                           <td className="p-4 font-mono font-bold text-gray-900 tracking-wider">
                             {r.pincode}
                             {r.deliveryPartner === 'local' && (
@@ -637,12 +637,12 @@ export default function PincodeDelivery() {
                           <td className="p-4 text-gray-500">{r.state || '—'}</td>
                           <td className="p-4 text-right">
                             {r.standardFeeType === 'custom'
-                              ? <span className="font-bold text-gray-800">{r.standardDeliveryFee ? `₹${r.standardDeliveryFee}` : 'Free'}<span className="ml-1.5 text-[9px] font-bold uppercase tracking-wider text-[#C41E6B]">Custom</span></span>
+                              ? <span className="font-bold text-gray-800">{r.standardDeliveryFee ? `₹${r.standardDeliveryFee}` : 'Free'}<span className="ml-1.5 text-[9px] font-bold uppercase tracking-wider text-[#B0128F]">Custom</span></span>
                               : <span className="text-gray-400">Default{settings ? ` · ₹${settings.defaultDeliveryFee}` : ''}</span>}
                           </td>
                           <td className="p-4 text-center">
                             {r.fastestDeliveryAvailable
-                              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#C41E6B] bg-[#C41E6B]/8 px-2 py-0.5 rounded-full"><Rocket className="w-3 h-3" />Yes</span>
+                              ? <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#B0128F] bg-[#B0128F]/8 px-2 py-0.5 rounded-full"><Rocket className="w-3 h-3" />Yes</span>
                               : <span className="text-gray-300 text-xs">No</span>}
                           </td>
                           <td className="p-4 text-right text-gray-600">{r.fastestDeliveryAvailable && r.fastestDeliveryFee ? `₹${r.fastestDeliveryFee}` : '—'}</td>
@@ -658,7 +658,7 @@ export default function PincodeDelivery() {
                           </td>
                           <td className="p-4">
                             <div className="flex items-center justify-end gap-1">
-                              <button onClick={() => setModal({ open: true, editing: r })} className="p-1.5 rounded-lg text-gray-400 hover:text-[#C41E6B] hover:bg-[#C41E6B]/5" title="Edit"><Pencil className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => setModal({ open: true, editing: r })} className="p-1.5 rounded-lg text-gray-400 hover:text-[#B0128F] hover:bg-[#B0128F]/5" title="Edit"><Pencil className="w-3.5 h-3.5" /></button>
                               <button onClick={() => rowStatus(r.pincode, 'isActive')} className="p-1.5 rounded-lg text-gray-400 hover:text-amber-500 hover:bg-amber-50" title={inactive ? 'Reactivate' : 'Deactivate'}>
                                 {inactive ? <ToggleLeft className="w-3.5 h-3.5" /> : <ToggleRight className="w-3.5 h-3.5" />}
                               </button>

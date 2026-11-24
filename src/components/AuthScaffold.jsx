@@ -1,13 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Star, ShieldCheck, Lock } from 'lucide-react';
+import { ShieldCheck, Lock, Wheat, Truck } from 'lucide-react';
 import logo from '../assets/logo.png';
 import brandPhotoDefault from '../assets/login.webp';
-import { Field, ORB_BERRY, ORB_GOLD } from './ui/motion';
 import { useAppearance } from '../lib/appearance';
 
 const EASE = [0.16, 1, 0.3, 1];
+
+/* Remembered across route changes so switching Sign in ⇄ Create account can
+   glide: the tab highlight slides over and the form slides in from that side. */
+let lastAuthPath = null;
+let lastAuthTab = null;
+const SIDE = { '/login': 0, '/register': 1 };
 
 /**
  * The split-screen shell shared by every auth route (login / register /
@@ -19,128 +24,81 @@ export default function AuthScaffold({ children }) {
   const still = useReducedMotion();
   const appearance = useAppearance();
   const brandPhoto = appearance.authBg || brandPhotoDefault;
+  // The bundled photo already carries the Alimenture sign at its top, so the logo chip is only added for custom photos.
+  const customPhoto = Boolean(appearance.authBg);
+  const { pathname } = useLocation();
+  const [prevPath] = useState(() => lastAuthPath);
+  useEffect(() => { lastAuthPath = pathname; }, [pathname]);
+  const fromAuthPage = prevPath !== null && prevPath !== pathname;
+  // +1 = slide in from the right (to Create account), -1 = from the left (to Sign in)
+  const dir = (SIDE[pathname] ?? 0) - (SIDE[prevPath] ?? 0);
 
   return (
-    <div className="relative min-h-screen grid lg:grid-cols-[minmax(0,1fr)_600px] bg-cream font-sans text-ink overflow-hidden">
-      {/* ══════════ Brand panel ══════════ */}
-      <div className="relative hidden lg:flex flex-col justify-between p-14 xl:p-16 text-white overflow-hidden foil-top bg-[#5F0634]">
-        {/* lifestyle photo */}
-        <img
-          src={brandPhoto}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105"
-        />
-        {/* berry scrim — keeps the panel on-brand and the copy legible while the
-            warm cookie tones read through the middle band */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(157deg, rgba(121,8,63,0.92) 0%, rgba(165,13,90,0.72) 46%, rgba(80,5,44,0.95) 100%)' }}
-          aria-hidden="true"
-        />
-        <Field
-          orbs={[
-            { size: 460, color: 'rgba(215,169,78,.28)', top: -160, left: -130 },
-            { size: 400, color: 'rgba(244,166,200,.20)', bottom: -180, right: -130 },
-          ]}
-        />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(120% 78% at 12% 4%, transparent 38%, rgba(35,3,20,.42) 100%)' }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-x-0 bottom-0 h-2/5 pointer-events-none"
-          style={{ background: 'linear-gradient(to top, rgba(52,4,29,0.72), transparent)' }}
-          aria-hidden="true"
-        />
+    <div className="relative min-h-screen grid lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] bg-cream font-sans text-ink">
+      {/* ══════════ Brand panel (photo card) ══════════ */}
+      <div className="relative hidden lg:block p-3">
+        <div className="relative h-full min-h-[calc(100vh-1.5rem)] overflow-hidden rounded-[28px] text-white">
+          {/* lifestyle photo — Admin → Appearance → Auth brand panel */}
+          <img src={brandPhoto} alt="" aria-hidden="true" className={`absolute inset-0 h-full w-full object-cover ${customPhoto ? 'object-center' : 'object-top'}`} />
+          {/* calm aubergine fade (logo hue) so the copy reads, photo stays visible */}
+          <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#2E1430]/90 via-[#401C3E]/45 to-black/10" />
 
-        <div className="relative z-[2]">
-          <img src={logo} alt="Alimenture" className="h-11 w-auto object-contain brightness-0 invert opacity-95" />
-        </div>
+          <div className="relative z-[1] flex h-full flex-col justify-between p-10 xl:p-12">
+            {customPhoto ? (
+              <Link to="/" className="self-start inline-flex rounded-[14px] bg-white px-3.5 py-2 shadow-sm" aria-label="Alimenture home">
+                <img src={logo} alt="Alimenture" className="h-9 w-auto object-contain" />
+              </Link>
+            ) : (
+              <Link to="/" className="self-center h-24 w-64" aria-label="Alimenture home" />
+            )}
 
-        <motion.div
-          initial={still ? false : { opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, ease: EASE }}
-          className="relative z-[2] flex flex-col gap-6 max-w-lg"
-        >
-          <span
-            className="self-start inline-flex items-center gap-2 h-8 px-3.5 rounded-full text-[10px] font-extrabold uppercase tracking-[0.16em] backdrop-blur-md"
-            style={{ background: 'rgba(255,255,255,.13)', border: '1px solid rgba(255,255,255,.22)', color: '#F2C24C' }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#F2C24C' }} />
-            Heritage grains · Since 2023
-          </span>
-
-          <h2 className="display-lg text-[2.9rem] xl:text-[3.2rem] leading-[1.04] text-balance">
-            Crafting grains<br />
-            <span style={{ color: '#F2C24C' }}>into gold</span>
-          </h2>
-
-          <p className="text-white/75 text-[15px] leading-relaxed">
-            Track orders, save your addresses and reorder your clean&#8209;label favourites in a single tap.
-          </p>
-
-          <div
-            className="mt-2 rounded-2xl p-5 backdrop-blur-md"
-            style={{ background: 'rgba(255,255,255,.10)', border: '1px solid rgba(255,255,255,.16)' }}
-          >
-            <div className="flex gap-1 mb-2.5" aria-hidden="true">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <Star key={i} className="h-3.5 w-3.5" style={{ fill: '#F2C24C', color: '#F2C24C' }} />
-              ))}
-            </div>
-            <p className="text-[13.5px] leading-relaxed text-white/85">
-              &ldquo;Genuinely clean ingredients and the millet cookies are unreal. Reordering is one tap now.&rdquo;
-            </p>
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-white/55 mt-3">
-              Sriram · Verified buyer
-            </p>
+            <motion.div
+              initial={still || fromAuthPage ? false : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="max-w-md"
+            >
+              <p className="text-[13px] font-medium text-white/75">Made in Chennai</p>
+              <h2 className="mt-2 font-display text-[2.4rem] xl:text-[2.75rem] font-medium leading-[1.08] tracking-[-0.02em]">
+                Clean food, rooted in heritage grains.
+              </h2>
+              <p className="mt-3 text-[15px] leading-relaxed text-white/80">
+                Track orders, save your addresses and reorder your favourites in a tap.
+              </p>
+              <ul className="mt-8 grid grid-cols-3 gap-3 border-t border-white/20 pt-6">
+                {[
+                  [Wheat, '10 heritage grains'],
+                  [ShieldCheck, 'FSSAI-registered kitchen'],
+                  [Truck, 'Delivered across India'],
+                ].map(([Icon, label]) => (
+                  <li key={label} className="flex flex-col gap-2">
+                    <Icon className="h-5 w-5 text-white/85" strokeWidth={1.6} />
+                    <span className="text-[13px] leading-snug text-white/85">{label}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
           </div>
-        </motion.div>
-
-        <div className="relative z-[2] flex gap-10 pt-6 border-t border-white/15">
-          {[['10+', 'Heritage grains'], ['FSSAI', 'Registered FBO'], ['4.8★', 'Avg. rating']].map(([n, l]) => (
-            <div key={l}>
-              <p className="display-md text-2xl" style={{ color: '#F2C24C' }}>{n}</p>
-              <p className="text-[12px] text-white/65 mt-0.5">{l}</p>
-            </div>
-          ))}
         </div>
       </div>
 
       {/* ══════════ Form panel ══════════ */}
-      <div className="relative flex items-center justify-center p-6 sm:p-12 overflow-hidden">
-        <Field
-          orbs={[
-            { size: 520, color: ORB_BERRY, top: -170, right: -170 },
-            { size: 440, color: ORB_GOLD, bottom: -170, left: -150 },
-          ]}
-        />
-
+      <div className="relative flex items-center justify-center px-5 py-10 sm:p-12">
         <motion.div
-          initial={still ? false : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: EASE }}
-          className="relative z-[2] w-full max-w-[420px]"
+          initial={still ? false : fromAuthPage ? { opacity: 0, x: (dir || 1) * 32 } : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ duration: fromAuthPage ? 0.45 : 0.6, ease: EASE }}
+          className="w-full max-w-[420px]"
         >
-          <div className="lg:hidden flex justify-center mb-7">
-            <img src={logo} alt="Alimenture" className="h-14 w-auto object-contain drop-shadow-sm" />
-          </div>
+          <Link to="/" className="lg:hidden flex justify-center mb-7" aria-label="Alimenture home">
+            <img src={logo} alt="Alimenture" className="h-12 w-auto object-contain" />
+          </Link>
 
           {children}
 
-          <div className="flex items-center justify-center gap-x-5 gap-y-2 flex-wrap mt-6">
-            {[
-              [ShieldCheck, 'Encrypted session'],
-              [Lock, 'Razorpay secured'],
-            ].map(([Icon, label]) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <Icon className="h-3.5 w-3.5 text-leaf" />
-                <p className="text-[10px] font-bold text-ink-soft uppercase tracking-[0.13em]">{label}</p>
-              </div>
-            ))}
+          <div className="mt-6 flex items-center justify-center gap-x-5 gap-y-2 flex-wrap text-[12px] text-ink-muted">
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" /> Encrypted session</span>
+            <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> Secure payments by Razorpay</span>
           </div>
         </motion.div>
       </div>
@@ -149,47 +107,60 @@ export default function AuthScaffold({ children }) {
 }
 
 /* ─── Shared field ────────────────────────────────────────────────────────
-   The exact input treatment from the login screen: kicker label, a paper
-   pill with a berry leading icon and an optional trailing slot.           */
+   Plain label, white 48px input with a quiet leading icon, mulberry focus. */
 export function AuthField({ label, labelAction, icon: Icon, trailing, hint, className = '', ...props }) {
   return (
     <label className="block">
       {labelAction ? (
         <span className="flex items-center justify-between mb-1.5">
-          <span className="kicker text-ink-soft text-[10.5px]">{label}</span>
+          <span className="text-[13px] font-semibold text-ink">{label}</span>
           {labelAction}
         </span>
       ) : (
-        label && <span className="kicker text-ink-soft text-[10.5px] mb-1.5 block">{label}</span>
+        label && <span className="text-[13px] font-semibold text-ink mb-1.5 block">{label}</span>
       )}
-      <div className="flex items-center gap-3 h-[52px] px-4 rounded-2xl bg-paper border border-hairline transition-all focus-within:border-berry/50 focus-within:ring-4 focus-within:ring-berry/10">
-        {Icon && <Icon className="h-[17px] w-[17px] text-berry shrink-0" />}
+      <div className="flex items-center gap-3 h-12 px-3.5 rounded-[12px] bg-white border border-[#E2DCD0] transition-[border-color,box-shadow] focus-within:border-mulberry/60 focus-within:ring-4 focus-within:ring-mulberry/10">
+        {Icon && <Icon className="h-[18px] w-[18px] text-ink-muted shrink-0" />}
         <input
-          className={`flex-1 min-w-0 w-full bg-transparent outline-none text-[14.5px] font-medium placeholder:text-ink-muted ${className}`}
+          className={`flex-1 min-w-0 w-full bg-transparent outline-none text-[15px] text-ink placeholder:text-ink-muted ${className}`}
           {...props}
         />
         {trailing && <span className="shrink-0 flex items-center">{trailing}</span>}
       </div>
-      {hint && <p className="text-[10.5px] text-ink-muted font-medium mt-1.5 ml-1">{hint}</p>}
+      {hint && <p className="text-[12px] text-ink-muted mt-1.5">{hint}</p>}
     </label>
   );
 }
 
-/* ─── Segmented Sign in / Create account toggle ───────────────────────── */
+/* ─── Segmented Sign in / Create account switch ───────────────────────
+   The white highlight glides between the tabs. Each tab is its own route, so
+   the last tab is remembered and the highlight springs over from it on mount. */
 export function AuthTabs({ active }) {
-  const base = 'flex-1 min-w-0 h-9 px-2 rounded-full flex items-center justify-center whitespace-nowrap text-[10px] min-[360px]:text-[10.5px] font-extrabold uppercase tracking-[0.08em] min-[360px]:tracking-[0.14em] transition-colors';
+  const still = useReducedMotion();
+  const [from] = useState(() => lastAuthTab);
+  useEffect(() => { lastAuthTab = active; }, [active]);
+  // Warm both routes so switching never flashes a loader.
+  useEffect(() => { import('../pages/Login'); import('../pages/Register'); }, []);
+
+  const idx = active === 'register' ? 1 : 0;
+  const glide = !still && from && from !== active;
+  const base = 'relative z-[1] flex-1 min-w-0 h-10 px-2 rounded-[10px] flex items-center justify-center whitespace-nowrap text-[14px] font-medium transition-colors duration-300';
+
   return (
-    <div className="glass-sm flex p-1 rounded-full mb-8">
-      {active === 'signin' ? (
-        <span className={`btn-berry ${base}`}>Sign in</span>
-      ) : (
-        <Link to="/login" className={`${base} text-ink-muted hover:text-berry`}>Sign in</Link>
-      )}
-      {active === 'register' ? (
-        <span className={`btn-berry ${base}`}>Create account</span>
-      ) : (
-        <Link to="/register" className={`${base} text-ink-muted hover:text-berry`}>Create account</Link>
-      )}
+    <div className="relative flex p-1 rounded-[12px] bg-[#EFEAE1] mb-7">
+      <motion.span
+        aria-hidden="true"
+        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-[10px] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_6px_16px_-10px_rgba(64,28,62,0.35)]"
+        initial={glide ? { x: idx ? '0%' : '100%' } : false}
+        animate={{ x: idx ? '100%' : '0%' }}
+        transition={{ type: 'spring', stiffness: 380, damping: 34, mass: 0.9 }}
+      />
+      {active === 'signin'
+        ? <span className={`${base} text-ink`} aria-current="page">Sign in</span>
+        : <Link to="/login" className={`${base} text-ink-soft hover:text-ink`}>Sign in</Link>}
+      {active === 'register'
+        ? <span className={`${base} text-ink`} aria-current="page">Create account</span>
+        : <Link to="/register" className={`${base} text-ink-soft hover:text-ink`}>Create account</Link>}
     </div>
   );
 }

@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Trash2, Plus, Minus, ShoppingBag, Truck, ArrowLeft, ArrowRight, ChevronDown,
+  Trash2, Plus, Minus, Truck, ArrowLeft, ArrowRight,
   ShieldCheck, RotateCcw, Lock, TicketPercent, X, CheckCircle2,
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
-import FallbackImg from '../../assets/lan.webp';
+import { useWelcomeCoupon } from '../../lib/welcomeCoupon';
 import { cachedFetch } from '../../lib/api';
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
+import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
 import { useDeliverySummary } from '../../lib/delivery';
 import { productPath } from '../../lib/seo';
 import SEO from '../../components/SEO';
+import { ShopHero, ShopSectionHead, FaqList, CARD, LABEL } from '../../components/shop/ShopSections';
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -27,7 +29,6 @@ const CART_FAQS = [
 export default function Cart() {
   const navigate = useNavigate();
   const { cart, updateQuantity, removeFromCart, clearCart, addToCart, validateCartData } = useCart();
-  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     validateCartData();
@@ -41,6 +42,7 @@ export default function Cart() {
     try { return JSON.parse(sessionStorage.getItem('appliedCoupon')) || null; } catch { return null; }
   });
   const [couponMsg, setCouponMsg] = useState('');
+  const welcomeCoupon = useWelcomeCoupon();
 
   const delivery = useDeliverySummary();
   const freeEnabled = delivery.freeDeliveryEnabled;
@@ -142,352 +144,301 @@ export default function Cart() {
   /* ─────────────────────────── EMPTY ─────────────────────────── */
   if (cart.length === 0) {
     return (
-      <div className="relative min-h-screen font-sans text-ink flex items-center justify-center px-4">
+      <div className="relative min-h-screen bg-cream font-sans text-ink overflow-x-hidden">
         <SEO title="Your cart" noindex />
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}
-          className="glass rounded-panel foil-top max-w-md w-full text-center px-8 py-16 relative z-10"
+        <ShopHero
+          eyebrow="Your cart"
+          title={<>Your cart is <em>empty</em></>}
+          text="Add a few heritage grain bakes and pantry staples to start your wellness journey."
         >
-          <span className="ico-chip h-16 w-16 rounded-2xl mx-auto mb-6">
-            <ShoppingBag className="h-7 w-7" />
-          </span>
-          <h1 className="display-md text-2xl mb-2">Your cart is empty</h1>
-          <p className="text-ink-soft text-sm mb-8">Add heritage grain products to start your wellness journey.</p>
-          <button
-            onClick={() => navigate('/shop')}
-            className="btn-berry inline-flex items-center gap-2 h-12 px-8 rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em]"
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
+            className="mt-8 flex flex-wrap justify-center gap-3"
           >
-            Explore products <ArrowRight className="h-4 w-4" />
-          </button>
-        </motion.div>
+            <Link to="/shop" className="btn-pill">Explore products <ArrowRight className="h-4 w-4" /></Link>
+            <Link to="/wishlist" className="btn-outline">View wishlist</Link>
+          </motion.div>
+        </ShopHero>
       </div>
     );
   }
 
   /* ─────────────────────────── CART ─────────────────────────── */
   return (
-    <div className="relative min-h-screen font-sans text-ink overflow-x-hidden">
+    <div className="relative min-h-screen bg-cream font-sans text-ink overflow-x-hidden">
       <SEO title="Your cart" noindex />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1264px] py-24 relative z-10">
 
-        {/* Header + steps */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: EASE }}
-          className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-9"
-        >
-          <div className="flex flex-col gap-3.5">
-            <h1 className="display-lg text-[2.6rem] sm:text-[3rem]">
-              Your <span className="accent-text">cart</span>
-            </h1>
-            <span className="rule-berry" />
-            <p className="text-ink-soft text-[15px] font-medium">
-              {itemCount} {itemCount === 1 ? 'item' : 'items'} · ready to dispatch from Chennai
-            </p>
-          </div>
-          <CheckoutSteps current={1} className="self-start lg:self-auto" />
-        </motion.div>
+      <ShopHero
+        eyebrow="Your cart"
+        title={<>Your <em>cart</em></>}
+        text={`${itemCount} ${itemCount === 1 ? 'item' : 'items'} · ready to dispatch from Chennai`}
+        aside={<CheckoutSteps current={1} className="self-start lg:self-auto lg:mb-2" />}
+      />
 
-        {/* Free shipping progress */}
-        {freeEnabled && shipping > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}
-            className="glass rounded-card p-5 sm:px-6 flex items-center gap-4 sm:gap-6 mb-6"
-          >
-            <span className="ico-chip ico-chip-gold h-11 w-11 rounded-2xl shrink-0">
-              <Truck className="h-5 w-5" />
-            </span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-ink">
-                You're <strong className="text-berry">₹{remainingForFree}</strong> away from free shipping
-              </p>
-              <div className="h-[7px] rounded-full bg-cream-deep mt-2.5 overflow-hidden">
-                <motion.span
-                  initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8, ease: EASE }}
-                  className="block h-full rounded-full bg-gradient-to-r from-berry to-gold-light"
-                />
+      <section className="relative z-10 bg-cream pb-16 sm:pb-24 px-4 sm:px-6">
+        <div className="mx-auto max-w-[1240px] lg:px-2">
+
+          {/* Free shipping progress */}
+          {freeEnabled && shipping > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}
+              className={`${CARD} p-5 sm:px-6 flex items-center gap-4 sm:gap-6 mb-6`}
+            >
+              <span className="h-11 w-11 rounded-full bg-gold-tint text-gold flex items-center justify-center shrink-0">
+                <Truck className="h-5 w-5" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] text-ink">
+                  You're <strong className="font-semibold text-berry">₹{remainingForFree}</strong> away from free shipping
+                </p>
+                <div className="h-1.5 rounded-full bg-cream-deep mt-2.5 overflow-hidden">
+                  <motion.span
+                    initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8, ease: EASE }}
+                    className="block h-full rounded-full bg-brand"
+                  />
+                </div>
+              </div>
+              <span className="hidden sm:inline text-[13px] font-medium text-ink-muted shrink-0">
+                ₹{subtotal} / ₹{freeShippingThreshold}
+              </span>
+            </motion.div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 lg:gap-8">
+
+            {/* ── Items ── */}
+            <div className="flex flex-col">
+              <div className={`${CARD} px-4 sm:px-6`}>
+                <ul className="divide-y divide-ink/10">
+                  <AnimatePresence initial={false} mode="popLayout">
+                    {cart.map((item) => {
+                      const id = item.id || item._id || item.uid;
+                      const name = item.name || item.title;
+                      return (
+                        <motion.li
+                          key={`${id}-${item.selectedWeight ?? ''}`}
+                          layout
+                          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
+                          transition={{ duration: 0.4, ease: EASE }}
+                          className="relative flex gap-4 sm:gap-5 py-5 sm:py-6"
+                        >
+                          <Link to={productPath(item)} className="group shrink-0 w-24 sm:w-32 rounded-[16px] overflow-hidden" aria-label={name}>
+                            <ProductImageFrame src={item.image} alt={name} aspect="aspect-[4/3]" />
+                          </Link>
+
+                          <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                            <div className="flex-1 min-w-0 pr-8 sm:pr-0">
+                              <span className={`${LABEL} truncate block`}>{item.category || 'Heritage grain'}</span>
+                              <Link to={productPath(item)}>
+                                <p className="mt-1 text-[15.5px] sm:text-[17px] font-semibold leading-snug text-[#3D3A3C] hover:text-berry transition-colors line-clamp-2">
+                                  {name}
+                                </p>
+                              </Link>
+                              <p className="mt-1 text-[13px] text-ink-muted">
+                                {item.selectedWeight && <>{item.selectedWeight} · </>}₹{item.price} each
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between sm:justify-end gap-5 sm:gap-8">
+                              <div className="flex items-center h-10 rounded-full border border-ink/15 bg-white">
+                                <button
+                                  type="button"
+                                  onClick={() => item.quantity <= 1
+                                    ? removeFromCart(id, item.selectedWeight)
+                                    : updateQuantity(id, item.selectedWeight, -1)}
+                                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${item.quantity <= 1 ? 'text-ink-muted hover:text-danger' : 'text-ink-soft hover:text-berry'}`}
+                                  aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                                >
+                                  {item.quantity <= 1 ? <Trash2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+                                </button>
+                                <span className="font-display text-[15px] w-6 text-center tabular-nums">{item.quantity}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => updateQuantity(id, item.selectedWeight, 1)}
+                                  className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:text-berry transition-colors"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+
+                              <p className="text-[17px] sm:text-[19px] font-bold text-ink tracking-tight min-w-[4.5rem] text-right">
+                                ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(id, item.selectedWeight)}
+                            className="absolute top-5 right-0 sm:static sm:self-center h-8 w-8 rounded-full flex items-center justify-center text-ink-muted hover:text-danger hover:bg-cream transition-colors shrink-0"
+                            aria-label={`Remove ${name}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </motion.li>
+                      );
+                    })}
+                  </AnimatePresence>
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-between mt-6 px-1">
+                <Link to="/shop" className="link-arrow">
+                  <ArrowLeft className="h-4 w-4" /> Continue shopping
+                </Link>
+                <button type="button" onClick={() => clearCart()} className="text-[13px] font-medium text-ink-muted hover:text-danger transition-colors">
+                  Clear cart
+                </button>
               </div>
             </div>
-            <span className="pill-berry-soft shrink-0 inline-flex items-center h-[30px] px-3 rounded-full text-[10px] font-bold">
-              ₹{subtotal} / ₹{freeShippingThreshold}
-            </span>
-          </motion.div>
-        )}
 
-        {/* Body */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+            {/* ── Summary column ── */}
+            <div className="flex flex-col gap-4 lg:sticky lg:top-28 self-start w-full">
+              <div className={`${CARD} p-6 sm:p-7`}>
+                <h2 className="headline text-[1.75rem]">Order summary</h2>
 
-          {/* ── Items ── */}
-          <div className="flex flex-col gap-4">
-            <AnimatePresence mode="popLayout">
-              {cart.map((item) => {
-                const id = item.id || item._id || item.uid;
-                return (
-                  <motion.div
-                    key={`${id}-${item.selectedWeight ?? ''}`}
-                    layout
-                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.4, ease: EASE }}
-                    className="relative glass rounded-card p-4 sm:p-5 flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-center"
-                  >
-                    <div className="w-full h-40 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-cream border border-hairline shrink-0 plate-berry">
-                      <img
-                        src={item.image || FallbackImg}
-                        alt={item.name || item.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                <dl className="mt-4 divide-y divide-ink/10 text-[14.5px]">
+                  <div className="flex justify-between items-center py-3">
+                    <dt className="text-ink-soft">Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})</dt>
+                    <dd className="font-semibold text-ink">₹{subtotal.toLocaleString('en-IN')}</dd>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between items-center py-3">
+                      <dt className="text-ink-soft flex items-center gap-1.5">
+                        <TicketPercent className="h-3.5 w-3.5" /> {couponData?.code}
+                      </dt>
+                      <dd className="font-semibold text-leaf">− ₹{discount}</dd>
                     </div>
+                  )}
+                  <div className="flex justify-between items-center gap-3 py-3">
+                    <dt className="text-ink-soft">Shipping</dt>
+                    {shipping === 0
+                      ? <dd className="font-semibold text-leaf">Free</dd>
+                      : <dd className="text-[13px] text-ink-muted text-right">Calculated at checkout</dd>}
+                  </div>
+                  <div className="flex justify-between items-center py-3">
+                    <dt className="text-ink-soft">Taxes</dt>
+                    <dd className="text-[13px] text-ink-muted">Included</dd>
+                  </div>
+                </dl>
 
-                    <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {item.category && <span className="kicker text-berry text-[10.5px]">{item.category}</span>}
-                        <span className="pill-leaf inline-flex items-center h-[22px] px-2 rounded-full text-[10.5px] font-bold">In stock</span>
-                      </div>
-                      <Link to={productPath(item)}>
-                        <p className="display-md text-lg leading-tight hover:text-berry transition-colors line-clamp-1">
-                          {item.name || item.title}
-                        </p>
-                      </Link>
-                      <p className="text-xs text-ink-muted">
-                        {item.selectedWeight && <>Pack size <strong className="text-ink-soft">{item.selectedWeight}</strong> · </>}
-                        ₹{item.price} each
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-normal sm:flex-col sm:items-end gap-4">
-                      <div className="flex items-center gap-1 h-[42px] px-1.5 rounded-full glass-sm">
-                        <button
-                          onClick={() => item.quantity <= 1
-                            ? removeFromCart(id, item.selectedWeight)
-                            : updateQuantity(id, item.selectedWeight, -1)}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${item.quantity <= 1 ? 'text-danger/80 hover:text-danger' : 'text-ink-muted hover:text-berry'}`}
-                          aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
-                        >
-                          {item.quantity <= 1
-                            ? <Trash2 className="h-3.5 w-3.5" strokeWidth={2.4} />
-                            : <Minus className="h-3.5 w-3.5" strokeWidth={2.6} />}
-                        </button>
-                        <span className="display-md text-[15px] w-6 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(id, item.selectedWeight, 1)}
-                          className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-berry to-[#C21A75] text-white"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
-                        </button>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="display-md text-xl">₹{item.price * item.quantity}</p>
-                        <p className="text-[10px] text-ink-muted mt-0.5">₹{item.price} × {item.quantity}</p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => removeFromCart(id, item.selectedWeight)}
-                      className="absolute top-6 right-6 sm:static flex w-9 h-9 rounded-xl items-center justify-center text-ink-muted hover:text-danger bg-white/90 backdrop-blur sm:bg-transparent border border-hairline shadow-sm sm:shadow-none transition-colors shrink-0"
-                      aria-label="Remove item"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-
-            <div className="flex items-center justify-between px-1 pt-1">
-              <button onClick={() => navigate('/shop')} className="kicker text-[10px] text-ink-soft hover:text-berry transition-colors inline-flex items-center gap-2">
-                <ArrowLeft className="h-3.5 w-3.5" /> Continue shopping
-              </button>
-              <button onClick={() => clearCart()} className="kicker text-[10px] text-ink-muted hover:text-danger transition-colors">
-                Clear cart
-              </button>
-            </div>
-          </div>
-
-          {/* ── Summary column ── */}
-          <div className="flex flex-col gap-4 lg:sticky lg:top-24 self-start">
-            <div className="glass foil-top rounded-panel p-6 sm:p-7">
-              <p className="kicker text-[10px] text-ink-soft mb-1.5">Order summary</p>
-
-              <div className="divide-y divide-white/50">
-                <div className="flex justify-between items-center py-3 text-sm">
-                  <span className="text-ink-soft">Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
-                  <span className="display-md text-[14.5px]">₹{subtotal}</span>
+                <div className="flex items-end justify-between gap-4 border-t border-ink/15 pt-4 pb-6">
+                  <div>
+                    <p className="font-display text-[15px] text-ink">Total</p>
+                    <p className="text-[12px] text-ink-muted mt-0.5">Inclusive of all taxes</p>
+                  </div>
+                  <p className="headline text-[2.4rem] leading-none">₹{total.toLocaleString('en-IN')}</p>
                 </div>
-                {discount > 0 && (
-                  <div className="flex justify-between items-center py-3 text-sm">
-                    <span className="text-ink-soft flex items-center gap-1.5">
-                      <TicketPercent className="h-3.5 w-3.5" /> {couponData?.code}
+
+                <button type="button" onClick={goCheckout} className="btn-pill w-full">
+                  Proceed to checkout <ArrowRight className="h-4 w-4" />
+                </button>
+
+                <p className="flex items-center justify-center gap-2 mt-4 text-[12px] text-ink-muted">
+                  <Lock className="h-3.5 w-3.5 text-leaf" /> Secure payment via Razorpay · UPI, cards, netbanking
+                </p>
+              </div>
+
+              {/* Coupon */}
+              <div className={`${CARD} p-5 sm:p-6`}>
+                <p className="font-display text-[15px] text-ink mb-3">Have a coupon?</p>
+                {welcomeCoupon && !couponData && (
+                  <button
+                    type="button"
+                    onClick={() => { setCouponCode(welcomeCoupon.code); setCouponStatus(null); }}
+                    className="mb-3 w-full flex items-center justify-between gap-3 rounded-xl border border-dashed border-berry/35 bg-berry-tint/50 px-3.5 py-2.5 text-left"
+                  >
+                    <span className="text-[12.5px] text-ink-soft">
+                      <span className="block text-[10.5px] font-display uppercase tracking-[0.14em] text-berry">Suggested for you</span>
+                      <span className="font-display font-semibold text-ink tracking-wide">{welcomeCoupon.code}</span> · {welcomeCoupon.discountValue}% off your first order
                     </span>
-                    <span className="display-md text-[14.5px] text-leaf">− ₹{discount}</span>
+                    <span className="text-[12px] font-display font-medium text-berry shrink-0">Use code</span>
+                  </button>
+                )}
+                {!couponData ? (
+                  <>
+                    <div className={`flex items-center gap-2 h-12 pl-4 pr-1.5 rounded-full border bg-white transition-colors ${
+                      couponStatus === 'error' ? 'border-danger/50' : 'border-ink/15 focus-within:border-berry/60'
+                    }`}>
+                      <TicketPercent className={`h-4 w-4 shrink-0 ${couponStatus === 'error' ? 'text-danger/70' : 'text-ink-muted'}`} />
+                      <input
+                        value={couponCode}
+                        onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); if (couponStatus === 'error') setCouponStatus(null); }}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                        placeholder="Enter coupon code"
+                        aria-label="Coupon code"
+                        disabled={couponStatus === 'loading'}
+                        className="flex-1 min-w-0 bg-transparent outline-none text-[14px] font-semibold tracking-[0.06em] text-ink placeholder:text-ink-muted placeholder:font-normal placeholder:tracking-normal"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode.trim() || couponStatus === 'loading'}
+                        className="btn-pill btn-pill-sm disabled:opacity-40 disabled:pointer-events-none shrink-0"
+                      >
+                        {couponStatus === 'loading' ? '…' : 'Apply'}
+                      </button>
+                    </div>
+                    {couponStatus === 'error' && couponMsg && (
+                      <p className="text-[12px] text-danger mt-2 pl-4">{couponMsg}</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-[16px] bg-leaf/10">
+                    <CheckCircle2 className="h-4 w-4 text-leaf shrink-0" />
+                    <p className="flex-1 min-w-0 text-[13.5px] text-ink">
+                      <strong className="font-semibold tracking-[0.04em]">{couponData.code}</strong>
+                      <span className="text-leaf"> · ₹{discount} off</span>
+                    </p>
+                    <button type="button" onClick={handleRemoveCoupon} className="text-[13px] font-medium text-ink-soft hover:text-danger transition-colors">
+                      Remove
+                    </button>
                   </div>
                 )}
-                <div className="flex justify-between items-center py-3 text-sm">
-                  <span className="text-ink-soft">Shipping</span>
-                  {shipping === 0
-                    ? <span className="pill-leaf inline-flex items-center h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-widest">Free</span>
-                    : <span className="pill-berry-soft inline-flex items-center h-6 px-2.5 rounded-full text-[10.5px] font-extrabold uppercase tracking-widest">Shipping charges applied!</span>}
-                </div>
-                <div className="flex justify-between items-center py-3 text-sm">
-                  <span className="text-ink-soft">Taxes</span>
-                  <span className="text-[12px] font-display font-bold text-ink-muted">Included</span>
-                </div>
               </div>
 
-              <div className="h-px bg-white/50 my-2.5" />
-              <div className="flex items-end justify-between pt-2 pb-5">
-                <div>
-                  <p className="kicker text-[10.5px] text-ink-soft">Total payable</p>
-                  <p className="text-[11px] text-ink-muted mt-0.5">Inclusive of all taxes · shipping applied at checkout</p>
-                </div>
-                <p className="display-lg text-[2rem]">₹{total}</p>
-              </div>
-
-              <button
-                onClick={goCheckout}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.14em] flex items-center justify-center gap-2.5"
-              >
-                Proceed to checkout <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <div className="flex items-center justify-center gap-2 mt-4">
-                <Lock className="h-3.5 w-3.5 text-leaf" />
-                <p className="text-[11px] text-ink-muted">Secure payment via Razorpay · UPI, cards, netbanking</p>
-              </div>
-            </div>
-
-            {/* Coupon */}
-            <div className="glass rounded-card p-5 sm:p-6">
-              <p className="kicker text-[10px] text-ink-soft mb-3">Have a coupon?</p>
-              {!couponData ? (
-                <>
-                  <div className={`glass-sm flex items-center gap-2 h-12 px-4 rounded-2xl transition-all ${
-                    couponStatus === 'error' ? 'border-danger/40' : 'focus-within:border-berry/50'
-                  }`}>
-                    <TicketPercent className={`h-4 w-4 shrink-0 ${couponStatus === 'error' ? 'text-danger/70' : 'text-ink-muted'}`} />
-                    <input
-                      value={couponCode}
-                      onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); if (couponStatus === 'error') setCouponStatus(null); }}
-                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
-                      placeholder="Enter coupon code"
-                      disabled={couponStatus === 'loading'}
-                      className="flex-1 bg-transparent outline-none text-[13px] font-display font-bold tracking-[0.06em] text-ink placeholder:text-ink-muted placeholder:font-sans placeholder:font-medium placeholder:tracking-normal"
-                    />
-                    <button
-                      onClick={handleApplyCoupon}
-                      disabled={!couponCode.trim() || couponStatus === 'loading'}
-                      className="kicker text-[10px] text-berry hover:opacity-70 disabled:opacity-40 transition-opacity shrink-0"
-                    >
-                      {couponStatus === 'loading' ? '…' : 'Apply'}
-                    </button>
-                  </div>
-                  {couponStatus === 'error' && couponMsg && (
-                    <p className="text-[11px] font-medium text-danger mt-2 pl-1">{couponMsg}</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="glass-sm flex-1 h-12 rounded-2xl flex items-center px-4 font-display font-extrabold text-[13px] tracking-[0.06em]">
-                      {couponData.code}
+              {/* Trust */}
+              <div className="flex flex-col gap-4 px-2 pt-2">
+                {[
+                  [ShieldCheck, 'FSSAI registered kitchen', 'Licensed food business operator'],
+                  [RotateCcw, '3-day return window', 'On damaged or incorrect items'],
+                ].map(([Icon, title, sub]) => (
+                  <div key={title} className="flex gap-3 items-center">
+                    <span className="h-9 w-9 rounded-full bg-berry-tint text-berry flex items-center justify-center shrink-0">
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <button onClick={handleRemoveCoupon} className="btn-glass h-12 px-4 rounded-2xl text-[10.5px] font-extrabold uppercase tracking-wider text-berry inline-flex items-center gap-1.5">
-                      <X className="h-3.5 w-3.5" /> Remove
-                    </button>
+                    <div>
+                      <p className="font-display text-[14.5px] text-ink">{title}</p>
+                      <p className="text-[12px] text-ink-muted">{sub}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-3 px-3 py-2.5 rounded-xl bg-leaf/10 border border-leaf/20">
-                    <CheckCircle2 className="h-4 w-4 text-leaf shrink-0" />
-                    <p className="text-[12px] text-leaf">₹{discount} off applied to this order</p>
-                  </div>
-                </>
-              )}
+                ))}
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Trust */}
-            <div className="glass-sm rounded-card p-5 sm:p-6 flex flex-col gap-3.5">
-              {[
-                [ShieldCheck, 'FSSAI registered kitchen', 'Licensed food business operator', false],
-                [RotateCcw, '3-day return window', 'On damaged or incorrect items', true],
-              ].map(([Icon, title, sub, gold]) => (
-                <div key={title} className="flex gap-3 items-center">
-                  <span className={`ico-chip ${gold ? 'ico-chip-gold' : ''} h-9 w-9 rounded-xl shrink-0`}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="display-md text-[13.5px]">{title}</p>
-                    <p className="text-[11px] text-ink-muted">{sub}</p>
-                  </div>
-                </div>
+      {/* ── Cross sell ── */}
+      {existingProducts.length > 0 && (
+        <section className="relative z-10 bg-cream border-t border-ink/10 py-16 sm:py-24 px-4 sm:px-6">
+          <div className="mx-auto max-w-[1240px] lg:px-2">
+            <ShopSectionHead
+              eyebrow="Frequently added together"
+              title={<>Add a little more <em>goodness</em></>}
+              action={<Link to="/shop" className="btn-outline self-start sm:self-auto">View all <ArrowRight className="h-4 w-4" /></Link>}
+            />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+              {existingProducts.map((prod) => (
+                <ProductCard key={prod.id || prod._id} product={prod} onAdd={handleQuickAdd} />
               ))}
             </div>
           </div>
-        </div>
+        </section>
+      )}
 
-        {/* ── Cross sell ── */}
-        {existingProducts.length > 0 && (
-          <div className="mt-20">
-            <div className="flex flex-col gap-3 mb-8">
-              <div className="flex items-baseline gap-4">
-                <span className="kicker text-berry">N&#8304; 01</span>
-                <span className="kicker text-ink-soft">Frequently added together</span>
-              </div>
-              <h2 className="display-lg text-[2rem]">Add a little more <span className="accent-text">goodness</span></h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {existingProducts.map((prod) => {
-                const variant = prod.variants?.length > 0 ? prod.variants[0] : null;
-                const price = variant ? variant.price : prod.price;
-                return (
-                  <article key={prod.id || prod._id} className="glass rounded-card overflow-hidden group">
-                    <div className="aspect-[4/3] overflow-hidden bg-cream plate-gold">
-                      <img src={prod.image || FallbackImg} alt={prod.name || prod.title} loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    </div>
-                    <div className="p-4 flex flex-col gap-1.5">
-                      <p className="display-md text-[15px] line-clamp-1">{prod.name || prod.title}</p>
-                      <p className="text-[11.5px] text-ink-muted line-clamp-1">{prod.category || 'Heritage grain'}</p>
-                      <div className="flex items-center justify-between pt-1.5">
-                        <span className="display-md text-[17px]">₹{price}</span>
-                        <button onClick={() => handleQuickAdd(prod)} className="btn-glass h-9 px-4 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-berry">
-                          Add
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── FAQ ── */}
-        <div className="mt-20">
-          <div className="text-center max-w-2xl mx-auto mb-10 flex flex-col items-center gap-3">
-            <span className="pill-berry-soft inline-flex items-center h-7 px-4 rounded-full text-[10.5px] font-extrabold uppercase tracking-[0.18em]">Have questions?</span>
-            <h2 className="display-lg text-[2rem]">Cart &amp; checkout FAQs</h2>
-          </div>
-          <div className="max-w-3xl mx-auto grid grid-cols-1 gap-3">
-            {faqs.map((faq, i) => (
-              <div key={i} className={`glass rounded-card overflow-hidden transition-all ${openFaq === i ? 'border-berry/25' : ''}`}>
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-5 sm:p-6 text-left gap-4">
-                  <span className={`display-md text-[15px] leading-snug transition-colors ${openFaq === i ? 'text-berry' : ''}`}>{faq.q}</span>
-                  <ChevronDown className={`h-4 w-4 text-ink-muted shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180 text-berry' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {openFaq === i && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }}>
-                      <div className="px-5 sm:px-6 pb-6 border-t border-white/50 pt-4">
-                        <p className="text-ink-soft text-sm leading-relaxed">{faq.a}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <FaqList title={<>Cart &amp; checkout <em>FAQs</em></>} faqs={faqs} />
     </div>
   );
 }

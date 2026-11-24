@@ -73,7 +73,7 @@ export function VariantSelectorModal({
                     onClick={() => setSelectedVariant(variant)}
                     className={`px-4 py-4 rounded-2xl font-bold text-sm transition-all border-2 text-left flex flex-col gap-1 relative overflow-hidden ${
                       selectedVariant?.weight === variant.weight 
-                      ? 'border-[#E83D6E] bg-pink-50 text-[#E83D6E] shadow-md shadow-pink-100' 
+                      ? 'border-[#E83D6E] bg-violet-50 text-[#E83D6E] shadow-md shadow-violet-100' 
                       : 'border-gray-100 text-gray-400 hover:border-gray-200 hover:text-gray-600 bg-white'
                     } ${isOutOfStock && mode === 'cart' ? 'opacity-50 grayscale cursor-not-allowed border-gray-100 bg-gray-50' : ''}`}
                   >
@@ -98,7 +98,7 @@ export function VariantSelectorModal({
             className={`w-full h-14 rounded-2xl font-bold text-lg shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
               mode === 'cart' && (!selectedVariant || selectedVariant.stock <= 0)
               ? 'bg-gray-200 text-gray-400 shadow-none'
-              : 'bg-[#E83D6E] hover:bg-[#D81B60] text-white shadow-pink-100'
+              : 'bg-[#E83D6E] hover:bg-[#B0128F] text-white shadow-violet-100'
             }`}
           >
             {mode === 'cart' ? (

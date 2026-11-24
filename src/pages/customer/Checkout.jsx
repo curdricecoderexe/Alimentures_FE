@@ -14,6 +14,7 @@ import SearchableSelect from '../../components/ui/SearchableSelect';
 import { INDIA_STATES } from '../../data/indiaStates';
 import { getDeliveryOptions, isValidPincode } from '../../lib/deliveryApi';
 import SEO from '../../components/SEO';
+import CouponBox from '../../components/checkout/CouponBox';
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -57,9 +58,14 @@ export default function Checkout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [appliedCoupon] = useState(() => {
+  const [appliedCoupon, setAppliedCoupon] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('appliedCoupon')) || null; } catch { return null; }
   });
+  const changeCoupon = (next) => {
+    setAppliedCoupon(next);
+    if (next) sessionStorage.setItem('appliedCoupon', JSON.stringify(next));
+    else sessionStorage.removeItem('appliedCoupon');
+  };
 
   const [formData, setFormData] = useState(() => {
     const savedAddress = localStorage.getItem(`shippingAddress_${userEmail}`);
@@ -644,7 +650,7 @@ export default function Checkout() {
                       <div className="w-full h-full rounded-xl overflow-hidden bg-cream border border-hairline">
                         <img src={it.image || FallbackImg} alt={it.name || it.title} className="w-full h-full object-cover" />
                       </div>
-                      <span className="absolute -top-1.5 -right-1.5 z-[1] h-[18px] min-w-[18px] px-1 rounded-full bg-berry text-white text-[10.5px] font-display font-extrabold flex items-center justify-center border-2 border-white shadow-sm">
+                      <span className="absolute -top-1.5 -right-1.5 z-[1] h-[18px] min-w-[18px] px-1 rounded-full bg-mulberry text-white text-[10.5px] font-display font-extrabold flex items-center justify-center border-2 border-white shadow-sm">
                         {it.quantity}
                       </span>
                     </div>
@@ -655,6 +661,11 @@ export default function Checkout() {
                     <span className="display-md text-[13.5px]">₹{it.price * it.quantity}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="pt-4">
+                <p className="font-display text-[14px] text-ink mb-2.5">Apply a coupon</p>
+                <CouponBox orderValue={subtotal} applied={appliedCoupon} onChange={changeCoupon} />
               </div>
 
               <div className="pt-3">

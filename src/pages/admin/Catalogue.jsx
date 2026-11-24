@@ -111,11 +111,11 @@ export default function AdminCatalogue() {
   const uploading = progress !== null;
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans">
+    <div className="space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans">
       {/* header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <span className="w-11 h-11 rounded-2xl bg-[#C41E6B]/10 flex items-center justify-center text-[#C41E6B] shrink-0">
+          <span className="w-11 h-11 rounded-2xl bg-[#B0128F]/10 flex items-center justify-center text-[#B0128F] shrink-0">
             <BookOpen className="w-5 h-5" />
           </span>
           <div>
@@ -126,7 +126,7 @@ export default function AdminCatalogue() {
           </div>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-500 bg-gray-50 border border-gray-100 px-3.5 py-2 rounded-xl self-start">
-          <Users className="w-3.5 h-3.5 text-[#C41E6B]" /> {info?.leadCount ?? leads.length} leads
+          <Users className="w-3.5 h-3.5 text-[#B0128F]" /> {info?.leadCount ?? leads.length} leads
         </span>
       </div>
 
@@ -136,7 +136,7 @@ export default function AdminCatalogue() {
           <h2 className="font-bold text-sm text-gray-900">Catalogue PDF</h2>
           {info?.hasFile ? (
             <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 min-w-0">
-              <span className="w-12 h-14 rounded-xl bg-gradient-to-br from-[#C41E6B] to-[#8E0E4E] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <span className="w-12 h-14 rounded-xl bg-gradient-to-br from-[#B0128F] to-[#8E0E4E] text-white flex items-center justify-center shrink-0 shadow-sm">
                 <FileText className="w-6 h-6" />
               </span>
               <div className="min-w-0 flex-1">
@@ -148,7 +148,7 @@ export default function AdminCatalogue() {
                   href={`${API_ORIGIN}${info.previewUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="h-9 px-3 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors shrink-0"
+                  className="h-9 px-3 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#B0128F] hover:text-[#B0128F] transition-colors shrink-0"
                 >
                   <Eye className="w-3.5 h-3.5" /> View
                 </a>
@@ -164,7 +164,7 @@ export default function AdminCatalogue() {
                   href={`${API_ORIGIN}${info.previewUrl}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 h-9 px-3 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors"
+                  className="mt-3 h-9 px-3 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#B0128F] hover:text-[#B0128F] transition-colors"
                 >
                   <Eye className="w-3.5 h-3.5" /> View generated catalogue
                 </a>
@@ -175,7 +175,7 @@ export default function AdminCatalogue() {
           {uploading && (
             <div className="space-y-1.5">
               <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div className="h-full bg-[#C41E6B] transition-[width]" style={{ width: `${progress * 100}%` }} />
+                <div className="h-full bg-[#B0128F] transition-[width]" style={{ width: `${progress * 100}%` }} />
               </div>
               <p className="text-[11px] font-bold text-gray-500">{Math.round(progress * 100)}% uploaded</p>
             </div>
@@ -185,7 +185,7 @@ export default function AdminCatalogue() {
             <button
               onClick={() => inputRef.current?.click()}
               disabled={busy || uploading}
-              className="h-10 px-4 rounded-xl bg-[#221B1F] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-black transition-colors disabled:opacity-50"
+              className="h-10 px-4 rounded-xl bg-[#1F1726] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-black transition-colors disabled:opacity-50"
             >
               {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
               {info?.hasFile ? 'Replace PDF' : 'Upload PDF'}
@@ -209,21 +209,21 @@ export default function AdminCatalogue() {
           <div className="flex items-center justify-between gap-3">
             <h2 className="font-bold text-sm text-gray-900">Homepage section</h2>
             <label className="inline-flex items-center gap-2 h-8 px-3 rounded-full border border-gray-200 text-[11px] font-bold text-gray-500 cursor-pointer whitespace-nowrap">
-              <input type="checkbox" checked={form.enabled} onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))} className="accent-[#C41E6B] w-4 h-4" />
+              <input type="checkbox" checked={form.enabled} onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))} className="accent-[#B0128F] w-4 h-4" />
               Show on site
             </label>
           </div>
           <label className="space-y-1.5 block">
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Title</span>
             <input value={form.title} maxLength={100} placeholder="Download our product catalogue" onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C41E6B]" />
+              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#B0128F]" />
           </label>
           <label className="space-y-1.5 block">
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Description</span>
             <textarea value={form.description} maxLength={300} rows={3} placeholder="Every Alimenture product in one place…" onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#C41E6B]" />
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-[#B0128F]" />
           </label>
-          <button onClick={saveDetails} disabled={busy} className="self-start h-10 px-4 rounded-xl bg-[#C41E6B] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:brightness-110 transition disabled:opacity-50">
+          <button onClick={saveDetails} disabled={busy} className="self-start h-10 px-4 rounded-xl bg-[#B0128F] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:brightness-110 transition disabled:opacity-50">
             <Save className="w-3.5 h-3.5" /> Save details
           </button>
         </motion.div>
@@ -236,7 +236,7 @@ export default function AdminCatalogue() {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-b border-gray-100">
           <h2 className="font-bold text-sm text-gray-900">Recent download requests</h2>
-          <Link to="/admin/leads" className="h-9 px-3.5 rounded-xl bg-[#C41E6B]/10 text-[#C41E6B] text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-[#C41E6B] hover:text-white transition-colors">
+          <Link to="/admin/leads" className="h-9 px-3.5 rounded-xl bg-[#B0128F]/10 text-[#B0128F] text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-[#B0128F] hover:text-white transition-colors">
             <Users className="w-3.5 h-3.5" /> View all leads <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -244,12 +244,12 @@ export default function AdminCatalogue() {
           <ul className="divide-y divide-gray-50">
             {leads.slice(0, 5).map((l) => (
               <li key={l.id} className="flex items-center gap-3 px-4 sm:px-5 py-3">
-                <span className="w-9 h-9 rounded-full bg-[#C41E6B]/10 text-[#C41E6B] text-xs font-bold flex items-center justify-center shrink-0">
+                <span className="w-9 h-9 rounded-full bg-[#B0128F]/10 text-[#B0128F] text-xs font-bold flex items-center justify-center shrink-0">
                   {l.name.slice(0, 1).toUpperCase()}
                 </span>
                 <div className="flex-1 min-w-0 sm:grid sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-6">
                   <p className="font-bold text-sm text-gray-900 truncate">{l.name}</p>
-                  <a href={`tel:+91${l.mobile}`} className="text-[12px] sm:text-sm font-semibold text-gray-600 hover:text-[#C41E6B] inline-flex items-center gap-1.5">
+                  <a href={`tel:+91${l.mobile}`} className="text-[12px] sm:text-sm font-semibold text-gray-600 hover:text-[#B0128F] inline-flex items-center gap-1.5">
                     <Phone className="w-3 h-3" /> +91 {l.mobile.slice(0, 5)} {l.mobile.slice(5)}
                   </a>
                   <p className="text-[11px] text-gray-400 sm:w-40 sm:text-right">{formatDate(l.createdAt)}</p>

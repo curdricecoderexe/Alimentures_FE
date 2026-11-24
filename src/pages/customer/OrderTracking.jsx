@@ -287,7 +287,7 @@ export default function MyOrders() {
                           <span
                             className={`h-[52px] w-[52px] rounded-full flex items-center justify-center relative z-[2] shrink-0 ${
                               done
-                                ? 'bg-gradient-to-br from-berry to-[#C21A75] text-white shadow-berry'
+                                ? 'bg-gradient-to-br from-berry to-[#B0128F] text-white shadow-berry'
                                 : now
                                 ? 'bg-white border-[2.5px] border-berry text-berry shadow-[0_0_0_7px_rgba(165,13,90,0.12)]'
                                 : 'bg-white/70 border border-hairline text-ink-muted'

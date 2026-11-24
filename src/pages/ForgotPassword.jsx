@@ -71,18 +71,18 @@ export default function ForgotPassword() {
   return (
     <AuthScaffold>
       <SEO title="Reset your password" noindex />
-      <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
+      <div className="rounded-[24px] bg-white p-6 sm:p-8 ring-1 ring-[#E8E1D4] shadow-[0_24px_60px_-36px_rgba(64,28,62,0.35)]">
         <Link
           to="/login"
-          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-muted hover:text-berry transition-colors mb-7"
+          className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted hover:text-ink transition-colors mb-7"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
         </Link>
 
         {!isSubmitted ? (
           <>
-            <h1 className="display-lg text-[2.15rem] leading-tight">
-              Reset your <span className="accent-text">password</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink">
+              Reset your password
             </h1>
             <p className="text-ink-soft text-[13.5px] mt-2 font-medium">
               Enter your registered email and we&rsquo;ll send a 6&#8209;digit code to reset it securely.
@@ -97,14 +97,14 @@ export default function ForgotPassword() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="alimentureindustries@gmail.com"
+                placeholder="you@example.com"
               />
 
               <motion.button
                 type="submit"
                 disabled={sending}
                 whileTap={still || sending ? undefined : { scale: 0.985 }}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {sending ? (
                   <>
@@ -121,12 +121,12 @@ export default function ForgotPassword() {
         ) : (
           <>
             <div className="flex justify-center mb-5">
-              <span className="ico-chip ico-chip-gold h-14 w-14 rounded-2xl">
+              <span className="flex items-center justify-center bg-mulberry-tint text-mulberry h-14 w-14 rounded-2xl">
                 <MailCheck className="h-6 w-6" />
               </span>
             </div>
-            <h1 className="display-lg text-[2rem] leading-tight text-center">
-              Check your <span className="accent-text">email</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink text-center">
+              Check your email
             </h1>
             <p className="text-ink-soft text-[13px] mt-2.5 font-medium text-center">
               If an account exists for <span className="text-ink font-semibold">{email}</span>, a 6&#8209;digit reset
@@ -136,7 +136,7 @@ export default function ForgotPassword() {
               {otpTimer.expired ? (
                 <span className="text-danger">The code has likely expired — resend below.</span>
               ) : (
-                <>Code expires in <span className="text-berry tabular-nums">{otpTimer.label}</span></>
+                <>Code expires in <span className="text-mulberry tabular-nums">{otpTimer.label}</span></>
               )}
             </p>
 
@@ -144,7 +144,7 @@ export default function ForgotPassword() {
               <button
                 type="button"
                 onClick={() => navigate('/reset-password', { state: { email } })}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5"
+                className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2"
               >
                 <KeyRound className="h-4 w-4" /> Enter reset code
               </button>
@@ -152,7 +152,7 @@ export default function ForgotPassword() {
                 type="button"
                 onClick={handleResend}
                 disabled={otpTimer.cooldown > 0 || sending}
-                className="text-[11px] font-bold uppercase tracking-[0.12em] text-berry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed self-center"
+                className="text-[13px] font-semibold text-mulberry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed self-center"
               >
                 {otpTimer.cooldown > 0 ? `Resend code in ${otpTimer.cooldown}s` : sending ? 'Sending…' : 'Resend code'}
               </button>

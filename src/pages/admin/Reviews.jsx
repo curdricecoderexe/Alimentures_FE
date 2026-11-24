@@ -70,13 +70,13 @@ export default function Reviews() {
   };
 
   return (
-    <div className="p-8 space-y-10">
+    <div className="space-y-10">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <Badge className="bg-amber-50 text-amber-600 border-none font-bold uppercase tracking-wider text-[10px] px-4 py-1.5 rounded-full">
             Customer Sentiments
           </Badge>
-          <h1 className="text-5xl font-bold tracking-tighter italic text-gray-900 leading-tight">Reviews.</h1>
+          <h1 className="text-5xl font-bold tracking-tighter italic text-gray-900 leading-tight">Reviews</h1>
           <p className="text-gray-500 font-bold max-w-lg leading-relaxed">
             Live product reviews from post-delivery feedback. They show on the storefront immediately — delete any that are spam or abusive.
           </p>

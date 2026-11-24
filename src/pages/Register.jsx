@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import OtpInput from '../components/ui/OtpInput';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Lock, Mail, User, ArrowRight, ShieldCheck, Eye, EyeOff, Loader2, KeyRound } from 'lucide-react';
+import { Lock, Mail, User, ArrowRight, ShieldCheck, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { API_BASE } from '../lib/api';
 import useOtpTimer from '../hooks/useOtpTimer';
 import AuthScaffold, { AuthField, AuthTabs } from '../components/AuthScaffold';
@@ -114,7 +115,7 @@ export default function Register() {
       if (response.ok) {
         toast.success('Account created! Please login.', {
           id: 'register-toast',
-          icon: <ShieldCheck className="text-berry" />,
+          icon: <ShieldCheck className="text-mulberry" />,
         });
         setTimeout(() => navigate('/login'), 1200);
       } else {
@@ -131,13 +132,13 @@ export default function Register() {
   return (
     <AuthScaffold>
       <SEO title="Create an account" noindex />
-      <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
+      <div className="rounded-[24px] bg-white p-6 sm:p-8 ring-1 ring-[#E8E1D4] shadow-[0_24px_60px_-36px_rgba(64,28,62,0.35)]">
         <AuthTabs active="register" />
 
         {!otpSent ? (
           <>
-            <h1 className="display-lg text-[2.15rem] leading-tight">
-              Create your <span className="accent-text">account</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink">
+              Create your account
             </h1>
             <p className="text-ink-soft text-[13.5px] mt-2 font-medium">
               Join Alimenture to track orders and reorder in one tap.
@@ -152,7 +153,7 @@ export default function Register() {
                 autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Sriram"
+                placeholder="Your full name"
               />
 
               <AuthField
@@ -163,7 +164,7 @@ export default function Register() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="alimentureindustries@gmail.com"
+                placeholder="you@example.com"
               />
 
               <AuthField
@@ -183,7 +184,7 @@ export default function Register() {
                     type="button"
                     onClick={() => setShowPw(!showPw)}
                     aria-label={showPw ? 'Hide password' : 'Show password'}
-                    className="text-ink-muted hover:text-berry transition-colors"
+                    className="h-9 w-9 -mr-2 rounded-full flex items-center justify-center text-ink-muted hover:text-mulberry hover:bg-mulberry/5 transition-colors"
                   >
                     {showPw ? <EyeOff className="h-[17px] w-[17px]" /> : <Eye className="h-[17px] w-[17px]" />}
                   </button>
@@ -194,7 +195,7 @@ export default function Register() {
                 type="submit"
                 disabled={busy}
                 whileTap={still || busy ? undefined : { scale: 0.985 }}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {busy ? (
                   <>
@@ -210,36 +211,28 @@ export default function Register() {
           </>
         ) : (
           <>
-            <h1 className="display-lg text-[2.15rem] leading-tight">
-              Verify your <span className="accent-text">email</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink">
+              Verify your email
             </h1>
             <p className="text-ink-soft text-[13.5px] mt-2 font-medium">
               Enter the 6&#8209;digit code sent to <span className="text-ink font-semibold">{email}</span>.
             </p>
 
             <form onSubmit={handleRegister} className="flex flex-col gap-4 mt-7">
-              <AuthField
-                label="Verification code"
-                icon={KeyRound}
-                type="text"
-                inputMode="numeric"
-                required
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                placeholder="123456"
-                className="tracking-[0.5em] font-bold text-center"
-              />
+              <div>
+                <span className="block text-[12.5px] font-semibold text-ink mb-2">Verification code</span>
+                <OtpInput value={otp} onChange={setOtp} />
+              </div>
 
               <div className="flex items-center justify-between text-[11px] font-bold">
                 <span className={otpTimer.expired ? 'text-danger' : 'text-ink-muted'}>
-                  {otpTimer.expired ? 'Code expired' : <>Expires in <span className="text-berry tabular-nums">{otpTimer.label}</span></>}
+                  {otpTimer.expired ? 'Code expired' : <>Expires in <span className="text-mulberry tabular-nums">{otpTimer.label}</span></>}
                 </span>
                 <button
                   type="button"
                   onClick={handleResendOtp}
                   disabled={otpTimer.cooldown > 0 || resending}
-                  className="uppercase tracking-[0.12em] text-berry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed"
+                  className="font-semibold text-mulberry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed"
                 >
                   {otpTimer.cooldown > 0 ? `Resend in ${otpTimer.cooldown}s` : resending ? 'Resending…' : 'Resend code'}
                 </button>
@@ -249,7 +242,7 @@ export default function Register() {
                 type="submit"
                 disabled={busy}
                 whileTap={still || busy ? undefined : { scale: 0.985 }}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {busy ? (
                   <>
@@ -265,7 +258,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={() => { setOtpSent(false); setOtp(''); }}
-                className="text-[12px] font-bold text-ink-muted hover:text-berry transition-colors self-center"
+                className="text-[13px] font-medium text-ink-muted hover:text-ink transition-colors self-center"
               >
                 Change email address
               </button>
@@ -275,7 +268,7 @@ export default function Register() {
 
         <p className="text-center text-[12px] text-ink-muted mt-7">
           Already have an account?{' '}
-          <Link to="/login" className="font-bold text-berry hover:opacity-70 transition-opacity">
+          <Link to="/login" className="font-semibold text-mulberry hover:opacity-70 transition-opacity">
             Sign in
           </Link>
         </p>

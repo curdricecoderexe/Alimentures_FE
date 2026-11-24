@@ -254,11 +254,11 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen font-sans">
+    <div className="bg-transparent min-h-screen font-sans">
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Accounts.</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Accounts</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Manage permissions and user directories</p>
         </div>
         <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-4">

@@ -17,7 +17,7 @@ import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 const EASE = [0.16, 1, 0.3, 1];
 
 const C = {
-  ink: '#221B1F', muted: '#8E848B', grid: '#EEE6D6',
+  ink: '#1F1726', muted: '#8A8193', grid: '#E6D8BF',
   berry: '#A50D5A',
   status: { good: '#2E7D51', warn: '#D98A1E', crit: '#C0392B' },
 };

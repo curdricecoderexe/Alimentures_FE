@@ -9,7 +9,7 @@ import { useEffect, useRef } from 'react';
  */
 export default function ParticleCanvas({
   count = 50,
-  colors = ['#920075', '#D4AF37', '#F59E0B', '#E91E8C', '#FDE047'],
+  colors = ['#920075', '#D4AF37', '#F59E0B', '#B0128F', '#FDE047'],
   minSize = 0.8,
   maxSize = 3.2,
   speed = 0.65,

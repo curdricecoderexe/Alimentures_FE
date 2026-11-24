@@ -117,11 +117,11 @@ export default function AdminSubscribers() {
   const actionBtn = 'h-9 w-9 rounded-xl border border-gray-200 text-gray-500 flex items-center justify-center transition-colors shrink-0';
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans">
+    <div className="space-y-6 sm:space-y-8 bg-transparent min-h-screen font-sans">
       {/* header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <span className="w-11 h-11 rounded-2xl bg-[#C41E6B]/10 flex items-center justify-center text-[#C41E6B] shrink-0">
+          <span className="w-11 h-11 rounded-2xl bg-[#B0128F]/10 flex items-center justify-center text-[#B0128F] shrink-0">
             <Mail className="w-5 h-5" />
           </span>
           <div>
@@ -134,14 +134,14 @@ export default function AdminSubscribers() {
         <div className="flex gap-2 self-start">
           <button
             onClick={() => { setRefreshing(true); load(); }}
-            className="h-10 px-3.5 rounded-xl border border-gray-200 bg-white text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#C41E6B] hover:text-[#C41E6B] transition-colors"
+            className="h-10 px-3.5 rounded-xl border border-gray-200 bg-white text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#B0128F] hover:text-[#B0128F] transition-colors"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
           </button>
           <button
             onClick={exportCsv}
             disabled={!filtered.length}
-            className="h-10 px-3.5 rounded-xl bg-[#221B1F] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-black transition-colors disabled:opacity-40"
+            className="h-10 px-3.5 rounded-xl bg-[#1F1726] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:bg-black transition-colors disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5" /> Export CSV
           </button>
@@ -150,7 +150,7 @@ export default function AdminSubscribers() {
 
       {/* stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Stat icon={Users} label="Active subscribers" value={stats.active} tint="bg-[#C41E6B]/10 text-[#C41E6B]" />
+        <Stat icon={Users} label="Active subscribers" value={stats.active} tint="bg-[#B0128F]/10 text-[#B0128F]" />
         <Stat icon={CalendarDays} label="Joined today" value={stats.today} tint="bg-emerald-50 text-emerald-600" />
         <Stat icon={CalendarClock} label="Last 7 days" value={stats.week} tint="bg-amber-50 text-amber-600" />
         <Stat icon={MailX} label="Unsubscribed" value={stats.unsubscribed} tint="bg-gray-100 text-gray-500" />
@@ -165,14 +165,14 @@ export default function AdminSubscribers() {
                 key={s.key}
                 onClick={() => setStatus(s.key)}
                 className={`h-9 px-3.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-colors ${
-                  status === s.key ? 'bg-[#C41E6B] text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                  status === s.key ? 'bg-[#B0128F] text-white' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                 }`}
               >
                 {s.label}
               </button>
             ))}
           </div>
-          <span className="flex items-center gap-2 h-10 px-3 rounded-xl border border-gray-200 focus-within:border-[#C41E6B] lg:w-72">
+          <span className="flex items-center gap-2 h-10 px-3 rounded-xl border border-gray-200 focus-within:border-[#B0128F] lg:w-72">
             <Search className="w-4 h-4 text-gray-400 shrink-0" />
             <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search email" className="flex-1 min-w-0 bg-transparent outline-none text-sm" />
           </span>
@@ -187,10 +187,10 @@ export default function AdminSubscribers() {
               {filtered.map((s) => (
                 <li key={s.id} className="px-4 sm:px-5 py-3.5 md:grid md:grid-cols-[minmax(0,1.6fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,0.9fr)_auto] md:gap-4 md:items-center flex flex-col gap-2">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-9 h-9 rounded-full bg-[#C41E6B]/10 text-[#C41E6B] text-xs font-bold flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-full bg-[#B0128F]/10 text-[#B0128F] text-xs font-bold flex items-center justify-center shrink-0">
                       {s.email.slice(0, 1).toUpperCase()}
                     </span>
-                    <a href={`mailto:${s.email}`} className="font-bold text-sm text-gray-900 truncate hover:text-[#C41E6B]">{s.email}</a>
+                    <a href={`mailto:${s.email}`} className="font-bold text-sm text-gray-900 truncate hover:text-[#B0128F]">{s.email}</a>
                   </div>
                   <span className="pl-12 md:pl-0">
                     <span className={`inline-flex items-center h-6 px-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
@@ -206,7 +206,7 @@ export default function AdminSubscribers() {
                       : <><Send className="w-3.5 h-3.5 text-amber-500" /><span className="text-amber-600 font-semibold">Not sent</span></>}
                   </p>
                   <div className="flex items-center gap-1.5 md:justify-end md:w-[88px] pl-12 md:pl-0">
-                    <a href={`mailto:${s.email}`} aria-label={`Email ${s.email}`} title="Email" className={`${actionBtn} hover:border-[#C41E6B] hover:text-[#C41E6B]`}>
+                    <a href={`mailto:${s.email}`} aria-label={`Email ${s.email}`} title="Email" className={`${actionBtn} hover:border-[#B0128F] hover:text-[#B0128F]`}>
                       <Mail className="w-3.5 h-3.5" />
                     </a>
                     {confirmId === s.id ? (
@@ -230,7 +230,7 @@ export default function AdminSubscribers() {
           <p className="text-center text-sm text-gray-400 py-14">No subscribers match these filters.</p>
         ) : (
           <div className="text-center py-14 px-6">
-            <span className="mx-auto w-14 h-14 rounded-2xl bg-[#C41E6B]/10 text-[#C41E6B] flex items-center justify-center">
+            <span className="mx-auto w-14 h-14 rounded-2xl bg-[#B0128F]/10 text-[#B0128F] flex items-center justify-center">
               <Mail className="w-6 h-6" />
             </span>
             <p className="mt-4 font-bold text-gray-900">No subscribers yet</p>

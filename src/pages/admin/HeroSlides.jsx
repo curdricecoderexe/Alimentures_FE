@@ -20,6 +20,7 @@ export default function AdminHeroSlides() {
 
   const [formData, setFormData] = useState({
     src: '',
+    mobileSrc: '',
     title: ''
   });
 
@@ -44,7 +45,8 @@ export default function AdminHeroSlides() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleImageUpload = (e) => {
+  // `field` is 'src' (desktop, widescreen) or 'mobileSrc' (phones, portrait).
+  const handleImageUpload = (field = 'src') => (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -54,7 +56,7 @@ export default function AdminHeroSlides() {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const max_size = 1920; 
+          const max_size = field === 'mobileSrc' ? 1350 : 1920;
           
           if (width > max_size || height > max_size) {
             if (width > height) {
@@ -76,8 +78,8 @@ export default function AdminHeroSlides() {
           if (dataUrl.length > 2500000) { 
             toast.error('Image is too large after compression. Please upload a more compact file.');
           } else {
-            setFormData({ ...formData, src: dataUrl });
-            toast.success('High-resolution banner uploaded successfully!');
+            setFormData((prev) => ({ ...prev, [field]: dataUrl }));
+            toast.success(field === 'mobileSrc' ? 'Phone banner uploaded!' : 'High-resolution banner uploaded successfully!');
           }
         };
         img.src = reader.result;
@@ -99,6 +101,7 @@ export default function AdminHeroSlides() {
 
       const payload = {
         src: formData.src,
+        mobileSrc: formData.mobileSrc || '',
         title: formData.title || 'Hero Banner Image'
       };
 
@@ -117,7 +120,7 @@ export default function AdminHeroSlides() {
         toast.success(editingSlide ? 'Banner updated successfully!' : 'Banner added to homepage slideshow!', { id: toastId });
         setIsAddModalOpen(false);
         setEditingSlide(null);
-        setFormData({ src: '', title: '' });
+        setFormData({ src: '', mobileSrc: '', title: '' });
         fetchSlides(false);
       } else {
         toast.error(data.error || 'Failed to save slide', { id: toastId });
@@ -151,32 +154,33 @@ export default function AdminHeroSlides() {
     setEditingSlide(slide);
     setFormData({
       src: slide.src || '',
+      mobileSrc: slide.mobileSrc || '',
       title: slide.title || 'Hero Banner Image'
     });
     setIsAddModalOpen(true);
   };
 
   if (isLoading) {
-    if (showSkeleton) return <div className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen"><DashboardSkeleton /></div>;
+    if (showSkeleton) return <div className="bg-transparent min-h-screen"><DashboardSkeleton /></div>;
     return <div className="min-h-screen bg-transparent"></div>;
   }
 
   return (
-    <div className="p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Homepage Hero Banners.</h1>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Homepage Hero Banners</h1>
           <p className="text-sm text-gray-500 font-medium">Manage the full-screen periodic slideshow displayed on the customer home page</p>
         </div>
         <Button 
           onClick={() => {
             setEditingSlide(null);
-            setFormData({ src: '', title: '' });
+            setFormData({ src: '', mobileSrc: '', title: '' });
             setIsAddModalOpen(true);
           }} 
           className="bg-black hover:bg-zinc-800 text-white h-12 px-6 rounded-xl font-bold shadow-md flex items-center gap-2"
         >
-          <Plus className="h-5 w-5 text-[#E91E8C]" /> Add New Banner
+          <Plus className="h-5 w-5 text-[#B0128F]" /> Add New Banner
         </Button>
       </div>
 
@@ -195,7 +199,7 @@ export default function AdminHeroSlides() {
                   
                   <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#E91E8C] text-white">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#B0128F] text-white">
                         Slide #{index + 1}
                       </span>
                       <h3 className="font-bold text-base mt-2 text-white drop-shadow-md truncate max-w-[200px]">
@@ -241,7 +245,7 @@ export default function AdminHeroSlides() {
           <Button 
             onClick={() => {
               setEditingSlide(null);
-              setFormData({ src: '', title: '' });
+              setFormData({ src: '', mobileSrc: '', title: '' });
               setIsAddModalOpen(true);
             }} 
             className="bg-black hover:bg-zinc-800 text-white h-12 px-6 rounded-xl font-bold shadow-md"
@@ -252,7 +256,7 @@ export default function AdminHeroSlides() {
       )}
 
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[540px] rounded-3xl p-8 bg-white border-0 shadow-2xl">
+        <DialogContent className="sm:max-w-[540px] max-h-[92svh] overflow-y-auto rounded-3xl p-6 sm:p-8 bg-white border-0 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900">
               {editingSlide ? 'Edit Banner Slide' : 'Add Homepage Banner'}
@@ -268,7 +272,7 @@ export default function AdminHeroSlides() {
                 value={formData.title || ''} 
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="e.g. Summer Wholesome Campaign Banner"
-                className="h-12 rounded-xl border-gray-200 focus:border-[#E91E8C]"
+                className="h-12 rounded-xl border-gray-200 focus:border-[#B0128F]"
               />
             </div>
 
@@ -282,8 +286,8 @@ export default function AdminHeroSlides() {
                   <img src={formData.src} alt="Preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                     <label className="cursor-pointer px-4 py-2 bg-white text-black font-bold rounded-xl text-xs shadow hover:bg-gray-100 transition-all flex items-center gap-1.5">
-                      <Upload className="h-4 w-4 text-[#E91E8C]" /> Replace
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                      <Upload className="h-4 w-4 text-[#B0128F]" /> Replace
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload('src')} />
                     </label>
                     <button 
                       type="button" 
@@ -296,12 +300,12 @@ export default function AdminHeroSlides() {
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center h-52 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/50 hover:bg-gray-100/50 cursor-pointer transition-colors group p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#E91E8C]/10 text-[#E91E8C] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-[#B0128F]/10 text-[#B0128F] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                     <Upload className="h-6 w-6" />
                   </div>
                   <span className="text-sm font-bold text-gray-800">Click to upload banner image</span>
                   <span className="text-xs text-gray-400 mt-1">Supports PNG, JPG, WebP (Max resolution: 1920px)</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload('src')} />
                 </label>
               )}
 
@@ -318,6 +322,37 @@ export default function AdminHeroSlides() {
               </div>
             </div>
 
+            <div className="space-y-3">
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-600 block">
+                Phone Banner <span className="normal-case tracking-normal font-medium text-gray-400">— optional, portrait 1080×1350</span>
+              </Label>
+              <p className="text-[12px] text-gray-500 -mt-1">
+                Shown on phones instead of the wide banner. Without it, phones show the full wide banner uncropped.
+              </p>
+              {formData.mobileSrc ? (
+                <div className="flex items-center gap-4">
+                  <div className="relative w-28 aspect-[4/5] rounded-xl overflow-hidden bg-gray-900 border border-gray-200 shrink-0">
+                    <img src={formData.mobileSrc} alt="Phone banner preview" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="cursor-pointer px-4 py-2 bg-white border border-gray-200 text-gray-800 font-bold rounded-xl text-xs hover:bg-gray-50 transition-all inline-flex items-center gap-1.5">
+                      <Upload className="h-4 w-4 text-[#B0128F]" /> Replace
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload('mobileSrc')} />
+                    </label>
+                    <button type="button" onClick={() => setFormData({ ...formData, mobileSrc: '' })} className="px-4 py-2 text-red-600 font-bold rounded-xl text-xs hover:bg-red-50 transition-all">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex items-center gap-3 h-20 px-5 border-2 border-dashed border-gray-300 rounded-2xl bg-gray-50/50 hover:bg-gray-100/50 cursor-pointer transition-colors">
+                  <Upload className="h-5 w-5 text-[#B0128F]" />
+                  <span className="text-sm font-bold text-gray-800">Upload phone banner</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload('mobileSrc')} />
+                </label>
+              )}
+            </div>
+
             <DialogFooter className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
               <Button 
                 type="button" 
@@ -329,7 +364,7 @@ export default function AdminHeroSlides() {
               </Button>
               <Button 
                 type="submit" 
-                className="h-12 px-8 rounded-xl font-bold bg-[#0a0806] hover:bg-[#E91E8C] text-white transition-all shadow-md"
+                className="h-12 px-8 rounded-xl font-bold bg-[#0a0806] hover:bg-[#B0128F] text-white transition-all shadow-md"
               >
                 {editingSlide ? 'Save Changes' : 'Publish Banner'}
               </Button>

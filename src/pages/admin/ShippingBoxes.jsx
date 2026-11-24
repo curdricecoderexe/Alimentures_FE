@@ -15,7 +15,7 @@ import { API_BASE, authenticatedFetch } from '../../lib/api';
  * shipping profit/loss analytics.
  */
 
-const inputCls = 'w-full h-10 px-3 rounded-xl border border-gray-100 bg-gray-50/60 text-sm text-gray-900 font-semibold focus:outline-none focus:border-[#C41E6B]/40 focus:bg-white transition-all';
+const inputCls = 'w-full h-10 px-3 rounded-xl border border-gray-100 bg-gray-50/60 text-sm text-gray-900 font-semibold focus:outline-none focus:border-[#B0128F]/40 focus:bg-white transition-all';
 const thCls = 'px-2 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-gray-400';
 
 const PACKAGE_TYPES = [['box', 'Box'], ['flyer', 'Flyer'], ['cover', 'Cover']];
@@ -196,7 +196,7 @@ function LearnedAllowances() {
   return (
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="flex items-center gap-2 px-6 pt-5 pb-3">
-        <Brain className="w-4 h-4 text-[#C41E6B]" />
+        <Brain className="w-4 h-4 text-[#B0128F]" />
         <div>
           <h2 className="text-sm font-bold text-gray-900">Learned packing allowances</h2>
           <p className="text-xs text-gray-400 mt-0.5">From verified parcels: extra weight beyond the base estimate, per product mix and package. Outliers are ignored.</p>
@@ -290,7 +290,7 @@ function ShippingAnalytics() {
     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden pb-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-6 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-[#C41E6B]" />
+          <BarChart3 className="w-4 h-4 text-[#B0128F]" />
           <h2 className="text-sm font-bold text-gray-900">Shipping analytics</h2>
           {busy && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-300" />}
         </div>
@@ -409,8 +409,8 @@ export default function ShippingBoxes() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#C41E6B]/10 to-[#E83D6E]/10 border border-[#C41E6B]/15">
-              <Boxes className="w-5 h-5 text-[#C41E6B]" />
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-[#B0128F]/10 to-[#E83D6E]/10 border border-[#B0128F]/15">
+              <Boxes className="w-5 h-5 text-[#B0128F]" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Shipping &amp; Boxes</h1>
           </div>
@@ -419,11 +419,11 @@ export default function ShippingBoxes() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={load} className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#C41E6B] hover:border-[#C41E6B]/30 shadow-sm">
+          <button onClick={load} className="p-2.5 rounded-xl border border-gray-100 bg-white text-gray-500 hover:text-[#B0128F] hover:border-[#B0128F]/30 shadow-sm">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <button onClick={save} disabled={saving || !form}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#C41E6B] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#C41E6B]/25 active:scale-95 disabled:opacity-60">
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#B0128F] to-[#E83D6E] text-white font-bold text-sm shadow-lg shadow-[#B0128F]/25 active:scale-95 disabled:opacity-60">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save changes
           </button>
         </div>

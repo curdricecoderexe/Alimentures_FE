@@ -27,9 +27,9 @@ const Loader = ({ fullScreen = true, text = "Loading", mini = false }) => {
           animate={{
             scale: [0.95, 1.05, 0.95],
             filter: [
-              "drop-shadow(0 0 4px rgba(233,30,140,0.3))",
-              "drop-shadow(0 0 10px rgba(212,175,55,0.6))",
-              "drop-shadow(0 0 4px rgba(233,30,140,0.3))"
+              "drop-shadow(0 0 4px rgba(212,20,143,0.3))",
+              "drop-shadow(0 0 10px rgba(248,168,48,0.6))",
+              "drop-shadow(0 0 4px rgba(212,20,143,0.3))"
             ]
           }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -49,7 +49,7 @@ const Loader = ({ fullScreen = true, text = "Loading", mini = false }) => {
     <div className={containerClasses}>
       {/* Subtle ambient light aura */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
-        <div className="w-[500px] h-[500px] bg-gradient-to-tr from-[#E91E8C]/10 via-[#D4AF37]/15 to-transparent blur-[140px] opacity-75 pointer-events-none" />
+        <div className="w-[500px] h-[500px] bg-gradient-to-tr from-[#B0128F]/10 via-[#D4AF37]/15 to-transparent blur-[140px] opacity-75 pointer-events-none" />
       </div>
 
       <div className="relative flex flex-col items-center justify-center gap-10 z-10 max-w-md w-full text-center">
@@ -60,9 +60,9 @@ const Loader = ({ fullScreen = true, text = "Loading", mini = false }) => {
             scale: [0.97, 1.03, 0.97],
             y: [-3, 3, -3],
             filter: [
-              "drop-shadow(0 4px 12px rgba(233,30,140,0.15)) drop-shadow(0 0 18px rgba(212,175,55,0.15))",
-              "drop-shadow(0 10px 28px rgba(233,30,140,0.35)) drop-shadow(0 0 40px rgba(212,175,55,0.35))",
-              "drop-shadow(0 4px 12px rgba(233,30,140,0.15)) drop-shadow(0 0 18px rgba(212,175,55,0.15))"
+              "drop-shadow(0 4px 12px rgba(212,20,143,0.15)) drop-shadow(0 0 18px rgba(248,168,48,0.15))",
+              "drop-shadow(0 10px 28px rgba(212,20,143,0.35)) drop-shadow(0 0 40px rgba(248,168,48,0.35))",
+              "drop-shadow(0 4px 12px rgba(212,20,143,0.15)) drop-shadow(0 0 18px rgba(248,168,48,0.15))"
             ]
           }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -81,7 +81,7 @@ const Loader = ({ fullScreen = true, text = "Loading", mini = false }) => {
           <motion.div
             animate={{ x: ["-100%", "250%", "-100%"] }}
             transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-            className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#E91E8C] via-[#F39C12] to-[#D4AF37] shadow-[0_0_12px_rgba(233,30,140,0.6)]"
+            className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#B0128F] via-[#F39C12] to-[#D4AF37] shadow-[0_0_12px_rgba(212,20,143,0.6)]"
           />
         </div>
 
@@ -90,7 +90,7 @@ const Loader = ({ fullScreen = true, text = "Loading", mini = false }) => {
           <motion.div 
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            className="text-xs sm:text-sm font-bold tracking-[0.35em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#E91E8C] via-[#E67E22] to-[#D4AF37]"
+            className="text-xs sm:text-sm font-bold tracking-[0.35em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#B0128F] via-[#E67E22] to-[#D4AF37]"
           >
             {text}
           </motion.div>

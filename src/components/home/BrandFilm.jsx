@@ -47,7 +47,7 @@ function FilmModal({ src, title, startAt, onClose }) {
         <X className="h-5 w-5" />
       </button>
       <motion.div
-        className="w-full max-w-6xl aspect-video rounded-2xl sm:rounded-[26px] overflow-hidden shadow-[0_40px_120px_-20px_rgba(165,13,90,0.55)] ring-1 ring-white/10 bg-black"
+        className="w-full max-w-6xl aspect-video rounded-2xl sm:rounded-[26px] overflow-hidden shadow-[0_40px_120px_-20px_rgba(176,18,143,0.55)] ring-1 ring-white/10 bg-black"
         initial={{ scale: 0.94, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.96, y: 10 }}
@@ -132,7 +132,7 @@ export default function BrandFilm() {
     <section
       id="brand-film"
       ref={sectionRef}
-      className="relative z-10 overflow-hidden py-20 sm:py-28 bg-[#FBF7EF] font-sans"
+      className="relative z-10 overflow-hidden py-20 sm:py-28 bg-[#F7F0E3] font-sans"
     >
       <Field orbs={[{ size: 520, color: ORB_BERRY, top: -140, left: -160 }, { size: 480, color: ORB_GOLD, bottom: -160, right: -140 }]} />
 
@@ -149,7 +149,7 @@ export default function BrandFilm() {
             <span className="kicker text-berry inline-flex items-center gap-2 bg-white/70 backdrop-blur-md border border-berry/15 px-4 py-2 rounded-full">
               <Film className="h-3.5 w-3.5" /> The Alimentures Film
             </span>
-            <h2 className="font-display font-bold text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#221B1F]">
+            <h2 className="font-display font-bold text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.03] tracking-tight text-[#1F1726]">
               {film.title}
             </h2>
             <span className="rule-berry" />
@@ -176,7 +176,7 @@ export default function BrandFilm() {
             maxWidth: `calc(78vh * ${ratio})`,
             ...(reduceMotion ? { borderRadius: 28 } : { scale, borderRadius: radius }),
           }}
-          className="group relative mx-auto w-full overflow-hidden bg-gradient-to-br from-berry-deep via-berry to-gold shadow-[0_50px_100px_-30px_rgba(121,8,63,0.45)] ring-1 ring-black/5 will-change-transform"
+          className="group relative mx-auto w-full overflow-hidden bg-gradient-to-br from-berry-deep via-berry to-gold shadow-[0_50px_100px_-30px_rgba(106,26,138,0.45)] ring-1 ring-black/5 will-change-transform"
         >
           <video
             ref={videoRef}
@@ -204,7 +204,7 @@ export default function BrandFilm() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#120A0E]/80 via-[#120A0E]/10 to-[#120A0E]/25 pointer-events-none" />
           <div
             className="absolute inset-0 pointer-events-none mix-blend-soft-light opacity-60"
-            style={{ background: 'radial-gradient(120% 80% at 20% 100%, rgba(165,13,90,0.55), transparent 60%)' }}
+            style={{ background: 'radial-gradient(120% 80% at 20% 100%, rgba(176,18,143,0.55), transparent 60%)' }}
           />
 
           {/* live badge */}

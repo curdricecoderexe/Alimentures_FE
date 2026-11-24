@@ -25,7 +25,7 @@ export default function CheckoutSteps({ current = 1, className = '' }) {
                 style={{
                   background: step <= current
                     ? 'linear-gradient(90deg,#2E7D51,#A50D5A)'
-                    : '#EEE6D6',
+                    : '#E6D8BF',
                 }}
               />
             )}
@@ -35,7 +35,7 @@ export default function CheckoutSteps({ current = 1, className = '' }) {
                   done
                     ? 'bg-leaf/15 text-leaf'
                     : active
-                    ? 'bg-gradient-to-br from-berry to-[#C21A75] text-white'
+                    ? 'bg-gradient-to-br from-berry to-[#B0128F] text-white'
                     : 'bg-white/70 border border-hairline text-ink-muted'
                 }`}
               >

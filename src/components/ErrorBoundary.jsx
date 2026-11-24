@@ -49,7 +49,7 @@ export default class ErrorBoundary extends React.Component {
           onClick={this.handleReload}
           style={{
             marginTop: '8px', padding: '12px 28px', borderRadius: '999px', border: 'none',
-            background: '#C41E6B', color: '#fff', fontWeight: 700, fontSize: '0.85rem',
+            background: '#B0128F', color: '#fff', fontWeight: 700, fontSize: '0.85rem',
             textTransform: 'uppercase', letterSpacing: '0.1em', cursor: 'pointer',
           }}
         >

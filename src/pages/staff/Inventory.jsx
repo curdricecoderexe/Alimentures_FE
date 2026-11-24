@@ -254,15 +254,15 @@ export default function StaffInventory() {
   };
 
   if (isLoading && products.length === 0) {
-    if (showSkeleton) return <div className="p-4 sm:p-6 lg:p-10 bg-transparent min-h-screen"><TableSkeleton /></div>;
+    if (showSkeleton) return <div className="bg-transparent min-h-screen"><TableSkeleton /></div>;
     return <div className="min-h-screen bg-transparent"></div>;
   }
 
   return (
-    <div className="p-3 sm:p-6 lg:p-10 bg-transparent min-h-screen">
+    <div className="bg-transparent min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between text-center sm:text-left gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Inventory.</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Inventory</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">Manage custom weights, prices & stocks for N variants</p>
         </div>
         <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 sm:gap-4 pr-0 sm:pr-4">
@@ -341,7 +341,7 @@ export default function StaffInventory() {
                         <div key={i} className="text-[9px] bg-gray-50 border border-gray-200/60 rounded-md px-1.5 py-0.5 text-gray-500 font-semibold flex items-center gap-1">
                           <span className="text-gray-900">{v.weight}</span>
                           <span className="text-gray-300">|</span>
-                          <span className={v.stock <= 5 ? 'text-rose-600 font-bold' : ''}>₹{v.price}</span>
+                          <span className={v.stock <= 5 ? 'text-violet-600 font-bold' : ''}>₹{v.price}</span>
                         </div>
                       ))}
                     </div>

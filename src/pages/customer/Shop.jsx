@@ -19,6 +19,11 @@ const SORT_OPTIONS = [
   { value: 'name', label: 'Name (A-Z)' }
 ];
 
+// Session cache of shop results (per filter combination) so returning to the
+// shop, or switching back to a filter, shows products instantly.
+const SHOP_CACHE = new Map();
+const shopQueryKey = (f) => JSON.stringify([f.query || '', f.category || '', f.sort || '', f.minPrice || '', f.maxPrice || '', f.page || 1]);
+
 export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { categorySlug } = useParams();
@@ -50,12 +55,15 @@ export default function Shop() {
   const categoryOptions = [{ name: 'All', productCount: allCount }, ...managedCategories];
   const isActiveCategory = (name) => category.toLowerCase() === name.toLowerCase();
 
-  // Local UI State
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Local UI State — seeded from the session cache so a revisit renders at once
+  const firstKey = shopQueryKey({ query, category, sort, minPrice, maxPrice, page });
+  const seed = SHOP_CACHE.get(firstKey);
+  const [products, setProducts] = useState(() => seed?.data || []);
+  const [loading, setLoading] = useState(!seed);
   const [error, setError] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(() => seed?.hasMore || false);
+  const [totalCount, setTotalCount] = useState(() => seed?.totalCount || 0);
+  const lastQueryRef = useRef(query);
 
   // Filter Drawer State (Mobile)
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -100,7 +108,14 @@ export default function Shop() {
   };
 
   const fetchProducts = useCallback(async (append = false) => {
-    setLoading(true);
+    const key = shopQueryKey({ query, category, sort, minPrice, maxPrice, page });
+    const cached = !append && SHOP_CACHE.get(key);
+    if (cached) { // show the last result instantly, refresh quietly
+      setProducts(cached.data);
+      setHasMore(cached.hasMore);
+      setTotalCount(cached.totalCount);
+    }
+    setLoading(!cached);
     setError(false);
     
     // Abort previous request if it's still in-flight
@@ -125,6 +140,7 @@ export default function Shop() {
       const data = await res.json();
       
       if (data.success) {
+        if (!append) SHOP_CACHE.set(key, { data: data.data, hasMore: data.hasMore, totalCount: data.totalCount });
         if (append) {
           setProducts(prev => [...prev, ...data.data]);
         } else {
@@ -149,8 +165,15 @@ export default function Shop() {
 
   useEffect(() => {
     if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-    
-    // Debounce fetching to prevent excessive API calls
+
+    // Debounce only while the search text is changing; first load, filters,
+    // sorting and paging fetch immediately.
+    const typing = query !== lastQueryRef.current;
+    lastQueryRef.current = query;
+    if (!typing) {
+      fetchProducts(page > 1);
+      return undefined;
+    }
     fetchTimeout.current = setTimeout(() => {
       fetchProducts(page > 1);
     }, 300);

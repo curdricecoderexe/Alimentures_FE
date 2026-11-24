@@ -77,7 +77,7 @@ export default function FssaiAdminCard() {
 
   if (!info) return null;
 
-  const field = 'w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#C41E6B]';
+  const field = 'w-full h-10 px-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#B0128F]';
   const label = 'text-[10px] font-bold uppercase tracking-widest text-gray-400';
 
   return (
@@ -122,15 +122,15 @@ export default function FssaiAdminCard() {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button onClick={save} disabled={busy} className="h-10 px-4 rounded-xl bg-[#C41E6B] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:brightness-110 disabled:opacity-50">
+        <button onClick={save} disabled={busy} className="h-10 px-4 rounded-xl bg-[#B0128F] text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:brightness-110 disabled:opacity-50">
           <Save className="w-3.5 h-3.5" /> Save details
         </button>
         <a href={`${API_ORIGIN}${info.previewUrl}`} target="_blank" rel="noopener noreferrer"
-          className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#C41E6B] hover:text-[#C41E6B]">
+          className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#B0128F] hover:text-[#B0128F]">
           <Eye className="w-3.5 h-3.5" /> Preview
         </a>
         <button onClick={() => inputRef.current?.click()} disabled={busy}
-          className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#C41E6B] hover:text-[#C41E6B] disabled:opacity-50">
+          className="h-10 px-4 rounded-xl border border-gray-200 text-gray-600 text-[11px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 hover:border-[#B0128F] hover:text-[#B0128F] disabled:opacity-50">
           {progress != null ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
           {progress != null ? `Uploading ${Math.round(progress * 100)}%` : 'Upload renewed certificate'}
         </button>
@@ -145,9 +145,9 @@ export default function FssaiAdminCard() {
 
       <Link to="/admin/leads" className="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-          <Users className="w-4 h-4 text-[#C41E6B]" /> {info.leadCount} certificate download{info.leadCount === 1 ? '' : 's'}
+          <Users className="w-4 h-4 text-[#B0128F]" /> {info.leadCount} certificate download{info.leadCount === 1 ? '' : 's'}
         </span>
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#C41E6B] inline-flex items-center gap-1">View in Leads <ArrowRight className="w-3.5 h-3.5" /></span>
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#B0128F] inline-flex items-center gap-1">View in Leads <ArrowRight className="w-3.5 h-3.5" /></span>
       </Link>
     </motion.div>
   );

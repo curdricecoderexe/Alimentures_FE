@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, FileText, User, Phone, Loader2, CheckCircle2, BookOpen, ShieldCheck } from 'lucide-react';
+import { Download, FileText, User, Phone, Loader2, CheckCircle2, BookOpen, ShieldCheck, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../lib/api';
+import { useAppearance } from '../../lib/appearance';
+import catalogueBgDefault from '../../assets/cas/banner.webp';
+import CatalogueBooklet from './CatalogueBooklet';
+
+/* Frosted glass input shell (sits on the liquid-glass form). */
+const GLASS_FIELD = 'mt-1.5 flex items-center h-12 rounded-[12px] overflow-hidden bg-white/[0.12] border border-white/25 focus-within:border-white/60 focus-within:bg-white/[0.18] focus-within:ring-4 focus-within:ring-white/15 transition-[border-color,background-color,box-shadow]';
 
 const API_ORIGIN = API_BASE.replace(/\/api\/?$/, '');
 const SAVED_KEY = 'alim_catalogue_lead_v1';
@@ -50,6 +56,9 @@ export default function CatalogueDownload() {
     return () => { alive = false; };
   }, []);
 
+  const appearance = useAppearance();
+  const bgImage = appearance.catalogueBg || catalogueBgDefault;
+
   if (!info?.available) return null;
 
   const submit = async (e) => {
@@ -85,162 +94,161 @@ export default function CatalogueDownload() {
 
   const hasFile = info.hasFile !== false;
   const size = hasFile ? formatMB(info.size) : null;
+  const title = info.title || DEFAULT_TITLE;
+  const description = info.description || (hasFile ? DEFAULT_DESCRIPTION : DEFAULT_DESCRIPTION_NO_FILE);
+  const promises = [
+    'Millet cookies, ghee, honey & more',
+    hasFile ? 'Instant PDF, yours to keep' : 'Sent straight to your mobile',
+    'Easy to share with family & friends',
+  ];
+  const mobileDigits = mobile.replace(/\D/g, '').slice(-10);
 
   return (
-    <section id="catalogue" className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 font-sans">
+    <section id="catalogue" className="relative z-10 overflow-clip font-sans text-white mb-16 sm:mb-24">
+      {/* full-bleed background photo for the whole section (Admin → Appearance → Catalogue download — Background) */}
+      <img src={bgImage} alt="" aria-hidden="true" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover object-center scale-105 blur-[3px]" />
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/25" />
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="relative max-w-[1180px] mx-auto rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-berry-deep via-berry to-[#8E0E4E] shadow-[0_50px_100px_-40px_rgba(121,8,63,0.7)]"
+        className="relative max-w-[1240px] 2xl:max-w-[1400px] mx-auto"
       >
-        {/* texture + glows */}
-        <div aria-hidden="true" className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
-        <div aria-hidden="true" className="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-gold-light/30 blur-[100px]" />
-        <div aria-hidden="true" className="absolute -bottom-40 right-0 h-96 w-96 rounded-full bg-berry-bright/40 blur-[110px]" />
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-10 items-center px-5 py-12 sm:px-8 sm:py-14 lg:py-16">
+          {/* ── Pitch + animated catalogue booklet ── */}
+          <div className="lg:col-span-6 [text-shadow:0_1px_16px_rgba(0,0,0,0.35)]">
+            <span className="inline-flex items-center gap-2 h-8 px-3 rounded-full bg-white/15 backdrop-blur-md ring-1 ring-white/30 text-[12px] font-semibold text-white">
+              <BookOpen className="h-4 w-4 text-gold-light" /> Free product catalogue
+            </span>
+            <h2 className="mt-4 headline headline-on-dark text-[1.9rem] leading-[1.08] sm:text-[2.4rem] lg:text-[2.6rem] [&_em]:[background:none] [&_em]:text-[#FFE2A8]">
+              {title}
+            </h2>
+            <p className="mt-2.5 text-[14.5px] sm:text-[15px] leading-relaxed text-white/85 max-w-[32rem]">{description}</p>
 
-        <div className="relative grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center p-6 sm:p-10 lg:p-14">
-          {/* ── Pitch + catalogue mock ── */}
-          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-center sm:items-start lg:items-start xl:items-center gap-8 sm:gap-10 text-center sm:text-left">
-            {/* stacked "booklet" */}
-            <div className="relative shrink-0 w-40 sm:w-44 aspect-[3/4]" aria-hidden="true">
-              <div className="absolute inset-0 translate-x-4 translate-y-3 rotate-6 rounded-2xl bg-white/25" />
-              <div className="absolute inset-0 translate-x-2 translate-y-1.5 rotate-3 rounded-2xl bg-white/45" />
-              <motion.div
-                animate={{ y: [0, -6, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute inset-0 -rotate-2 rounded-2xl bg-gradient-to-br from-[#FFFDF8] to-cream-deep shadow-2xl p-4 flex flex-col"
-              >
-                <span className="h-1.5 w-10 rounded-full bg-gradient-to-r from-berry to-gold-light" />
-                <p className="mt-3 font-display font-extrabold text-[15px] leading-tight text-ink">Alimenture</p>
-                <p className="font-display font-bold text-[11px] text-berry tracking-wide uppercase">Catalogue</p>
-                <div className="mt-auto space-y-1.5">
-                  <span className="block h-1.5 w-full rounded-full bg-ink/10" />
-                  <span className="block h-1.5 w-4/5 rounded-full bg-ink/10" />
-                  <span className="block h-1.5 w-3/5 rounded-full bg-ink/10" />
-                </div>
-                <span className="absolute -bottom-3 -right-3 inline-flex items-center gap-1 h-7 px-2.5 rounded-full bg-gradient-to-r from-gold to-gold-light text-white text-[10px] font-extrabold shadow-lg">
-                  <FileText className="h-3.5 w-3.5" /> PDF
-                </span>
-              </motion.div>
+            <div className="mt-14 sm:mt-16 [text-shadow:none]">
+              <CatalogueBooklet />
             </div>
 
-            <div className="min-w-0">
-              <span className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/12 border border-white/20 text-white/90 text-[10px] font-extrabold uppercase tracking-[0.2em]">
-                <BookOpen className="h-3.5 w-3.5 text-gold-light" /> Free catalogue
-              </span>
-              <h2 className="mt-4 font-display font-bold text-white text-3xl sm:text-4xl lg:text-[2.6rem] leading-[1.08] tracking-tight">
-                {info.title || DEFAULT_TITLE}
-              </h2>
-              <p className="mt-4 text-white/80 text-[14.5px] sm:text-[15px] leading-relaxed font-medium max-w-md mx-auto sm:mx-0">
-                {info.description || (hasFile ? DEFAULT_DESCRIPTION : DEFAULT_DESCRIPTION_NO_FILE)}
-              </p>
-              {size && (
-                <p className="mt-4 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-gold-light">
-                  <FileText className="h-3.5 w-3.5" /> PDF · {size}
-                </p>
-              )}
-            </div>
           </div>
 
-          {/* ── Form ── */}
-          <div className="relative rounded-[1.6rem] bg-white/95 backdrop-blur-xl p-5 sm:p-7 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.5)]">
-            <AnimatePresence mode="wait" initial={false}>
-              {done ? (
-                <motion.div
-                  key="done"
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center py-4 sm:py-6"
-                >
-                  <span className="mx-auto h-16 w-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <CheckCircle2 className="h-8 w-8" />
-                  </span>
-                  <h3 className="mt-4 font-display font-extrabold text-xl text-ink">Thank you, {name.trim().split(' ')[0]}!</h3>
-                  <p className="mt-2 text-sm text-ink-soft font-medium">
-                    {done === 'downloaded'
-                      ? 'Your catalogue download has started. Check your downloads folder.'
-                      : `Our team will share the catalogue with you on +91 ${mobile.replace(/\D/g, '').slice(-10)} shortly.`}
-                  </p>
-                  <div className="mt-6 flex flex-col sm:flex-row gap-2.5 justify-center">
-                    {done === 'downloaded' && (
-                      <button
-                        onClick={submit}
-                        disabled={busy}
-                        className="btn-berry h-11 px-5 rounded-xl text-[11px] font-extrabold uppercase tracking-[0.14em] inline-flex items-center justify-center gap-2 disabled:opacity-60"
-                      >
-                        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download again
-                      </button>
-                    )}
-                    <Link
-                      to="/shop"
-                      className="h-11 px-5 rounded-xl border border-hairline text-ink-soft text-[11px] font-extrabold uppercase tracking-[0.14em] inline-flex items-center justify-center hover:border-berry/40 hover:text-berry transition-colors"
-                    >
-                      Shop now
-                    </Link>
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={submit} noValidate>
-                  <h3 className="font-display font-extrabold text-xl sm:text-2xl text-ink">Get the catalogue</h3>
-                  <p className="mt-1 text-[13px] text-ink-muted font-medium">
-                    {hasFile ? 'Takes 10 seconds. No spam, ever.' : 'We’ll send it to your mobile. No spam, ever.'}
-                  </p>
-
-                  <label className="block mt-5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-soft">Your name</span>
-                    <span className="mt-1.5 flex items-center gap-3 h-12 px-4 rounded-2xl bg-cream/60 border border-hairline focus-within:border-berry/50 focus-within:ring-4 focus-within:ring-berry/10 transition-all">
-                      <User className="h-4 w-4 text-berry shrink-0" />
-                      <input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        maxLength={60}
-                        autoComplete="name"
-                        placeholder="Full name"
-                        className="flex-1 min-w-0 bg-transparent outline-none text-[15px] font-medium placeholder:text-ink-muted"
-                      />
-                    </span>
-                  </label>
-
-                  <label className="block mt-4">
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-soft">Mobile number</span>
-                    <span className="mt-1.5 flex items-center gap-3 h-12 px-4 rounded-2xl bg-cream/60 border border-hairline focus-within:border-berry/50 focus-within:ring-4 focus-within:ring-berry/10 transition-all">
-                      <Phone className="h-4 w-4 text-berry shrink-0" />
-                      <span className="text-[15px] font-bold text-ink-soft shrink-0">+91</span>
-                      <input
-                        value={mobile}
-                        onChange={(e) => setMobile(e.target.value.replace(/[^\d\s]/g, '').slice(0, 12))}
-                        inputMode="numeric"
-                        autoComplete="tel-national"
-                        placeholder="98765 43210"
-                        className="flex-1 min-w-0 bg-transparent outline-none text-[15px] font-medium tracking-wide placeholder:text-ink-muted"
-                      />
-                    </span>
-                  </label>
-
-                  {error && <p className="mt-3 text-[12px] font-bold text-red-500" role="alert">{error}</p>}
-
-                  <button
-                    type="submit"
-                    disabled={busy}
-                    className="mt-5 w-full py-3.5 rounded-2xl btn-berry text-[12px] font-extrabold uppercase tracking-[0.15em] inline-flex items-center justify-center gap-2 disabled:opacity-60"
+          {/* ── Liquid-glass form ── */}
+          <div className="lg:col-span-6 lg:pl-6 xl:pl-12">
+            <div className="liquid-glass rounded-[24px] p-5 sm:p-7">
+              <AnimatePresence mode="wait" initial={false}>
+                {done ? (
+                  <motion.div
+                    key="done"
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center py-3 sm:py-5"
                   >
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                    {busy ? (hasFile ? 'Preparing…' : 'Sending…') : (hasFile ? 'Download catalogue' : 'Request catalogue')}
-                  </button>
-
-                  <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-ink-muted font-medium">
-                    <ShieldCheck className="h-3.5 w-3.5 mt-0.5 text-emerald-600 shrink-0" />
-                    <span>
-                      By {hasFile ? 'downloading' : 'submitting'} you agree that Alimenture may contact you about our products. See our{' '}
-                      <Link to="/policies" className="text-berry font-bold hover:underline">privacy policy</Link>.
+                    <span className="mx-auto h-14 w-14 rounded-full bg-white/20 ring-1 ring-white/40 text-white flex items-center justify-center">
+                      <CheckCircle2 className="h-7 w-7" />
                     </span>
-                  </p>
-                </motion.form>
-              )}
-            </AnimatePresence>
+                    <h3 className="mt-4 text-[20px] font-semibold text-white">Thank you, {name.trim().split(' ')[0]}!</h3>
+                    <p className="mt-1.5 text-[14px] text-white/80">
+                      {done === 'downloaded'
+                        ? 'Your catalogue download has started. Check your downloads folder.'
+                        : `Our team will share the catalogue with you on +91 ${mobileDigits} shortly.`}
+                    </p>
+                    <div className="mt-6 flex flex-col sm:flex-row gap-2.5 justify-center">
+                      {done === 'downloaded' && (
+                        <button
+                          type="button"
+                          onClick={submit}
+                          disabled={busy}
+                          className="h-11 px-5 rounded-[12px] bg-gold-light text-ink text-[14px] font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#F0A020] disabled:opacity-60 transition-colors [text-shadow:none]"
+                        >
+                          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Download again
+                        </button>
+                      )}
+                      <Link to="/shop" className="h-11 px-5 rounded-[12px] bg-white/10 ring-1 ring-white/35 text-white text-[14px] font-semibold inline-flex items-center justify-center hover:bg-white/20 transition-colors">
+                        Shop now
+                      </Link>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onSubmit={submit} noValidate>
+                    {/* 2-step hint */}
+                    <ol className="flex items-center gap-2 text-[12px] font-medium text-white/70">
+                      <li className="inline-flex items-center gap-1.5 text-white">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-ink text-[11px] [text-shadow:none]">1</span> Your details
+                      </li>
+                      <span aria-hidden="true" className="h-px w-6 bg-white/30" />
+                      <li className="inline-flex items-center gap-1.5">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/30 text-white text-[11px]">2</span>
+                        {hasFile ? 'Instant PDF' : 'We send it to you'}
+                      </li>
+                    </ol>
+
+                    <h3 className="mt-4 text-[22px] sm:text-[24px] font-semibold tracking-[-0.01em] text-white">Get your free copy</h3>
+                    <p className="mt-1 text-[13.5px] text-white/70">Takes 10 seconds. No spam, ever.</p>
+
+                    <label className="block mt-5">
+                      <span className="text-[13px] font-semibold text-white">Your name</span>
+                      <span className={GLASS_FIELD}>
+                        <User className="h-[18px] w-[18px] text-white/60 shrink-0 ml-3.5" />
+                        <input
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          maxLength={60}
+                          autoComplete="name"
+                          placeholder="Full name"
+                          className="flex-1 min-w-0 h-full bg-transparent px-3 outline-none text-[15px] text-white placeholder:text-white/50"
+                        />
+                      </span>
+                    </label>
+
+                    <label className="block mt-4">
+                      <span className="text-[13px] font-semibold text-white">Mobile number</span>
+                      <span className={GLASS_FIELD}>
+                        <span className="flex items-center gap-1.5 h-full px-3 bg-white/10 border-r border-white/20 text-[14px] font-medium text-white/85 shrink-0">
+                          <Phone className="h-4 w-4 text-white/60" /> +91
+                        </span>
+                        <input
+                          value={mobile}
+                          onChange={(e) => setMobile(e.target.value.replace(/[^\d\s]/g, '').slice(0, 12))}
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          placeholder="98765 43210"
+                          className="flex-1 min-w-0 h-full bg-transparent px-3 outline-none text-[15px] tracking-wide text-white placeholder:text-white/50"
+                        />
+                      </span>
+                    </label>
+
+                    {error && <p className="mt-3 text-[13px] font-semibold text-[#FFD1CC]" role="alert">{error}</p>}
+
+                    <button
+                      type="submit"
+                      disabled={busy}
+                      className="group mt-5 w-full h-12 rounded-[12px] bg-gold-light text-ink text-[15px] font-semibold inline-flex items-center justify-center gap-2 shadow-[0_12px_24px_-12px_rgba(0,0,0,0.5)] hover:bg-[#F0A020] active:scale-[0.99] disabled:opacity-60 transition-[background-color,transform] [text-shadow:none]"
+                    >
+                      {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" /> : <Download className="h-[18px] w-[18px] transition-transform group-hover:translate-y-0.5" />}
+                      {busy ? (hasFile ? 'Preparing…' : 'Sending…') : (hasFile ? 'Download catalogue' : 'Request catalogue')}
+                    </button>
+
+                    <p className="mt-4 flex items-start gap-2 text-[12px] leading-relaxed text-white/70">
+                      <ShieldCheck className="h-4 w-4 mt-px text-white/80 shrink-0" />
+                      <span>
+                        By {hasFile ? 'downloading' : 'submitting'} you agree that Alimenture may contact you about our products. See our{' '}
+                        <Link to="/policies" className="font-semibold text-white underline underline-offset-2 decoration-white/40 hover:decoration-white">privacy policy</Link>.
+                      </span>
+                    </p>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </div>
+            <ul className="mt-4 flex flex-wrap justify-center gap-2">
+              {[...promises, size && `PDF · ${size}`].filter(Boolean).map((line) => (
+                <li key={line} className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-black/25 backdrop-blur-md ring-1 ring-white/20 text-[12px] text-white/90">
+                  <Check className="h-3.5 w-3.5 text-white" strokeWidth={2.4} /> {line}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </motion.div>

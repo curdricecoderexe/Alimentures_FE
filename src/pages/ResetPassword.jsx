@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import OtpInput from '../components/ui/OtpInput';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Lock, Mail, ArrowRight, ArrowLeft, ShieldCheck, KeyRound, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ArrowLeft, ShieldCheck, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
 import { API_BASE } from '../lib/api';
 import useOtpTimer from '../hooks/useOtpTimer';
 import AuthScaffold, { AuthField } from '../components/AuthScaffold';
@@ -88,18 +89,18 @@ export default function ResetPassword() {
   return (
     <AuthScaffold>
       <SEO title="Choose a new password" noindex />
-      <div className="glass foil-top rounded-panel p-7 sm:p-9 shadow-glass-lift">
+      <div className="rounded-[24px] bg-white p-6 sm:p-8 ring-1 ring-[#E8E1D4] shadow-[0_24px_60px_-36px_rgba(64,28,62,0.35)]">
         {!done ? (
           <>
             <Link
               to="/forgot-password"
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink-muted hover:text-berry transition-colors mb-7"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted hover:text-ink transition-colors mb-7"
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Request a new code
             </Link>
 
-            <h1 className="display-lg text-[2.15rem] leading-tight">
-              Set a new <span className="accent-text">password</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink">
+              Set a new password
             </h1>
             <p className="text-ink-soft text-[13.5px] mt-2 font-medium">
               Enter the code from your email and choose a new secure password.
@@ -115,34 +116,26 @@ export default function ResetPassword() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alimentureindustries@gmail.com"
+                  placeholder="you@example.com"
                 />
               )}
 
               <div>
-                <AuthField
-                  label="Verification code"
-                  icon={KeyRound}
-                  type="text"
-                  inputMode="numeric"
-                  required
-                  maxLength={6}
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  placeholder="123456"
-                  className="tracking-[0.5em] font-bold text-center"
-                />
+                <div>
+                  <span className="block text-[12.5px] font-semibold text-ink mb-2">Verification code</span>
+                  <OtpInput value={otp} onChange={setOtp} />
+                </div>
                 <div className="flex items-center justify-between text-[11px] font-bold mt-1.5 ml-1">
                   <span className={otpTimer.secondsLeft > 0 ? 'text-ink-muted' : 'text-danger'}>
                     {otpTimer.secondsLeft > 0
-                      ? <>Expires in <span className="text-berry tabular-nums">{otpTimer.label}</span></>
+                      ? <>Expires in <span className="text-mulberry tabular-nums">{otpTimer.label}</span></>
                       : 'Code may have expired'}
                   </span>
                   <button
                     type="button"
                     onClick={handleResend}
                     disabled={!email || otpTimer.cooldown > 0 || resending}
-                    className="uppercase tracking-[0.12em] text-berry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed"
+                    className="font-semibold text-mulberry hover:opacity-70 transition-opacity disabled:text-ink-muted disabled:cursor-not-allowed"
                   >
                     {otpTimer.cooldown > 0 ? `Resend in ${otpTimer.cooldown}s` : resending ? 'Sending…' : 'Resend code'}
                   </button>
@@ -165,7 +158,7 @@ export default function ResetPassword() {
                     type="button"
                     onClick={() => setShowPw(!showPw)}
                     aria-label={showPw ? 'Hide password' : 'Show password'}
-                    className="text-ink-muted hover:text-berry transition-colors"
+                    className="h-9 w-9 -mr-2 rounded-full flex items-center justify-center text-ink-muted hover:text-mulberry hover:bg-mulberry/5 transition-colors"
                   >
                     {showPw ? <EyeOff className="h-[17px] w-[17px]" /> : <Eye className="h-[17px] w-[17px]" />}
                   </button>
@@ -188,7 +181,7 @@ export default function ResetPassword() {
                 type="submit"
                 disabled={busy}
                 whileTap={still || busy ? undefined : { scale: 0.985 }}
-                className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {busy ? (
                   <>
@@ -204,11 +197,11 @@ export default function ResetPassword() {
           </>
         ) : (
           <div className="flex flex-col items-center text-center py-4">
-            <span className="ico-chip ico-chip-gold h-16 w-16 rounded-2xl mb-5">
+            <span className="flex items-center justify-center bg-mulberry-tint text-mulberry h-16 w-16 rounded-2xl mb-5">
               <CheckCircle2 className="h-7 w-7" />
             </span>
-            <h1 className="display-lg text-[2rem] leading-tight">
-              Password <span className="accent-text">updated</span>
+            <h1 className="text-[26px] sm:text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink">
+              Password updated
             </h1>
             <p className="text-ink-soft text-[13.5px] mt-2.5 font-medium max-w-[300px]">
               Your password has been reset. You can now sign in with your new credentials.
@@ -216,7 +209,7 @@ export default function ResetPassword() {
             <button
               type="button"
               onClick={() => navigate('/login')}
-              className="btn-berry w-full h-[52px] rounded-full text-[11px] font-extrabold uppercase tracking-[0.16em] flex items-center justify-center gap-2.5 mt-7"
+              className="btn-berry w-full h-12 rounded-[12px] text-[15px] font-semibold flex items-center justify-center gap-2 mt-7"
             >
               Back to sign in <ArrowRight className="h-4 w-4" />
             </button>
