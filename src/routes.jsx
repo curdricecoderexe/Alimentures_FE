@@ -77,7 +77,7 @@ const MyAddresses = Loadable(lazy(() => import('./pages/customer/MyAddresses')))
 const Policy = Loadable(lazy(() => import('./pages/customer/Policy')));
 const About = Loadable(lazy(() => import('./pages/customer/About')));
 const WhyChooseUs = Loadable(lazy(() => import('./pages/customer/WhyChooseUs')));
-const LocationChennai = Loadable(lazy(() => import('./pages/customer/LocationChennai')));
+const LocationCity = Loadable(lazy(() => import('./pages/customer/LocationCity')));
 const Hampers = Loadable(lazy(() => import('./pages/customer/Hampers')));
 const Blog = Loadable(lazy(() => import('./pages/customer/Blog')));
 const BlogPost = Loadable(lazy(() => import('./pages/customer/BlogPost')));
@@ -156,7 +156,8 @@ export const router = createBrowserRouter([
       { path: "products/:id", element: <ProductDetails /> },
       { path: "product/:id", element: <ProductDetails /> },
       { path: "categories/:categorySlug", element: <Shop /> },
-      { path: "locations/chennai", element: <LocationChennai /> },
+      { path: "locations", element: <LocationCity /> },
+      { path: "locations/:city", element: <LocationCity /> },
       { path: "wishlist", element: <Wishlist /> },
       { path: "addresses", element: <ProtectedRoute allowedRoles={['customer', 'admin']}><MyAddresses /></ProtectedRoute> },
       { path: "policies", element: <Policy /> },

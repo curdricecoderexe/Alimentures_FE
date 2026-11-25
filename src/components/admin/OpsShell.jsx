@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Menu, X, Moon, Sun, ExternalLink } from 'lucide-react';
 import { logout } from '../../lib/api';
 import logo from '../../assets/logo.png';
-import NotificationCenter from '../NotificationCenter';
 import { MilletSpray } from '../home/BotanicalArt';
 
 /**
@@ -61,7 +60,6 @@ export default function OpsShell({ groups, portal, account, syncHtmlDark = false
           <button type="button" onClick={() => setIsDarkMode((v) => !v)} className={themeBtn} aria-label="Toggle theme">
             <ThemeIcon className="h-[18px] w-[18px]" />
           </button>
-          <NotificationCenter />
         </div>
       </div>
 
@@ -70,7 +68,6 @@ export default function OpsShell({ groups, portal, account, syncHtmlDark = false
         <button type="button" onClick={() => setIsDarkMode((v) => !v)} className={`${themeBtn} shadow-sm`} aria-label="Toggle theme">
           <ThemeIcon className="h-[18px] w-[18px]" />
         </button>
-        <NotificationCenter />
       </div>
 
       {/* ── Mobile drawer backdrop ── */}

@@ -138,7 +138,7 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen -mt-20 pt-20 bg-paper text-ink font-sans">
       <SEO
-        title={`${post.title} | ${BRAND}`}
+        title={post.title}
         description={post.excerpt}
         type="article"
         url={`/blog/${post.slug}`}

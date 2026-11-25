@@ -5,6 +5,7 @@ import {
   ArrowLeft, ArrowRight, ChevronRight, FileText, ShieldCheck, Mail, Phone, Home,
 } from 'lucide-react';
 import SEO from '../../components/SEO';
+import { policyDescription } from '../../lib/seo';
 import { POLICIES, POLICY_BY_SLUG, SUPPORT_CONTACT } from '../../data/policies';
 
 const slugify = (s) =>
@@ -151,7 +152,7 @@ export default function Policy() {
     <div className="relative -mt-20 font-sans text-ink overflow-hidden">
       <SEO
         title={policy.title}
-        description={policy.summary}
+        description={policyDescription(policy)}
         url={`/policies/${policy.slug}`}
         type="article"
       />

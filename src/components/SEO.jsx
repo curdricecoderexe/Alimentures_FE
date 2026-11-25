@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { BRAND, DEFAULT_IMAGE, LOCALE, absoluteUrl } from '../lib/seo';
+import { BRAND, DEFAULT_IMAGE, LOCALE, absoluteUrl, pageTitle } from '../lib/seo';
 
 /**
  * Per-page head tags. `title` is used as-is when it already names the brand,
@@ -25,7 +25,7 @@ export default function SEO({
     document.querySelectorAll('head [data-prerender]').forEach((el) => el.remove());
   }, []);
 
-  const fullTitle = !title ? BRAND : (title.includes(BRAND) ? title : `${title} | ${BRAND}`);
+  const fullTitle = !title ? BRAND : (title.includes(BRAND) ? title : pageTitle(title));
   const pageUrl = url ? absoluteUrl(url) : null;
   const imageUrl = absoluteUrl(image && !image.startsWith('data:') ? image : DEFAULT_IMAGE);
   const blocks = [].concat(jsonLd || []).filter(Boolean);

@@ -43,7 +43,7 @@ process.env.NODE_ENV = 'production';
 
 const seo = await import('../src/lib/seo.js');
 const { CATEGORY_CONTENT, genericCategoryContent } = await import('../src/data/categoryContent.js');
-const { CHENNAI_PAGE } = await import('../src/data/localSeo.js');
+const { TN_CITIES, cityPath, cityMeta, cityFaqs, HUB_META, LOCATIONS_PATH, TAMIL_TERMS } = await import('../src/data/localSeo.js');
 const { POLICIES, SUPPORT_CONTACT } = await import('../src/data/policies.js');
 const { BLOG_POSTS: STARTER_POSTS } = await import('../src/data/blog.js');
 const { parseContent } = await import('../src/lib/blogContent.js');
@@ -53,7 +53,7 @@ const {
   SITE_URL, BRAND, LOCALE, DEFAULT_IMAGE, absoluteUrl, slugify, productPath, categoryPath,
   displayName, productTitle, productDescription, productJsonLd, breadcrumbJsonLd,
   productBreadcrumbs, organizationJsonLd, websiteJsonLd, publicImages, productImagePath,
-  dataUriExt, offerSummary, packSizes, keyIngredients, HOME_SEO, SHOP_SEO, ABOUT_SEO, WHY_CHOOSE_SEO, BLOG_SEO, HAMPERS_SEO, articleJsonLd,
+  dataUriExt, offerSummary, packSizes, keyIngredients, faqJsonLd, localPageJsonLd, pageTitle, policyDescription, HOME_SEO, SHOP_SEO, ABOUT_SEO, WHY_CHOOSE_SEO, BLOG_SEO, HAMPERS_SEO, articleJsonLd,
 } = seo;
 
 const API = (process.env.VITE_API_URL || '').replace(/\/+$/, '');
@@ -250,7 +250,7 @@ for (const post of BLOG_POSTS) {
     return `<p>${esc(b.p || b.tip || '')}</p>`;
   }).join('');
   writePage(pathname, {
-    title: `${post.title} | ${BRAND}`,
+    title: pageTitle(post.title),
     description: post.excerpt,
     pathname,
     type: 'article',
@@ -311,20 +311,52 @@ writePage('/policies', {
 sitemap.push({ loc: '/policies' });
 for (const pol of POLICIES) {
   writePage(`/policies/${pol.slug}`, {
-    title: `${pol.title} | ${BRAND}`, description: pol.summary, pathname: `/policies/${pol.slug}`, type: 'article',
+    title: `${pol.title} | ${BRAND}`, description: policyDescription(pol), pathname: `/policies/${pol.slug}`, type: 'article',
   }, `<main><h1>${esc(pol.title)}</h1><p>${esc(pol.summary)}</p>${link('/policies', 'All policies')}</main>`);
   sitemap.push({ loc: `/policies/${pol.slug}` });
 }
 
-// Chennai landing page — only once the business has published its facts.
-if (CHENNAI_PAGE.published) {
-  writePage('/locations/chennai', {
-    title: `Millet Cookies, Ghee & Honey Delivered in Chennai | ${BRAND}`,
-    description: `Order Alimenture millet cookies, A2 ghee, raw honey and bakes in Chennai. Check delivery to your PIN code.`,
-    pathname: '/locations/chennai',
-    jsonLd: breadcrumbJsonLd([{ name: 'Home', path: '/' }, { name: 'Chennai', path: '/locations/chennai' }]),
-  }, `<main><h1>Alimenture in Chennai</h1>${navHtml()}</main>`);
-  sitemap.push({ loc: '/locations/chennai' });
+// Tamil Nadu local pages — hub + one per city. Facts only (src/data/localSeo.js);
+// delivery facts that need the live API (free-delivery threshold) are left to the
+// client so the static HTML never states something stale.
+{
+  const tamilHtml = `<p lang="ta">${TAMIL_TERMS.map((t) => `${esc(t.ta)} (${esc(t.en)})`).join(' · ')}</p>`;
+  const faqHtml = (faqs) => `<section><h2>Frequently asked questions</h2>${faqs.map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>`;
+  const citiesHtml = (list) => `<nav aria-label="Tamil Nadu cities"><ul>${list.map((c) => `<li>${link(cityPath(c.slug), `${c.name} (${c.tamil})`)}</li>`).join('')}</ul></nav>`;
+  const topProducts = products.filter((p) => p.image).slice(0, 8);
+
+  const hubFaqs = cityFaqs({ name: 'Tamil Nadu', slug: 'tamil-nadu' }, { hampersVisible });
+  const hubCrumbs = [{ name: 'Home', path: '/' }, { name: 'Tamil Nadu', path: LOCATIONS_PATH }];
+  writePage(LOCATIONS_PATH, {
+    title: HUB_META.title,
+    description: HUB_META.description,
+    pathname: LOCATIONS_PATH,
+    jsonLd: [
+      breadcrumbJsonLd(hubCrumbs),
+      localPageJsonLd({ path: LOCATIONS_PATH, title: HUB_META.title, description: HUB_META.description, places: [{ type: 'State', name: 'Tamil Nadu' }, ...TN_CITIES.map((c) => ({ name: c.fullName || c.name, containedIn: 'Tamil Nadu' }))] }),
+      faqJsonLd(hubFaqs),
+    ],
+  }, `<main>${crumbsHtml(hubCrumbs)}<h1>${esc(HUB_META.h1)}</h1><p>${esc(HUB_META.description)}</p>${citiesHtml(TN_CITIES)}${tamilHtml}${productListHtml(topProducts)}${faqHtml(hubFaqs)}${navHtml()}</main>`);
+  sitemap.push({ loc: LOCATIONS_PATH, lastmod: isoDate(newest) });
+
+  for (const city of TN_CITIES) {
+    const meta = cityMeta(city);
+    const path_ = cityPath(city.slug);
+    const faqs = cityFaqs(city, { hampersVisible });
+    const crumbs = [...hubCrumbs, { name: city.name, path: path_ }];
+    const areas = city.areas?.length ? `<p>Ordering from ${esc(city.areas.join(', '))}? Enter your PIN code to check delivery to your address.</p>` : '';
+    writePage(path_, {
+      title: meta.title,
+      description: meta.description,
+      pathname: path_,
+      jsonLd: [
+        breadcrumbJsonLd(crumbs),
+        localPageJsonLd({ path: path_, title: meta.title, description: meta.description, places: [{ name: city.fullName || city.name, containedIn: 'Tamil Nadu' }] }),
+        faqJsonLd(faqs),
+      ],
+    }, `<main>${crumbsHtml(crumbs)}<h1>${esc(meta.h1)}</h1><p lang="ta">${esc(city.tamil)}</p><p>${esc(city.intro)}</p>${areas}${productListHtml(topProducts)}${tamilHtml}${faqHtml(faqs)}<h2>We also deliver to</h2>${citiesHtml(TN_CITIES.filter((c) => c.slug !== city.slug))}${navHtml()}</main>`);
+    sitemap.push({ loc: path_, lastmod: isoDate(newest) });
+  }
 }
 
 // Shells: unknown URLs (404) and private app routes (noindex, no canonical).

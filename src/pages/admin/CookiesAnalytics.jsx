@@ -192,9 +192,10 @@ export default function CookiesAnalytics() {
 
   useEffect(() => { fetchAll(true); }, [fetchAll]);
 
-  // Poll active visitors every 30s
+  // Poll active visitors every 2 min, only while this tab is visible (the API caches it for 60s).
   useEffect(() => {
     const interval = setInterval(async () => {
+      if (document.visibilityState !== 'visible') return;
       try {
         const r = await authenticatedFetch(`/analytics/active-visitors`);
         if (r) {
@@ -202,7 +203,7 @@ export default function CookiesAnalytics() {
           if (d.success) setActiveNow(d.data.active);
         }
       } catch { /* empty */ }
-    }, 30000);
+    }, 120000);
     return () => clearInterval(interval);
   }, []);
 

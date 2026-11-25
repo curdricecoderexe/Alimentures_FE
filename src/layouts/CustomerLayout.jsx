@@ -26,7 +26,7 @@ import { cachedFetch, logout, API_BASE } from '../lib/api';
 import { POLICIES } from '../data/policies';
 import { productPath, categoryPath, displayName } from '../lib/seo';
 import { useCategories } from '../lib/categories';
-import { CHENNAI_PAGE } from '../data/localSeo';
+import { TN_CITIES, cityPath, LOCATIONS_PATH } from '../data/localSeo';
 import TrustBadges from '../components/TrustBadges';
 import ShopMenu from '../components/nav/ShopMenu';
 import { SOCIAL_PLATFORMS, resolveSocialLinks } from '../lib/socialPlatforms';
@@ -902,9 +902,6 @@ export default function CustomerLayout() {
                     {footerCategories.map((c) => (
                       <li key={c.id}><Link to={categoryPath(c.name)} className={footerLinkCls}>{c.name}</Link></li>
                     ))}
-                    {CHENNAI_PAGE.published && (
-                      <li><Link to="/locations/chennai" className={footerLinkCls}>Delivery in Chennai</Link></li>
-                    )}
                   </ul>
                 </>
               )}
@@ -937,6 +934,20 @@ export default function CustomerLayout() {
               </ul>
             </div>
           </div>
+
+          {/* Local SEO: crawlable links to every Tamil Nadu city page */}
+          <nav aria-label="Delivery locations" className="mt-12 pt-8 border-t border-white/10">
+            <p className="text-[13px] text-white/50">
+              <Link to={LOCATIONS_PATH} className="text-white/75 hover:text-white transition-colors">We deliver across Tamil Nadu</Link>
+              <span className="mx-2 text-white/25">·</span>
+              {TN_CITIES.map((c, i) => (
+                <span key={c.slug}>
+                  {i > 0 && <span className="mx-1.5 text-white/25">·</span>}
+                  <Link to={cityPath(c.slug)} className="hover:text-white transition-colors">{c.name}</Link>
+                </span>
+              ))}
+            </p>
+          </nav>
 
           {/* Payment, licence & shipping partners */}
           <div className="mt-12">

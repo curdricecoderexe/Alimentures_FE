@@ -276,6 +276,8 @@ export function organizationJsonLd({ email, phones = [] } = {}) {
     logo: absoluteUrl(DEFAULT_IMAGE),
     foundingDate: '2023-12',
     address: { '@type': 'PostalAddress', addressLocality: 'Chennai', addressRegion: 'Tamil Nadu', addressCountry: 'IN' },
+    areaServed: [{ '@type': 'State', name: 'Tamil Nadu' }, { '@type': 'Country', name: 'India' }],
+    knowsLanguage: ['en', 'ta'],
     ...(email || phones.length ? {
       contactPoint: phones.map((telephone) => ({
         '@type': 'ContactPoint',
@@ -286,6 +288,40 @@ export function organizationJsonLd({ email, phones = [] } = {}) {
         ...(email ? { email } : {}),
       })),
     } : {}),
+  };
+}
+
+/** FAQPage rich result from [{ q, a }]. */
+export function faqJsonLd(faqs) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+  };
+}
+
+/**
+ * Local landing page: a WebPage about the (online) store serving a city or the
+ * whole state. Uses OnlineStore — not LocalBusiness — because orders ship from
+ * Chennai; we don't claim a physical branch anywhere else.
+ */
+export function localPageJsonLd({ path, title, description, places }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': `${absoluteUrl(path)}#webpage`,
+    url: absoluteUrl(path),
+    name: title,
+    description,
+    inLanguage: 'en-IN',
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: {
+      '@type': 'OnlineStore',
+      '@id': `${SITE_URL}/#organization`,
+      name: ORG_NAME,
+      url: `${SITE_URL}/`,
+      areaServed: places.map((p) => ({ '@type': p.type || 'City', name: p.name, ...(p.containedIn ? { containedInPlace: { '@type': 'State', name: p.containedIn } } : {}) })),
+    },
   };
 }
 
@@ -308,7 +344,7 @@ export function websiteJsonLd() {
 
 export const HOME_SEO = {
   title: `Millet Cookies, Ghee, Honey & Healthy Bakes in Chennai | ${BRAND}`,
-  description: 'Millet & heritage-rice cookies made with country sugar, plus A2 ghee, raw forest honey and bakes. Made in Chennai by Alimenture, delivered across India.',
+  description: 'Millet & heritage-rice cookies made with country sugar, plus A2 ghee, raw forest honey and bakes. Made in Chennai, delivered across Tamil Nadu and India.',
 };
 
 export const ABOUT_SEO = {
@@ -321,8 +357,16 @@ export const WHY_CHOOSE_SEO = {
   description: "Why families choose Alimenture: Alchemi's clean-label cookies, ten ancient super grains and an honest farm-to-pantry process with nothing hidden.",
 };
 
+/** "<title> | Alimenture" when that fits Google's ~60-character display, else the title alone. */
+export const pageTitle = (title, max = 62) => (`${title} | ${BRAND}`.length <= max ? `${title} | ${BRAND}` : title);
+
+/** Policy meta description: the summary, padded with context when it's too short to be useful. */
+export const policyDescription = (pol) => (String(pol.summary || '').length >= 70
+  ? pol.summary
+  : `${pol.name}: ${pol.summary} Read the full ${pol.name.toLowerCase()} of ${ORG_NAME}, Chennai.`);
+
 export const BLOG_SEO = {
-  title: `The Grain Journal — Millet Recipes, Heritage Grains & Mindful Living | ${BRAND}`,
+  title: `The Grain Journal: Millet Recipes & Guides | ${BRAND}`,
   description: 'Stories, recipes and guides from the Alimenture kitchen: millets for beginners, heritage rices of Tamil Nadu, mindful snacking and thoughtful gifting.',
 };
 

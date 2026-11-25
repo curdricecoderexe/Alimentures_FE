@@ -49,6 +49,28 @@ function ChartTip({ active, payload, label, valuePrefix = '' }) {
   );
 }
 
+/*
+ * Dashboard data, remembered for 2 minutes in this tab so moving between admin
+ * pages and back doesn't re-read users, products and orders every time.
+ */
+const DASHBOARD_TTL = 2 * 60 * 1000;
+let dashboardCache = null; // { at, users, products, orders }
+
+async function loadDashboardData() {
+  if (dashboardCache && Date.now() - dashboardCache.at < DASHBOARD_TTL) return dashboardCache;
+  const [usersRes, productsRes, ordersRes] = await Promise.all([
+    authenticatedFetch(`${import.meta.env.VITE_API_URL}/users`),
+    authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`),
+    authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`),
+  ]);
+  if (!usersRes || !productsRes || !ordersRes) return null;
+  const users = (await usersRes.json()).data || [];
+  const products = (await productsRes.json()).data || [];
+  const orders = (await ordersRes.json()).data || [];
+  dashboardCache = { at: Date.now(), users, products, orders };
+  return dashboardCache;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalRevenue: 0, totalOrders: 0, activeProducts: 0, totalCustomers: 0 });
   const [topProducts, setTopProducts] = useState([]);
@@ -62,17 +84,11 @@ export default function AdminDashboard() {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [usersRes, productsRes, ordersRes] = await Promise.all([
-          authenticatedFetch(`${import.meta.env.VITE_API_URL}/users`),
-          authenticatedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`),
-          authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`),
-        ]);
-        if (!usersRes || !productsRes || !ordersRes) return;
-
-        const users = (await usersRes.json()).data || [];
-        const products = (await productsRes.json()).data || [];
+        const data = await loadDashboardData();
+        if (!data) return;
+        const { users, products } = data;
         // Only paid, live orders are sales — cancelled / refunded / unpaid are excluded.
-        const orders = ((await ordersRes.json()).data || []).filter(isRevenueOrder);
+        const orders = data.orders.filter(isRevenueOrder);
 
         setStats({
           totalCustomers: users.filter((u) => u.role?.toLowerCase() === 'customer').length,

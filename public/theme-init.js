@@ -4,4 +4,4 @@ try {
   if (/^\/(admin|staff)(\/|$)/.test(location.pathname) && localStorage.getItem('theme') === 'dark') {
     document.documentElement.classList.add('dark');
   }
-} catch (e) { /* storage blocked — fall back to light */ }
+} catch { /* storage blocked — fall back to light */ }
