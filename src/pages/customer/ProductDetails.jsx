@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import {
   Heart, Star, Truck, Package, Minus, Plus, Check, Leaf, Loader2,
-  Tag, X, TicketPercent, Maximize2, ShieldCheck, ShoppingBag, MapPin,
+  Tag, X, TicketPercent, Maximize2, ShieldCheck, ShoppingBag, MapPin, ExternalLink
 } from 'lucide-react';
 import FallbackImg from '../../assets/lan.webp';
 import { useCart } from '../../context/CartContext';
@@ -104,6 +104,10 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const location = useLocation();
   const [product, setProduct] = useState(null);
+  // The URL key `product` was loaded for. While a new product is loading the
+  // previous one stays on screen, and this stops the canonical-URL redirect
+  // from bouncing the address bar back to it (the "two products swap" glitch).
+  const [loadedKey, setLoadedKey] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImage, setActiveImage] = useState(null);
@@ -194,15 +198,26 @@ export default function ProductDetails() {
   }, [product, loading]); // the CTA only exists once the page has finished loading
 
   useEffect(() => {
+    // Rapid clicks between products start overlapping loads — only the one for
+    // the current URL may update the page; older responses are dropped.
+    let cancelled = false;
+    const relCtl = new AbortController();
     const fetchProduct = async () => {
       try {
         const json = await cachedFetch(`${import.meta.env.VITE_API_URL}/products/${encodeURIComponent(urlKey)}`);
+        if (cancelled) return;
+        if (!json || json.success === false) throw new Error(json?.error || 'Product unavailable');
         const pData = json.data || json;
         setProduct(pData);
+        setLoadedKey(urlKey);
+        setRelatedProducts([]);
+        setReviews([]);
         setActiveImage(pData.image || FallbackImg);
         if (pData.variants && pData.variants.length > 0) {
           const firstAvail = pData.variants.find(v => v.stock > 0) || pData.variants[0];
           setSelectedVariant(firstAvail);
+        } else {
+          setSelectedVariant(null);
         }
 
         // --- Phase 8: Recently Viewed Tracking ---
@@ -224,29 +239,33 @@ export default function ProductDetails() {
         // --- Phase 8: Related Products Fetch ---
         if (pData.category) {
           try {
-            const relRes = await fetch(`${import.meta.env.VITE_API_URL}/products/search?category=${encodeURIComponent(pData.category)}&limit=5`);
+            const relRes = await fetch(`${import.meta.env.VITE_API_URL}/products/search?category=${encodeURIComponent(pData.category)}&limit=5`, { signal: relCtl.signal });
             const relData = await relRes.json();
-            if (relData.success) {
+            if (!cancelled && relData.success) {
               setRelatedProducts(relData.data.filter(p => p.id !== pData.id && p._id !== pData.id).slice(0, 4));
             }
-          } catch(e) { console.error(e); }
+          } catch (e) { if (e.name !== 'AbortError') console.error(e); }
         }
 
       } catch (err) {
+        if (cancelled) return;
         console.error('Failed to fetch product:', err);
+        setProduct(null);
+        setLoadedKey(urlKey);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchProduct();
+    return () => { cancelled = true; relCtl.abort(); };
   }, [urlKey]);
 
   // Old /product/<id> links and renamed slugs land here — swap in the canonical URL.
   useEffect(() => {
-    if (!product) return;
+    if (!product || loadedKey !== urlKey) return; // still loading the product the URL points at
     const canonical = productPath(product);
     if (location.pathname !== canonical) navigate(`${canonical}${location.search}${location.hash}`, { replace: true });
-  }, [product, location.pathname, location.search, location.hash, navigate]);
+  }, [product, loadedKey, urlKey, location.pathname, location.search, location.hash, navigate]);
 
   // Reviews come from the post-delivery feedback flow (Order Tracking) — this
   // just loads whatever is already live for the product.

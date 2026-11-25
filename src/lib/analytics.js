@@ -286,7 +286,10 @@ window.addEventListener('alim_consent_granted', () => {
 
 // ─── PERFORMANCE METRICS (Core Web Vitals) ────────────────────────────────────
 
+let _perfOn = false;
 export function initPerformance() {
+  if (_perfOn) return;
+  _perfOn = true;
   // Don't check consent here — measure first, send only if consent granted when data is ready
   if (!('PerformanceObserver' in window)) return;
 
@@ -370,7 +373,12 @@ export function identify(userId) {
 
 // ─── AUTO CLICK TRACKING ──────────────────────────────────────────────────────
 
+let _autoTrackingOn = false;
 export function initAutoTracking() {
+  // The layout can mount more than once (StrictMode, admin <-> store); a second
+  // listener would double every click event and burn the API rate limit.
+  if (_autoTrackingOn) return;
+  _autoTrackingOn = true;
   document.addEventListener('click', (e) => {
     if (!hasAnalyticsConsent()) return;
     const el = e.target.closest('button, a, [data-track]');

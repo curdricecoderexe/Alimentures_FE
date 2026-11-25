@@ -17,7 +17,13 @@ export const cachedFetch = async (url, ttlMs = 120000) => {
   const request = (async () => {
     try {
       const res = await fetch(url);
-      const json = await res.json();
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json || json.success === false) {
+        // A 429 / 5xx must never be cached (it would blank the page for the whole
+        // TTL) nor replace good data — keep serving the last good copy instead.
+        if (cached) return cached.data;
+        return json || { success: false, error: `Request failed (${res.status})` };
+      }
       memoryCache.set(url, { timestamp: now, data: json });
       return json;
     } catch (err) {

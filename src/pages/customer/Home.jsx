@@ -318,11 +318,17 @@ export default function Home() {
   // Fetch Products Catalog
   useEffect(() => {
     let active = true;
-    (async () => {
+    let retryTimer;
+    // A failed load (e.g. a brief 429 / network blip) retries on its own instead
+    // of leaving the catalogue empty until a manual reload.
+    const RETRY_MS = [4000, 12000, 30000];
+    const load = async (attempt = 0) => {
+      let ok = false;
       try {
         // Fetch the full catalogue (API max) so products in custom categories aren't cut off.
         const data = await cachedFetch(`${import.meta.env.VITE_API_URL}/products?limit=100`);
-        if (data.success && active) {
+        if (data?.success && Array.isArray(data.data) && active) {
+          ok = true;
           setProducts(data.data);
           const distinctCategories = [...new Set(data.data.map(p => p.category).filter(Boolean))];
           setCategories(distinctCategories);
@@ -332,8 +338,12 @@ export default function Home() {
       } finally {
         if (active) setLoading(false);
       }
-    })();
-    return () => { active = false; };
+      if (!ok && active && attempt < RETRY_MS.length) {
+        retryTimer = setTimeout(() => load(attempt + 1), RETRY_MS[attempt]);
+      }
+    };
+    load();
+    return () => { active = false; clearTimeout(retryTimer); };
   }, []);
 
   const filteredProducts = activeCategory === 'All'
@@ -369,10 +379,8 @@ export default function Home() {
     const price = qaVariant ? qaVariant.price : quickAddItem.price;
     const weight = qaVariant ? qaVariant.weight : undefined;
     if (quickAddMode === 'cart') {
-      for (let i = 0; i < qaQty; i++) {
-        addToCart({ ...quickAddItem, price, selectedWeight: weight, category: quickAddItem.category || 'Biscuit' });
-      }
-      toast.success(`${qaQty}× ${name} added to cart!`);
+      // One update for the whole quantity (the cart context shows the toast).
+      addToCart({ ...quickAddItem, price, selectedWeight: weight, category: quickAddItem.category || 'Biscuit' }, qaQty);
     } else {
       toggleWishlist({ ...quickAddItem, price, selectedWeight: weight });
       toast.success(`${name} saved to wishlist!`);

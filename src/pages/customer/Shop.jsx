@@ -122,7 +122,8 @@ export default function Shop() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     
     try {
       const qs = new URLSearchParams();
@@ -135,9 +136,10 @@ export default function Shop() {
       qs.append('limit', '12');
 
       const res = await fetch(`${import.meta.env.VITE_API_URL}/products/search?${qs.toString()}`, {
-        signal: abortControllerRef.current.signal
+        signal: controller.signal
       });
       const data = await res.json();
+      if (controller.signal.aborted) return; // a newer request owns the grid now
       
       if (data.success) {
         if (!append) SHOP_CACHE.set(key, { data: data.data, hasMore: data.hasMore, totalCount: data.totalCount });
@@ -156,8 +158,9 @@ export default function Shop() {
       console.error(err);
       setError(true);
     } finally {
-      // Only set loading to false if this request wasn't aborted
-      if (!abortControllerRef.current?.signal.aborted) {
+      // Only the latest request may clear the loading state — an older,
+      // aborted one finishing late must not reveal an empty/stale grid.
+      if (abortControllerRef.current === controller && !controller.signal.aborted) {
         setLoading(false);
       }
     }

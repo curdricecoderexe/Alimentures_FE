@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Trash2, Plus, Minus, Truck, ArrowLeft, ArrowRight,
   ShieldCheck, RotateCcw, Lock, TicketPercent, X, CheckCircle2,
@@ -110,29 +110,31 @@ export default function Cart() {
     toast.success('Coupon removed');
   };
 
-  const [existingProducts, setExistingProducts] = useState([]);
+  // Suggestions: load + shuffle the catalogue ONCE, then derive the visible 4
+  // from the current cart. Re-fetching/re-shuffling on every cart change made
+  // rapid "Add" clicks race (two random sets flashing and swapping).
+  const [suggestionPool, setSuggestionPool] = useState([]);
   useEffect(() => {
-    const fetchCatalog = async () => {
-      try {
-        const json = await cachedFetch(`${import.meta.env.VITE_API_URL}/products`);
-        const pData = json.data || json;
-        if (Array.isArray(pData)) {
-          const inCartIds = cart.map((item) => item.id || item._id);
-          let filtered = pData.filter((p) => !inCartIds.includes(p.id || p._id));
-          if (!filtered.length) filtered = pData;
-          setExistingProducts([...filtered].sort(() => 0.5 - Math.random()).slice(0, 4));
-        }
-      } catch (e) { console.error(e); }
-    };
-    fetchCatalog();
-  }, [cart]);
+    let alive = true;
+    cachedFetch(`${import.meta.env.VITE_API_URL}/products`)
+      .then((json) => {
+        const pData = json?.data || json;
+        if (alive && Array.isArray(pData)) setSuggestionPool([...pData].sort(() => 0.5 - Math.random()));
+      })
+      .catch((e) => console.error(e));
+    return () => { alive = false; };
+  }, []);
+  const existingProducts = useMemo(() => {
+    const inCart = new Set(cart.map((item) => item.id || item._id));
+    const notInCart = suggestionPool.filter((p) => !inCart.has(p.id || p._id));
+    return (notInCart.length ? notInCart : suggestionPool).slice(0, 4);
+  }, [cart, suggestionPool]);
 
   const handleQuickAdd = (prod) => {
     const token = localStorage.getItem('token');
     if (!token) { toast.error('Please login to add to cart'); navigate('/login'); return; }
     const variant = prod.variants?.length > 0 ? prod.variants[0] : null;
     addToCart({ ...prod, price: variant ? variant.price : prod.price, selectedWeight: variant ? variant.weight : '150g', category: prod.category || 'Snack' });
-    toast.success(`Added ${prod.name || prod.title}!`);
   };
 
   const goCheckout = () => {
