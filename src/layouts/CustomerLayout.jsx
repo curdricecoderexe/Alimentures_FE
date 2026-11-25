@@ -291,10 +291,16 @@ export default function CustomerLayout() {
   const isSolidNav = scrolled || !isHome;
 
   // Seed-style pills: frosted, more opaque once the page scrolls.
-  const pillCls = `rounded-full backdrop-blur-xl ring-1 transition-[background-color,box-shadow] duration-500 ${
+  const pillCls = `rounded-full backdrop-blur-xl ring-1 transition-[background-color,box-shadow] duration-500 max-lg:rounded-none max-lg:bg-transparent max-lg:ring-0 max-lg:shadow-none max-lg:backdrop-blur-none ${
     isSolidNav
       ? 'bg-paper/95 ring-black/5 shadow-[0_14px_40px_-18px_rgba(43,11,51,0.40)]'
       : 'bg-paper/80 ring-white/60 shadow-[0_14px_40px_-20px_rgba(0,0,0,0.45)]'
+  }`;
+  // Mobile: one full-width bar (the two pills merge into it below lg).
+  const mobileBarCls = `max-lg:backdrop-blur-xl max-lg:border-b max-lg:transition-[background-color,box-shadow] max-lg:duration-500 ${
+    isSolidNav
+      ? 'max-lg:bg-paper/95 max-lg:border-black/5 max-lg:shadow-[0_10px_30px_-18px_rgba(43,11,51,0.40)]'
+      : 'max-lg:bg-paper/80 max-lg:border-white/60 max-lg:shadow-[0_10px_30px_-20px_rgba(0,0,0,0.45)]'
   }`;
   const navLinkCls = (active) =>
     `inline-flex items-center h-10 px-2.5 xl:px-4 rounded-full text-[13.5px] xl:text-[14.5px] font-medium tracking-[-0.005em] transition-colors duration-200 whitespace-nowrap ${
@@ -313,10 +319,10 @@ export default function CustomerLayout() {
       {/* ── NAVBAR — Seed pattern: two floating pills, "Shop" opens a category mega-menu ── */}
       <header
         ref={navRef}
-        className="fixed top-0 inset-x-0 z-[100] px-3 sm:px-5 lg:px-6 pt-3 sm:pt-4 pointer-events-none"
+        className="fixed top-0 inset-x-0 z-[100] lg:px-6 lg:pt-4 pointer-events-none"
         onKeyDown={(e) => { if (e.key === 'Escape') { setShopOpen(false); setIsSearching(false); } }}
       >
-        <div className="mx-auto max-w-[1440px] flex items-start justify-between gap-3">
+        <div className={`mx-auto max-w-[1440px] flex items-start justify-between gap-3 max-lg:items-center max-lg:gap-0 max-lg:pl-1 max-lg:pr-2 sm:max-lg:pl-3 sm:max-lg:pr-4 max-lg:pointer-events-auto ${mobileBarCls}`}>
           {/* LEFT PILL — logo + primary links */}
           <div className="relative pointer-events-auto" onMouseLeave={scheduleShopClose}>
             <nav aria-label="Main" className={`${pillCls} flex items-center h-14 sm:h-[60px] pl-3 sm:pl-4 pr-2`}>
