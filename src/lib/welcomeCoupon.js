@@ -30,6 +30,20 @@ export function useWelcomeCoupon() {
   return coupon;
 }
 
+/**
+ * Discount for an applied coupon against the CURRENT cart subtotal — mirrors the
+ * server's computeDiscount (orderController) so cart, checkout and the charged
+ * amount always agree, even after quantities change. Shipping is never discounted.
+ */
+export function couponDiscount(coupon, subtotal) {
+  if (!coupon) return 0;
+  const value = Number(subtotal) || 0;
+  const amount = Number(coupon.discountValue) || 0;
+  if (coupon.discountType === 'percentage') return Math.round((value * amount) / 100);
+  if (coupon.discountType === 'flat') return Math.min(amount, value);
+  return Number(coupon.discountAmount) || 0; // legacy stored coupon without type
+}
+
 /** Validate a code against the order value; resolves to the applied-coupon object or throws with the API message. */
 export async function validateCoupon(code, orderValue) {
   const res = await authenticatedFetch(`${API_BASE}/coupons/validate`, {

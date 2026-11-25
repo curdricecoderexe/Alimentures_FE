@@ -7,7 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { toast } from 'sonner';
-import { useWelcomeCoupon } from '../../lib/welcomeCoupon';
+import { useWelcomeCoupon, couponDiscount } from '../../lib/welcomeCoupon';
 import { cachedFetch } from '../../lib/api';
 import CheckoutSteps from '../../components/ui/CheckoutSteps';
 import ProductCard, { ProductImageFrame } from '../../components/ui/ProductCard';
@@ -50,7 +50,7 @@ export default function Cart() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const fromFee = delivery.minDeliveryFee ?? delivery.defaultDeliveryFee;
   const shipping = subtotal === 0 || (freeEnabled && subtotal >= freeShippingThreshold) ? 0 : fromFee;
-  const discount = couponData?.discountAmount || 0;
+  const discount = couponDiscount(couponData, subtotal);
   // Shipping is a checkout-time, PIN-code-resolved fee (see Cart's "Shipping charges
   // applied!" note) — never baked into the cart's displayed total.
   const total = Math.max(0, subtotal - discount);
@@ -81,7 +81,7 @@ export default function Cart() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ code: couponCode.trim().toUpperCase(), orderValue: subtotal + shipping }),
+        body: JSON.stringify({ code: couponCode.trim().toUpperCase(), orderValue: subtotal }),
       });
       const json = await res.json();
       if (json.success) {

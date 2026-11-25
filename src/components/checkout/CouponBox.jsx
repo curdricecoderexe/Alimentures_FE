@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TicketPercent, X, Loader2, Gift, Check } from 'lucide-react';
 import { CouponTicket, Confetti, CountUp } from '../coupon/WelcomeOffer';
-import { useWelcomeCoupon, validateCoupon } from '../../lib/welcomeCoupon';
+import { useWelcomeCoupon, validateCoupon, couponDiscount } from '../../lib/welcomeCoupon';
 
 /**
  * Apply-a-coupon box with the customer's welcome offer suggested on top.
@@ -97,7 +97,7 @@ export default function CouponBox({ orderValue, applied, onChange }) {
             </motion.span>
             <span className="min-w-0">
               <span className="block text-[13.5px] font-display font-semibold text-ink tracking-wide truncate">{applied.code} applied</span>
-              <span className="block text-[12.5px] text-leaf">You save ₹<CountUp to={Number(applied.discountAmount) || 0} delay={0.15} duration={0.8} /></span>
+              <span className="block text-[12.5px] text-leaf">You save ₹<CountUp to={couponDiscount(applied, orderValue)} delay={0.15} duration={0.8} /></span>
             </span>
           </span>
           <button type="button" onClick={remove} aria-label="Remove coupon" className="h-8 w-8 rounded-full flex items-center justify-center text-ink-muted hover:bg-ink/5 hover:text-ink">

@@ -15,6 +15,7 @@ import { INDIA_STATES } from '../../data/indiaStates';
 import { getDeliveryOptions, isValidPincode } from '../../lib/deliveryApi';
 import SEO from '../../components/SEO';
 import CouponBox from '../../components/checkout/CouponBox';
+import { couponDiscount } from '../../lib/welcomeCoupon';
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -99,7 +100,7 @@ export default function Checkout() {
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   // Re-quote delivery when the cart's contents (not just its value) change — parcel weight matters.
   const cartKey = cart.map((i) => `${i.id || i._id || i.uid}:${i.selectedWeight}:${i.quantity}`).join('|');
-  const discount = appliedCoupon?.discountAmount || 0;
+  const discount = couponDiscount(appliedCoupon, subtotal);
   const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
 
   const persist = useCallback((next) => {
