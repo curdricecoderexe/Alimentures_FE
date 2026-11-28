@@ -19,14 +19,26 @@ import { couponDiscount } from '../../lib/welcomeCoupon';
 
 const EASE = [0.16, 1, 0.3, 1];
 
-const loadRazorpay = () =>
-  new Promise((resolve) => {
+let razorpayScript = null;
+const loadRazorpay = () => {
+  if (window.Razorpay) return Promise.resolve(true);
+  if (razorpayScript) return razorpayScript;
+  razorpayScript = new Promise((resolve) => {
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
+    const timer = setTimeout(() => resolve(false), 15000);
+    script.onload = () => { clearTimeout(timer); resolve(!!window.Razorpay); };
+    script.onerror = () => { clearTimeout(timer); resolve(false); };
     document.body.appendChild(script);
-  });
+  }).then((ok) => { if (!ok) razorpayScript = null; return ok; }); // allow a retry
+  return razorpayScript;
+};
+
+// Indian mobile: 10 digits starting 6–9 (a leading +91 / 0 is accepted).
+const normaliseMobile = (v) => String(v || '').replace(/\D/g, '').replace(/^(91|0)(?=\d{10}$)/, '');
+const isValidMobile = (v) => /^[6-9]\d{9}$/.test(normaliseMobile(v));
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.08 } } };
 const item = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } } };
@@ -198,9 +210,66 @@ export default function Checkout() {
   }
   const total = Math.max(0, subtotal + (shipping || 0) - discount);
 
+  const resetCheckout = () => { setLoading(false); setCheckoutStep(null); };
+
+  const orderConfirmed = (message) => {
+    toast.success(message || 'Payment successful! Order confirmed.', { duration: 6000 });
+    clearCart();
+    sessionStorage.removeItem('appliedCoupon');
+    setTimeout(() => navigate('/orders'), 1500);
+  };
+
+  // After Razorpay reports success but our verify call failed (network drop, server
+  // hiccup): ask the server — which double-checks with Razorpay — a few times
+  // before telling the customer anything alarming.
+  const confirmByPolling = async (orderId) => {
+    const PAID = ['pending', 'processing', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'payment_successful_no_stock'];
+    for (let i = 0; i < 6; i++) {
+      await sleep(i === 0 ? 1500 : 3000);
+      try {
+        const r = await authenticatedFetch(`${API_BASE}/orders/${orderId}`);
+        const body = r ? await r.json().catch(() => null) : null;
+        const st = body?.data?.status;
+        if (st && PAID.includes(st)) return st;
+      } catch { /* keep trying */ }
+    }
+    return null;
+  };
+
+  // Turn any server reply into one clear, actionable message.
+  const handleOrderError = (status, data) => {
+    const code = data?.code;
+    const msg = data?.error;
+    if (code === 'OUT_OF_STOCK' || code === 'CART_CHANGED') {
+      toast.error(msg, { duration: 7000 });
+      validateCartData(); // refresh quantities/prices from the server
+      return;
+    }
+    if (code && code.startsWith('COUPON')) {
+      changeCoupon(null);
+      toast.error(msg, { description: 'We removed the coupon — check the new total and tap Pay again.', duration: 8000 });
+      return;
+    }
+    if (status === 429) { toast.error('Too many attempts. Please wait a minute and try again.'); return; }
+    if (status === 401 || status === 403) return; // authenticatedFetch already explained it
+    if (status >= 500 && !msg) {
+      toast.error("We couldn't reach our servers. You have not been charged — please try again in a moment.");
+      return;
+    }
+    toast.error(msg || "We couldn't place your order. You have not been charged — please try again.", {
+      description: data?.ref ? `Reference: ${data.ref}` : undefined,
+      duration: 8000,
+    });
+  };
+
   const handlePlaceOrder = async () => {
+    if (loading) return;
     if (!formData.firstName || !formData.address || !formData.city || !formData.state) {
       toast.error('Please fill in your name, address, state and city');
+      return;
+    }
+    if (!isValidMobile(formData.phone)) {
+      toast.error('Please enter a valid 10-digit mobile number', { description: 'The courier uses it to reach you for delivery.' });
       return;
     }
     if (!isValidPincode(formData.pincode)) {
@@ -215,138 +284,161 @@ export default function Checkout() {
       toast.error('Please wait — calculating delivery for your PIN code');
       return;
     }
-    const rzpLoaded = await loadRazorpay();
-    if (!rzpLoaded) { toast.error('Razorpay SDK failed to load. Are you online?'); return; }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      toast.error("You're offline. Check your internet connection and try again.");
+      return;
+    }
 
     setLoading(true);
     setCheckoutStep('creating');
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    const rzpLoaded = await loadRazorpay();
+    if (!rzpLoaded) {
+      toast.error("The payment window couldn't load.", { description: 'Check your connection, or turn off an ad-blocker for this site, then try again.', duration: 8000 });
+      resetCheckout();
+      return;
+    }
+
+    const API_URL = API_BASE;
+    let response;
     try {
       const idempotencyKey = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
-      const response = await authenticatedFetch(`${API_URL}/orders`, {
+      response = await authenticatedFetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Idempotency-Key': idempotencyKey },
         body: JSON.stringify({
           items: cart.map((it) => ({
             productId: it.id || it._id || it.uid,
             name: it.name || it.title,
-            price: it.price,
             quantity: it.quantity,
-            image: it.image,
-            category: it.category || 'Biscuit',
             selectedWeight: it.selectedWeight || '',
           })),
-          totalAmount: total, // display only — server recomputes authoritatively
-          discountAmount: discount || 0,
-          couponId: appliedCoupon?.id || null,
           couponCode: appliedCoupon?.code || null,
           deliveryMethod,
-          customerInfo: { ...formData, email: localStorage.getItem('userEmail') || 'unknown_user@alimenture.com' },
+          customerInfo: { ...formData, phone: normaliseMobile(formData.phone) },
         }),
       });
+    } catch {
+      toast.error("Couldn't connect. Check your internet and try again — you have not been charged.");
+      resetCheckout();
+      return;
+    }
 
-      if (!response) { setLoading(false); setCheckoutStep(null); return; }
-      const data = await response.json();
+    if (!response) { resetCheckout(); return; } // session expired → already redirected to login
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.success) {
+      handleOrderError(response.status, data);
+      resetCheckout();
+      return;
+    }
 
-      if (data.success) {
-        setCheckoutStep('opening');
+    // The server is the source of truth for the amount; tell the customer if it moved.
+    const serverTotal = Math.round(Number(data.amount) || 0) / 100;
+    if (serverTotal && Math.abs(serverTotal - total) >= 1) {
+      toast.info(`Total updated to ₹${serverTotal}`, { description: 'Prices or delivery changed since the page loaded.', duration: 7000 });
+    }
 
-        // The pending order already reserved the stock for this checkout.
-        // If the customer backs out or the payment fails, release that
-        // reservation immediately instead of leaving it locked until the
-        // ~10 minute reservation window (and cleanup cron) catch up — that
-        // gap is exactly what makes a 1-in-stock item look "in stock" to
-        // the next shopper while checkout still rejects it.
-        let paymentCompleted = false;
-        const releaseAbandonedReservation = async () => {
-          if (paymentCompleted) return;
-          try {
-            const r = await authenticatedFetch(`${API_URL}/orders/${data.orderId}/abandon-payment`, { method: 'PUT' });
-            const body = r ? await r.json() : null;
-            // The server found a captured payment (e.g. the success callback never reached us).
-            if (body?.paid) {
-              toast.success('Payment received! Order confirmed.');
-              clearCart();
-              sessionStorage.removeItem('appliedCoupon');
-              setTimeout(() => navigate('/orders'), 1500);
-            }
-          } catch {
-            // best-effort — the reservation-expiry cleanup still catches this eventually
-          }
-        };
-
-        const options = {
-          key: data.key_id,
-          amount: data.amount,
-          currency: 'INR',
-          name: 'Alimenture',
-          description: 'Premium Order Payment',
-          order_id: data.razorpayOrderId,
-          handler: async function (res) {
-            paymentCompleted = true;
-            setLoading(true);
-            setCheckoutStep('processing');
-            try {
-              const verifyRes = await authenticatedFetch(`${API_URL}/orders/razorpay/verify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  razorpay_payment_id: res.razorpay_payment_id,
-                  razorpay_order_id: res.razorpay_order_id,
-                  razorpay_signature: res.razorpay_signature,
-                  orderId: data.orderId,
-                }),
-              });
-              const verifyData = await verifyRes.json();
-              if (verifyData.success) {
-                toast.success('Payment successful! Order confirmed.');
-                clearCart();
-                sessionStorage.removeItem('appliedCoupon');
-                setTimeout(() => navigate('/orders'), 1500);
-              } else {
-                toast.error('Payment verification failed. Please contact support.');
-                setLoading(false);
-                setCheckoutStep(null);
-              }
-            } catch {
-              toast.error('Payment verification encountered an error.');
-              setLoading(false);
-              setCheckoutStep(null);
-            }
-          },
-          modal: {
-            ondismiss: () => {
-              setLoading(false);
-              setCheckoutStep(null);
-              releaseAbandonedReservation();
-            },
-          },
-          prefill: {
-            name: `${formData.firstName} ${formData.lastName}`.trim(),
-            email: localStorage.getItem('userEmail') || '',
-            contact: formData.phone || '',
-          },
-          theme: { color: '#A50D5A' },
-        };
-        const paymentObject = new window.Razorpay(options);
-        // Fires per failed attempt while the Razorpay modal stays open for a
-        // retry — the reservation is released on dismiss, not here.
-        paymentObject.on('payment.failed', () => {
-          toast.error('Payment failed. Please try again.');
-        });
-        paymentObject.open();
-        setLoading(false);
-        setCheckoutStep(null);
-      } else {
-        toast.error(data.error || 'Failed to place order');
-        setLoading(false);
-        setCheckoutStep(null);
+    setCheckoutStep('opening');
+    // The pending order already reserved the stock for this checkout. If the
+    // customer backs out, release that reservation right away (the server first
+    // checks with Razorpay that nothing was actually paid).
+    let paymentCompleted = false;
+    const releaseAbandonedReservation = async () => {
+      if (paymentCompleted) return;
+      try {
+        const r = await authenticatedFetch(`${API_URL}/orders/${data.orderId}/abandon-payment`, { method: 'PUT' });
+        const body = r ? await r.json().catch(() => null) : null;
+        if (body?.paid) orderConfirmed('Payment received! Order confirmed.');
+      } catch {
+        // best-effort — the reservation-expiry cleanup still catches this
       }
-    } catch (err) {
-      console.error('Checkout error:', err);
-      toast.error('Network error. Please try again.');
+    };
+
+    const options = {
+      key: data.key_id,
+      amount: data.amount,
+      currency: 'INR',
+      name: 'Alimenture',
+      description: 'Order payment',
+      order_id: data.razorpayOrderId,
+      handler: async function (res) {
+        paymentCompleted = true;
+        setLoading(true);
+        setCheckoutStep('processing');
+        const warnLeave = (e) => { e.preventDefault(); e.returnValue = ''; };
+        window.addEventListener('beforeunload', warnLeave);
+        try {
+          let verified = null;
+          try {
+            const verifyRes = await authenticatedFetch(`${API_URL}/orders/razorpay/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: res.razorpay_payment_id,
+                razorpay_order_id: res.razorpay_order_id,
+                razorpay_signature: res.razorpay_signature,
+                orderId: data.orderId,
+              }),
+            });
+            verified = verifyRes ? await verifyRes.json().catch(() => null) : null;
+          } catch { /* fall through to polling */ }
+
+          if (verified?.success) {
+            orderConfirmed(verified.status === 'payment_successful_no_stock' ? verified.message : undefined);
+            return;
+          }
+          if (verified?.code === 'ORDER_NOT_PAYABLE') {
+            toast.error(verified.error, { description: `Payment ID: ${res.razorpay_payment_id}`, duration: 15000 });
+            resetCheckout();
+            return;
+          }
+          // Money has left the customer's account — never say "failed" without checking.
+          const status = await confirmByPolling(data.orderId);
+          if (status) {
+            orderConfirmed();
+            return;
+          }
+          toast.warning("We've received your payment and are confirming it.", {
+            description: `It will appear in My Orders within a few minutes — please don't pay again. Payment ID: ${res.razorpay_payment_id}`,
+            duration: 20000,
+          });
+          sessionStorage.removeItem('appliedCoupon');
+          setTimeout(() => navigate('/orders'), 2500);
+        } finally {
+          window.removeEventListener('beforeunload', warnLeave);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          resetCheckout();
+          releaseAbandonedReservation();
+        },
+      },
+      prefill: {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: localStorage.getItem('userEmail') || '',
+        contact: normaliseMobile(formData.phone),
+      },
+      theme: { color: '#A50D5A' },
+    };
+
+    try {
+      const paymentObject = new window.Razorpay(options);
+      // Fires per failed attempt while the Razorpay window stays open for a retry —
+      // the reservation is released on dismiss, not here.
+      paymentObject.on('payment.failed', (resp) => {
+        const reason = resp?.error?.description;
+        toast.error('Payment failed — no money was taken.', {
+          description: reason ? `${reason} You can try again or use another method.` : 'You can try again or use another payment method.',
+          duration: 8000,
+        });
+      });
+      paymentObject.open();
       setLoading(false);
       setCheckoutStep(null);
+    } catch {
+      toast.error("The payment window couldn't open. Please try again.");
+      resetCheckout();
+      releaseAbandonedReservation();
     }
   };
 
@@ -417,7 +509,7 @@ export default function Checkout() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="First name" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Sriram" />
                 <Field label="Last name" name="lastName" value={formData.lastName} onChange={handleInputChange} />
-                <Field label="Phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91 98847 33453" full />
+                <Field label="Mobile number (for delivery)" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="98847 33453" full />
                 <label className="sm:col-span-2 block">
                   <span className="kicker text-[10.5px] text-ink-soft mb-1.5 block">Email</span>
                   <div className="w-full h-[52px] px-4 rounded-2xl bg-cream border border-hairline flex items-center text-[14px] font-medium text-ink-soft">

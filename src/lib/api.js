@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { resetForLogout, resetForExpiredSession, SESSION_RESET_EVENT } from './siteStorage';
 
 let isRedirecting = false;
 
@@ -37,14 +38,15 @@ export const cachedFetch = async (url, ttlMs = 120000) => {
   return request;
 };
 
+// A login/logout must never serve the previous account's cached responses.
+try { window.addEventListener(SESSION_RESET_EVENT, () => memoryCache.clear()); } catch { /* no window (tests) */ }
+
 export const clearApiCache = (url) => {
   if (url) memoryCache.delete(url);
   else memoryCache.clear();
 };
 
 export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
-const AUTH_KEYS = ['token', 'uid', 'role', 'userEmail', 'userName'];
 
 /**
  * Sessions are httpOnly cookies set by the API (see the backend's lib/session.js);
@@ -93,8 +95,9 @@ export const logout = async ({ redirect = true } = {}) => {
       });
     } catch { /* best effort — clear local state regardless */ }
   }
-  AUTH_KEYS.forEach((k) => localStorage.removeItem(k));
-  try { sessionStorage.removeItem('appliedCoupon'); } catch { /* ignore */ }
+  // Everything personal goes, cart included, so the next person starts clean.
+  resetForLogout();
+  memoryCache.clear();
   if (redirect) window.location.href = '/login';
 };
 
@@ -115,7 +118,10 @@ export const authenticatedFetch = async (url, options = {}) => {
       if (!isRedirecting) {
         isRedirecting = true;
         toast.error('Session expired. Please login again.');
-        localStorage.clear();
+        // Keeps consent/theme/remembered email and the cart (a bare
+        // localStorage.clear() wiped them — and emptied carts mid-checkout).
+        resetForExpiredSession();
+        memoryCache.clear();
         window.location.href = '/login';
       }
       return null;

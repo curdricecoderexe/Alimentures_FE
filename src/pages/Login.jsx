@@ -10,6 +10,7 @@ import { API_BASE } from '../lib/api';
 import AuthScaffold, { AuthField, AuthTabs } from '../components/AuthScaffold';
 import SEO from '../components/SEO';
 import { SESSION_MARKER } from '../lib/api';
+import { resetForLogin } from '../lib/siteStorage';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,6 +30,10 @@ export default function Login() {
 
   const finishLogin = (data) => {
     toast.success('Welcome back!', { id: 'login-toast', icon: <ShieldCheck className="text-mulberry" /> });
+    // Fresh start: drop everything stored by earlier sessions/accounts on this
+    // device (old coupon, addresses, PIN, wishlist copy, caches…). The guest
+    // cart is kept so signing in at checkout doesn't empty it.
+    resetForLogin();
     if (remember) localStorage.setItem('rememberEmail', email);
     else localStorage.removeItem('rememberEmail');
     // The session itself is an httpOnly cookie set by the server; scripts never

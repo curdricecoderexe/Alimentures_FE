@@ -37,6 +37,9 @@ import { authenticatedFetch } from '../../lib/api';
 import ShiprocketPanel from '../../components/ShiprocketPanel';
 import CustomerContact from '../../components/admin/CustomerContact';
 import { cityLine, fullAddress } from '../../lib/customerInfo';
+import PaymentResolvePanel, { PaymentRecord } from '../../components/admin/PaymentResolvePanel';
+import { isUnpaidOrder } from '../../lib/orderPayment';
+import { RefreshCw } from 'lucide-react';
 
 // --- MOCK DATA ---
 const initialOrders = [];
@@ -53,6 +56,9 @@ const StatusBadge = ({ status }) => {
     'pending': 'badge-pending',
     'payment_pending': 'badge-pending',
     'payment_failed': 'badge-failed',
+    'cancelled': 'badge-failed',
+    'refunded': 'badge-failed',
+    'payment_successful_no_stock': 'badge-failed',
   };
 
   const labelMap = {
@@ -62,8 +68,11 @@ const StatusBadge = ({ status }) => {
     'packed': 'Packed',
     'processing': 'Processing',
     'pending': 'Placed',
-    'payment_pending': 'Pending',
+    'payment_pending': 'Awaiting Payment',
     'payment_failed': 'Failed',
+    'cancelled': 'Cancelled',
+    'refunded': 'Refunded',
+    'payment_successful_no_stock': 'Paid · Out of Stock',
   };
 
   return (
@@ -77,7 +86,7 @@ const StatusBadge = ({ status }) => {
 import TableSkeleton from '../../components/skeletons/TableSkeleton';
 import useSkeletonLoader from '../../hooks/useSkeletonLoader';
 
-const METHOD_LABELS = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay Later' };
+const METHOD_LABELS = { upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay Later', bank_transfer: 'Bank Transfer', cash: 'Cash', razorpay_link: 'Payment Link', other: 'Other' };
 
 /** Human-readable payment type for an order (COD / UPI / Card / Online …). */
 const paymentLabel = (order) => {
@@ -108,12 +117,42 @@ export default function AdminOrders() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [orders, setOrders] = useState(initialOrders);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const showSkeleton = useSkeletonLoader(isLoading);
 
-  const fetchOrders = async () => {
+  // Ask Razorpay about every unpaid order and confirm the ones actually paid.
+  const syncPayments = async () => {
+    setSyncing(true);
     try {
-      setIsLoading(true);
+      const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders/admin/sync-payments`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+      });
+      if (!res) return;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(data?.error || 'Sync failed'); return; }
+      const n = data.data?.confirmed?.length || 0;
+      if (n) toast.success(`${n} paid order${n > 1 ? 's' : ''} confirmed from Razorpay`);
+      else toast.info(`Checked ${data.data?.checked || 0} unpaid order(s) — no new Razorpay payments found`);
+      if (n) fetchOrders(true);
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  // Apply a server-updated order (after a payment fix) to the list + open modal.
+  const applyOrderUpdate = (updated) => {
+    if (!updated?.id) { fetchOrders(true); setSelectedOrder(null); return; }
+    setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
+    setSelectedOrder((prev) => (prev && prev.id === updated.id ? { ...prev, ...updated } : prev));
+  };
+
+  const fetchOrders = async (quiet = false) => {
+    try {
+      if (!quiet) setIsLoading(true);
       const res = await authenticatedFetch(`${import.meta.env.VITE_API_URL}/orders?limit=100`);
       if (!res) return;
       const data = await res.json();
@@ -220,11 +259,17 @@ export default function AdminOrders() {
     if (selectedOrder && gone.has(selectedOrder.id)) setSelectedOrder(null);
   };
 
-  const filteredOrders = orders.filter(o => 
+  const matchesStatus = (o) => {
+    const s = String(o.status || '').toLowerCase();
+    if (statusFilter === 'all') return true;
+    if (statusFilter === 'unpaid') return isUnpaidOrder(o);
+    return s === statusFilter;
+  };
+  const filteredOrders = orders.filter(o => matchesStatus(o) && (
     ([o.customerInfo?.name, o.customer, o.customerInfo?.phone, o.customerInfo?.email, o.customerInfo?.city, o.customerInfo?.pincode]
-      .filter(Boolean).join(' ').toLowerCase().includes(searchQuery.toLowerCase())) || 
+      .filter(Boolean).join(' ').toLowerCase().includes(searchQuery.toLowerCase())) ||
     (o.id.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  ));
 
   if (isLoading) {
     if (showSkeleton) return <div className="bg-transparent min-h-screen"><TableSkeleton /></div>;
@@ -239,12 +284,23 @@ export default function AdminOrders() {
           <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight italic">Orders</h1>
           <p className="text-xs sm:text-sm text-gray-500 font-medium">Manage logistics and customer fulfillment</p>
         </div>
-        <Button 
-          onClick={() => setIsExportModalOpen(true)}
-          className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl bg-black hover:bg-zinc-800 !text-white font-bold shadow-lg transition-all active:scale-95 text-xs sm:text-sm self-center sm:self-auto"
-        >
-          <Download className="h-4 w-4 mr-2" /> Export History
-        </Button>
+        <div className="flex flex-wrap items-center justify-center gap-2 self-center sm:self-auto">
+          <Button
+            variant="outline"
+            onClick={syncPayments}
+            disabled={syncing}
+            title="Check every unpaid order with Razorpay and confirm the ones that were paid"
+            className="h-10 sm:h-12 px-4 sm:px-5 rounded-2xl font-bold text-xs sm:text-sm border-gray-200"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} /> {syncing ? 'Syncing…' : 'Sync Razorpay Payments'}
+          </Button>
+          <Button
+            onClick={() => setIsExportModalOpen(true)}
+            className="h-10 sm:h-12 px-4 sm:px-6 rounded-2xl bg-black hover:bg-zinc-800 !text-white font-bold shadow-lg transition-all active:scale-95 text-xs sm:text-sm"
+          >
+            <Download className="h-4 w-4 mr-2" /> Export History
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-2xl shadow-gray-200/40 rounded-2xl bg-white shadow-sm border-gray-200/60 transition-shadow duration-300 border border-gray-100 overflow-visible">
@@ -261,7 +317,7 @@ export default function AdminOrders() {
               />
             </div>
             
-            <Select defaultValue="all">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px] h-12 rounded-2xl border-gray-100 bg-gray-100 focus:ring-0 font-bold text-gray-500">
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-500" />
@@ -270,10 +326,14 @@ export default function AdminOrders() {
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-100 shadow-2xl z-[100]">
                 <SelectItem value="all" className="rounded-lg py-2.5 font-medium">All Statuses</SelectItem>
+                <SelectItem value="unpaid" className="rounded-lg py-2.5 font-medium">Unpaid / Payment Issues</SelectItem>
+                <SelectItem value="pending" className="rounded-lg py-2.5 font-medium">Placed</SelectItem>
                 <SelectItem value="processing" className="rounded-lg py-2.5 font-medium">Processing</SelectItem>
                 <SelectItem value="packed" className="rounded-lg py-2.5 font-medium">Packed</SelectItem>
                 <SelectItem value="shipped" className="rounded-lg py-2.5 font-medium">Shipped</SelectItem>
                 <SelectItem value="delivered" className="rounded-lg py-2.5 font-medium">Delivered</SelectItem>
+                <SelectItem value="cancelled" className="rounded-lg py-2.5 font-medium">Cancelled</SelectItem>
+                <SelectItem value="refunded" className="rounded-lg py-2.5 font-medium">Refunded</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -538,7 +598,19 @@ export default function AdminOrders() {
                 <CustomerContact order={selectedOrder} />
               </div>
 
-              {/* STATUS UPDATE SECTION */}
+              {/* PAYMENT — unpaid orders get the resolve tools; paid ones show the record */}
+              {isUnpaidOrder(selectedOrder) ? (
+                <div className="space-y-3 sm:space-y-4">
+                  <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider ml-1">Payment</Label>
+                  <PaymentResolvePanel key={selectedOrder.id} order={selectedOrder} onResolved={applyOrderUpdate} />
+                </div>
+              ) : (
+                <PaymentRecord order={selectedOrder} />
+              )}
+
+              {/* STATUS UPDATE SECTION — only for paid orders that are being fulfilled
+                  (an unpaid order used to look "Placed" here because unknown statuses fell back to step 1) */}
+              {!isUnpaidOrder(selectedOrder) && !['cancelled', 'refunded'].includes(String(selectedOrder.status || '').toLowerCase()) && (
               <div className="space-y-4 pt-2">
                 <div className="flex items-center justify-between ml-1">
                   <Label className="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Fulfillment Progress</Label>
@@ -589,6 +661,7 @@ export default function AdminOrders() {
                   <div className="h-6 sm:h-8"></div>
                 </div>
               </div>
+              )}
 
               {/* ITEMS LIST */}
               <div className="space-y-3 sm:space-y-4">

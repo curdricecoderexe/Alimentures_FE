@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { API_BASE, authenticatedFetch } from '../lib/api';
+import { SESSION_RESET_EVENT } from '../lib/siteStorage';
 
 const CartContext = createContext();
 
@@ -136,6 +137,19 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchWishlist();
+  }, []);
+
+  // Storage was reset (lib/siteStorage): login → keep the guest cart, reload this
+  // account's wishlist from the server; logout → empty both.
+  useEffect(() => {
+    const onReset = (e) => {
+      setWishlist([]);
+      if (e.detail?.reason === 'logout') setCart([]);
+      // After login the new account's markers are written right after the reset.
+      else setTimeout(fetchWishlist, 0);
+    };
+    window.addEventListener(SESSION_RESET_EVENT, onReset);
+    return () => window.removeEventListener(SESSION_RESET_EVENT, onReset);
   }, []);
 
   const toggleWishlist = async (product) => {

@@ -7,7 +7,10 @@ import { HelmetProvider } from 'react-helmet-async'
 import ErrorBoundary from './components/ErrorBoundary'
 import { installGlobalErrorReporting } from './lib/reportError'
 import { installCredentialedFetch } from './lib/api'
+import { migrateStorageOnBoot } from './lib/siteStorage'
 
+// Before anything reads localStorage: drop data from an incompatible older release.
+migrateStorageOnBoot()
 installCredentialedFetch()
 installGlobalErrorReporting()
 
